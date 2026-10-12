@@ -161,9 +161,22 @@ Format: context → decision → alternatives → consequences. Status: **Accept
 4. **Engine and hooks are opt-in.** Running `scripts/impeccable` (which may download engine 0.1.14 to `~/.impeccable`, SHA-256-checked) and `impeccable hooks on` (writes `.claude/settings.local.json` and `.impeccable/config.json`) each need the owner's explicit approval, which is then recorded here. Without the engine, the skill reads PRODUCT.md and DESIGN.md directly (its documented fallback).
 5. Scope discipline still applies: Impeccable's "complete deliverable" principle does not expand a task beyond its milestone; findings outside scope go into ROADMAP.md.
 **Consequences:** Every M3 UI slice ends with an Impeccable `critique` + `audit` pass. Fixes land in the same slice, and the results are noted in TESTING.md.
+**Approval recorded (2026-10-12):** the owner approved **engine + hooks**. Engine 0.1.14 was downloaded to `~/.impeccable/bin/0.1.14/` (SHA-256 `abbd69d5…f87c`, matching the published `impeccable-darwin-arm64.sha256`). `impeccable hooks on` wrote `.impeccable/config.json` (committed, shared) and a PostToolUse (Edit|Write) + Stop hook in `.claude/settings.local.json` (machine-local, git-ignored). `live` mode remains opt-in.
 
 ## D-025 — One product authority: `docs/PRODUCT.md`; design system in `DESIGN.md` {#d-025}
-**Status:** Proposed · 2026-10-12, finalize at the start of M3
+**Status:** Accepted · 2026-10-12. `impeccable context` resolved `productPath: docs/PRODUCT.md` on its own, so no root `PRODUCT.md` or pointer file exists.
 
 **Context:** Impeccable's `init` writes `PRODUCT.md` at the repo root unless its context resolver finds an existing file. Ours is `docs/PRODUCT.md`, and two product documents would drift.
 **Decision (proposed):** `docs/PRODUCT.md` stays the single product authority. When Impeccable needs product context, it reads that file. If the engine insists on a root `PRODUCT.md`, the root file is a short pointer to `docs/PRODUCT.md`, never a second copy. The visual design system is captured once with `impeccable document` as `DESIGN.md` (root, Impeccable's convention; linked from the README and ARCHITECTURE) at the start of M3, generated from the existing shadcn tokens rather than invented.
+
+## D-026 — "The Bridge Console" design system {#d-026}
+**Status:** Accepted · 2026-10-12
+
+**Context:** The incumbent theme was stock shadcn "neutral" (fully achromatic) with no semantic colours for the severity, overdue and blocked states the product revolves around. Running `impeccable document` (scan mode), the owner chose: North Star **"The Bridge Console"**, palette **neutral + navy accent + status signals**, density **comfortable-compact**.
+**Decision:** Captured in [DESIGN.md](../DESIGN.md) (tokens in `src/app/globals.css`; sidecar `.impeccable/design.json`):
+- Primary `oklch(0.37 0.09 252)` "Harbour Navy" (dark: `oklch(0.8 0.07 252)`), cool console sidebar, navy focus ring and chart ramp.
+- New semantic tokens `--success`, `--warning`, `--info` (light and dark) plus matching `Badge` variants, following shadcn's own `destructive` 10%-tint pattern.
+- Light-theme `--destructive` darkened from `oklch(0.577 0.245 27.325)` to `oklch(0.53 0.21 27)`: shadcn's default measured **3.99:1** against its own tint (fails WCAG AA for small text). The new value measures 4.95:1.
+- Every text/background pair was computed with an OKLCH→sRGB contrast script (not estimated); all pass AA.
+- Named rules: Signal, Lit Instrument, Two-Channel, Ledger, Fixed Scale, Quiet Hull.
+**Consequences:** M3 screens use semantic tokens and badge variants only; colour always means state.

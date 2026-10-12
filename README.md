@@ -76,6 +76,7 @@ Strategy and latest results: [docs/TESTING.md](docs/TESTING.md).
 | [PRODUCT](docs/PRODUCT.md) | Users, workflows, scope, exclusions |
 | [ARCHITECTURE](docs/ARCHITECTURE.md) | System design, **folder layout**, boundaries, data flow |
 | [CONVENTIONS](docs/CONVENTIONS.md) | Next.js, Supabase, Postgres, RLS and UI best practices used here |
+| [DESIGN](DESIGN.md) | Design system "The Bridge Console": colour, type, layout, components |
 | [DATA_MODEL](docs/DATA_MODEL.md) | Tables, constraints, indexes, lifecycle |
 | [SECURITY](docs/SECURITY.md) | Auth, role matrix, RLS, secrets, audit integrity |
 | [TESTING](docs/TESTING.md) · [DEPLOYMENT](docs/DEPLOYMENT.md) | How it's verified and shipped |

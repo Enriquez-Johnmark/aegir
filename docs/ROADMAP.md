@@ -31,7 +31,7 @@ Acceptance: `db reset` builds the schema from migrations alone; pgTAP proves cro
 
 ## M3: Vertical slices (P0 → P1) ⬜ ← next
 Each slice: schema already in place → DAL → actions → UI (loading, empty, error, unauthorized states) → Impeccable `critique` + `audit`, fixes, `polish` (D-024) → tests → docs and ledger.
-0. [ ] Finalize D-025; capture the design system with `impeccable document` → `DESIGN.md` (needs engine approval, otherwise written by hand from the shadcn tokens)
+0. [x] D-025 accepted; design system captured with `impeccable document` → `DESIGN.md` "The Bridge Console" (D-026); engine + hooks enabled (D-024)
 1. [ ] Vessels: list (search, filter, sort), detail, create, edit
 2. [ ] Inspections: schedule with checklist (RPC), record results, complete, follow-up flag
 3. [ ] Work orders: create (incl. from a failed item), transitions, overdue, history

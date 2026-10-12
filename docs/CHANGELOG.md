@@ -4,6 +4,24 @@ Meaningful functional and technical changes, newest first. Format loosely follow
 
 ## [Unreleased]
 
+### 2026-10-12: Design system "The Bridge Console" (M3 step 0)
+
+**Added**
+- `DESIGN.md` (Impeccable/DESIGN.md format) and `.impeccable/design.json` sidecar; `.impeccable/config.json` with the design detector hook enabled.
+- Semantic status tokens `--success`, `--warning`, `--info` (light and dark) and matching `Badge` variants.
+- Palette-tinted text selection and navy caret.
+
+**Changed**
+- Primary colour: neutral black → Harbour Navy `oklch(0.37 0.09 252)` (dark `oklch(0.8 0.07 252)`); cool console sidebar; navy focus ring and chart ramp.
+- Light-theme destructive darkened for WCAG AA on its tint (3.99:1 → 4.95:1).
+
+**Fixed**
+- App header separator rendered as a stray full-height line (Radix-style `data-[orientation=vertical]` selector on a Base UI component).
+
+**Reason:** a product-specific, accessible design system before building the feature screens.
+**Affected areas:** theme tokens, Badge, app shell, docs. **Breaking changes:** none. **Migrations:** none.
+**Verification:** lint ✅ · typecheck ✅ · unit 18/18 ✅ · build ✅ · `impeccable detect` no findings ✅ · desktop + mobile screenshot round ✅ · E2E 10/10 ✅.
+
 ### 2026-10-12: Impeccable UI/UX skill
 
 **Added**

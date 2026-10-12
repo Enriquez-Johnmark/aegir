@@ -131,3 +131,20 @@ Migrations were created with `npx supabase migration new` and revised only while
 | UPDATE | `AGENTS.md` | Skill list + Impeccable guardrails | | ✅ |
 | UPDATE | `docs/ROADMAP.md` | Impeccable pass in each M3 slice; DESIGN.md task | | ✅ |
 | UPDATE | `docs/CHANGELOG.md`, `docs/FILE-CHANGE-LOG.md` | This entry | | ✅ reconciled with `git status` |
+
+## 2026-10-12 · M3 step 0: Design system
+
+| Action | Path | Purpose | Related | Verification |
+|---|---|---|---|---|
+| CREATE | `DESIGN.md` | Design system "The Bridge Console" (tokens + rules) | D-026 | ✅ matches `globals.css` |
+| CREATE | `.impeccable/design.json` | Impeccable sidecar: ramps, components, narrative | D-026 | ✅ valid JSON |
+| CREATE | `.impeccable/config.json` | Shared Impeccable config, design hook enabled (written by `impeccable hooks on`) | D-024 | ✅ hook fires on Edit/Write |
+| UPDATE | `.gitignore` | Ignore `.claude/settings.local.json`, `.impeccable/config.local.json`, hook caches, review/build artefacts | D-024 | ✅ `git status` shows only shared files |
+| UPDATE | `src/app/globals.css` | Navy primary, status tokens, cool sidebar, ring/chart ramp, destructive AA fix, selection/caret | D-026 | ✅ contrast script, build, screenshots |
+| UPDATE | `src/components/ui/badge.tsx` | `success` / `warning` / `info` variants | D-026 | ✅ hook scan clean, typecheck |
+| UPDATE | `src/app/(app)/layout.tsx` | Separator uses Base UI `data-vertical:` selectors | CONVENTIONS §6 | ✅ screenshots |
+| UPDATE | `docs/DECISIONS.md` | D-024 approval, D-025 accepted, D-026 | | ✅ |
+| UPDATE | `docs/CONVENTIONS.md`, `docs/AGENT-SKILLS.md`, `docs/ARCHITECTURE.md`, `docs/TESTING.md`, `docs/ROADMAP.md`, `README.md` | Design system references, Base UI selector rule, results | | ✅ |
+| UPDATE | `docs/CHANGELOG.md`, `docs/FILE-CHANGE-LOG.md` | This entry | | ✅ reconciled with `git status` |
+
+Not tracked (machine-local, outside the repo or git-ignored): `~/.impeccable/bin/0.1.14/impeccable`, `.claude/settings.local.json`, `.impeccable/config.local.json`.

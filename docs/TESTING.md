@@ -73,6 +73,9 @@ rollback;
 | 2026-10-12 | `npm run db:lint` / `db advisors` | ✅ no lint errors; no security findings; perf: only "unused index" on a fresh DB |
 | 2026-10-12 | `npm test` | ✅ 18/18 (env, roles, safe-redirect) |
 | 2026-10-12 | `npm run test:e2e` | ✅ 10/10 (5 auth tests × desktop + mobile) |
+| 2026-10-12 | `impeccable detect --json` (globals.css, badge, auth/app routes, layout, features) | ✅ `[]` no findings |
+| 2026-10-12 | Design inspection round (Playwright screenshots, desktop 1280×800 + Pixel 7: landing, login errors, dashboard) | ✅ after 1 fix: header separator used a Radix selector and rendered as a stray line |
+| 2026-10-12 | Token contrast (OKLCH→sRGB WCAG script) | ✅ all pairs ≥ 4.5:1 text, ring ≥ 3:1; shadcn default destructive-on-tint was 3.99:1 (fixed, D-026) |
 
 ## Known gaps
 

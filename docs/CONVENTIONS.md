@@ -128,6 +128,8 @@ Project config: `base-nova` style, **Base UI** primitives (`base`), lucide icons
 - Dialog, Sheet and Drawer always have a Title (use `sr-only` if visually hidden).
 - Icons in buttons use `data-icon="inline-start|inline-end"` and no sizing classes.
 - Base UI uses the **`render` prop** for custom triggers, not `asChild`. When a `Button` renders a non-button element (e.g. `<Link>`), also pass `nativeButton={false}`.
+- Base UI state attributes are `data-vertical`, `data-horizontal`, `data-active`, … (Tailwind `data-vertical:h-4`), **not** Radix's `data-[orientation=vertical]`. Radix-style selectors copied from examples silently do nothing.
+- Visual rules live in [DESIGN.md](../DESIGN.md) ("The Bridge Console"). Status uses `Badge` variants `destructive | warning | success | info | outline` with the mapping in DESIGN.md; numbers in tables and metrics use `tabular-nums`.
 - Accessibility: semantic HTML landmarks (`header`, `nav`, `main`), visible focus states, labelled controls, keyboard-reachable actions, and colour never the only signal.
 - No dead buttons: if a feature isn't implemented, the control doesn't render.
 

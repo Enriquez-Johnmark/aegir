@@ -1,8 +1,9 @@
 "use client";
 
-import { AnchorIcon, LayoutDashboardIcon } from "lucide-react";
+import { AnchorIcon, LayoutDashboardIcon, ShipIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Suspense } from "react";
 
 import {
   Sidebar,
@@ -19,11 +20,12 @@ import {
 } from "@/components/ui/sidebar";
 
 // Only routes that exist are listed; features join the nav as they ship.
-const NAV_ITEMS = [{ title: "Dashboard", href: "/dashboard", icon: LayoutDashboardIcon }] as const;
+const NAV_ITEMS = [
+  { title: "Dashboard", href: "/dashboard", icon: LayoutDashboardIcon },
+  { title: "Vessels", href: "/vessels", icon: ShipIcon },
+] as const;
 
 export function AppSidebar({ footer }: { footer: React.ReactNode }) {
-  const pathname = usePathname();
-
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
@@ -45,25 +47,39 @@ export function AppSidebar({ footer }: { footer: React.ReactNode }) {
         <SidebarGroup>
           <SidebarGroupLabel>Operations</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
-              {NAV_ITEMS.map((item) => (
-                <SidebarMenuItem key={item.href}>
-                  <SidebarMenuButton
-                    render={<Link href={item.href} />}
-                    isActive={pathname === item.href || pathname.startsWith(`${item.href}/`)}
-                    tooltip={item.title}
-                  >
-                    <item.icon />
-                    <span>{item.title}</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
+            {/* The pathname of a dynamic route is request-time data under Cache
+                Components, so only the active-state lookup waits behind Suspense. */}
+            <Suspense fallback={<NavItems pathname={null} />}>
+              <ActiveNavItems />
+            </Suspense>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>{footer}</SidebarFooter>
       <SidebarRail />
     </Sidebar>
+  );
+}
+
+function ActiveNavItems() {
+  return <NavItems pathname={usePathname()} />;
+}
+
+function NavItems({ pathname }: { pathname: string | null }) {
+  return (
+    <SidebarMenu>
+      {NAV_ITEMS.map((item) => (
+        <SidebarMenuItem key={item.href}>
+          <SidebarMenuButton
+            render={<Link href={item.href} />}
+            isActive={pathname === item.href || Boolean(pathname?.startsWith(`${item.href}/`))}
+            tooltip={item.title}
+          >
+            <item.icon />
+            <span>{item.title}</span>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      ))}
+    </SidebarMenu>
   );
 }

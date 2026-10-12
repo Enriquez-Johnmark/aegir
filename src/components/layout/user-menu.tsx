@@ -41,7 +41,8 @@ export function UserMenu({ fullName, email, organizationName, roleLabel }: UserM
         <DropdownMenu>
           <DropdownMenuTrigger render={<SidebarMenuButton size="lg" />}>
             <Avatar className="size-8 rounded-lg">
-              <AvatarFallback className="rounded-lg">{initials(fullName)}</AvatarFallback>
+              {/* Default muted-on-muted initials measured 4.3:1; foreground on the sidebar accent passes AA. */}
+              <AvatarFallback className="rounded-lg bg-sidebar-accent text-foreground">{initials(fullName)}</AvatarFallback>
             </Avatar>
             <div className="grid flex-1 text-left text-sm leading-tight">
               <span className="truncate font-medium">{fullName}</span>

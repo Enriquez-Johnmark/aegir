@@ -15,7 +15,8 @@
     "db:reset": "supabase db reset",
     "db:test": "supabase test db",
     "db:lint": "supabase db lint",
-    "db:types": "supabase gen types typescript --local --schema public > src/types/database.types.ts"
+    "db:types": "supabase gen types typescript --local --schema public > src/types/database.types.ts && prettier --write --log-level warn src/types/database.types.ts",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@base-ui/react": "1.9.0",
@@ -33,12 +34,14 @@
     "zod": "4.6.6"
   },
   "devDependencies": {
+    "@playwright/test": "1.64.0",
     "@tailwindcss/turbopack": "4.3.3",
     "@types/node": "24.19.2",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
     "eslint": "9.39.5",
     "eslint-config-next": "16.4.0",
+    "prettier": "3.9.10",
     "supabase": "2.120.0",
     "tailwindcss": "4.3.3",
     "typescript": "5.9.3",

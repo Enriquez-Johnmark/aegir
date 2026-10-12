@@ -1,8 +1,8 @@
 import { expect, test } from "@playwright/test";
 
-// Seeded local users (supabase/seed.sql). Password is local-only.
-const PASSWORD = "AegirDemo2026";
-const TECHNICIAN = { email: "tomas.okafor@northwind.example", name: "Tomas Okafor" };
+import { PASSWORD, USERS } from "./helpers";
+
+const TECHNICIAN = USERS.technician;
 
 test.describe("authentication", () => {
   test("redirects signed-out visitors to sign in and back afterwards", async ({ page }) => {

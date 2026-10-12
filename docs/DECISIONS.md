@@ -75,12 +75,12 @@ Format: context → decision → alternatives → consequences. Status: **Accept
 **Note on `force row level security`:** The postgres skill shows `force row level security`. We do not force it. App traffic uses the `authenticated` role, which is always subject to RLS. `force` only adds policy checks for the table owner, and that is the role our reviewed security-definer helpers and audit trigger run as. Forcing would need extra owner policies without improving isolation for app users. Revisit this if a non-owner privileged role is ever introduced.
 
 ## D-011 — Demo access strategy {#d-011}
-**Status:** Proposed · 2026-10-12, decide in M2
+**Status:** Accepted · 2026-10-12, option (a)
 
 **Options:**
 (a) Seeded demo accounts per role in a single demo organization, with credentials published in the README; no hard deletes are possible, and a documented reset script restores the seed.
 (b) A "Try the demo" button that signs into a shared **non-admin** account.
-**Leaning:** (a), with the admin role excluded from the published credentials. **Constraint:** never publish a privileged account, never bypass RLS for the demo.
+**Decision:** (a). Locally, `supabase/seed.sql` creates one user per role in "Northwind Shipping" plus a second organization ("Meridian Tankers") that exists to prove isolation. For the hosted demo (M5), publish manager, inspector, technician and viewer logins with a demo-only password, and never publish the admin login. **Constraint:** never publish a privileged account, never bypass RLS for the demo. Sign-out is session-local (D-020), so visitors sharing a demo login don't sign each other out.
 
 ## D-012 — shadcn/ui with Base UI primitives (`base-nova`) {#d-012}
 **Status:** Accepted · 2026-10-12
@@ -101,4 +101,51 @@ Format: context → decision → alternatives → consequences. Status: **Accept
 ## D-015 — Local auth hardening {#d-015}
 **Status:** Accepted · 2026-10-12
 
-**Decision:** `supabase/config.toml`: public sign-up disabled, minimum password length 10, `letters_digits` required. Users are provisioned into organizations. Mirror these settings on the hosted project during deployment.
+**Decision:** `supabase/config.toml`: public sign-up disabled (`[auth] enable_signup = false`), minimum password length 10, `letters_digits` required. Users are provisioned into organizations. Mirror these settings on the hosted project during deployment.
+**Correction (2026-10-12, M2):** M1 also set `[auth.email] enable_signup = false`. In GoTrue that flag disables the **entire email provider**, so password logins failed (`email_provider_disabled`). It is now `true`, with a comment explaining why. Sign-ups remain disabled by the global flag (verified: `signup_disabled`).
+
+## D-016 — RLS helpers return sets; policies use `in (select …)` {#d-016}
+**Status:** Accepted · 2026-10-12
+
+**Context / skill nuance:** The postgres skill's example wraps a boolean helper as `(select private.is_team_member(team_id))`. Because that call passes the row's column, it is a *correlated* subquery and still runs once per row.
+**Decision:** Helpers return the caller's organization IDs (`private.my_org_ids()`, `private.my_org_ids_with_role(roles)`), and policies use `organization_id in (select private.my_org_ids())`. The subquery is uncorrelated, so Postgres evaluates it once per statement and hashes the result. `(select auth.uid())` is still wrapped everywhere.
+**Consequence:** One pattern for every table; fast with indexes on `organization_id`.
+
+## D-017 — Column-level grants for immutable and server-owned columns {#d-017}
+**Status:** Accepted · 2026-10-12
+
+**Decision:** Instead of table-wide `INSERT`/`UPDATE`, each table grants only the client-writable columns ([DATA_MODEL.md §5a](DATA_MODEL.md#5a-privileges-column-level-grants)). Ownership (`organization_id`), authorship (`created_by`, `from_user_id`), lifecycle timestamps and IDs are therefore impossible to forge or change, without needing extra trigger code. Server-owned values are set by triggers (`private.set_created_by()` and friends).
+**Trade-off:** Adding a client-editable column requires a grant in the same migration. A forgotten grant fails loudly (42501) rather than silently.
+
+## D-018 — Seed data doubles as the pgTAP fixture contract {#d-018}
+**Status:** Accepted · 2026-10-12
+
+**Decision:** `supabase/seed.sql` uses fixed, readable UUIDs (`a…` Northwind, `b…` Meridian) documented at the top of the file. pgTAP tests reference them, create any extra rows they need, and roll back. This keeps tests short and readable.
+**Trade-off:** Changing those fixture rows means updating tests. The contract is listed in the seed header.
+
+## D-019 — One organization per session in the MVP {#d-019}
+**Status:** Accepted · 2026-10-12
+
+**Decision:** The schema supports many memberships per user, and RLS handles all of them. The UI uses the user's oldest membership (`getSessionState()` in `src/lib/auth/session.ts`). An organization switcher is future work. Users without a membership land on `/no-access`.
+
+## D-020 — Session-local sign-out {#d-020}
+**Status:** Accepted · 2026-10-12
+
+**Context:** `supabase.auth.signOut()` defaults to `scope: "global"`, which revokes every session of the user. The E2E suite exposed this: one test signing out logged out parallel tests using the same account. On a shared demo login it would log out every visitor.
+**Decision:** `signOut({ scope: "local" })`.
+
+## D-021 — Playwright introduced in M2; serial locally {#d-021}
+**Status:** Accepted · 2026-10-12
+
+**Decision:** Playwright (`e2e/`, desktop and mobile projects) was added in M2 instead of M4, to verify the real sign-in flow (Server Actions, cookies, proxy). It runs against a production build and the local Supabase stack. Locally it runs with **1 worker** and a 10 s `expect` timeout: on an 8 GB laptop the full Supabase stack plus parallel browsers caused 10 s Auth→DB connection timeouts (diagnosed: Auth handled 5 concurrent sign-ins in 0.4 s when the machine was not saturated). CI uses 2 workers.
+
+## D-022 — Revoke Supabase's legacy default privileges {#d-022}
+**Status:** Accepted · 2026-10-12
+
+**Context:** Inspecting `pg_default_acl` on the local stack showed that new `public` tables, sequences and functions still get `ALL`/`EXECUTE` for `anon` and `authenticated` by default.
+**Decision:** The first migration runs `alter default privileges for role postgres in schema public revoke …` for tables, sequences and functions, so new objects are private until a migration grants access. Each table migration also revokes explicitly before granting, so the result is identical on projects with either default.
+
+## D-023 — Generated types formatted with Prettier {#d-023}
+**Status:** Accepted · 2026-10-12
+
+**Decision:** `npm run db:types` pipes `supabase gen types` through `prettier` (pinned devDependency) because the CLI emits unformatted TypeScript. Prettier is used only for this generated file; source formatting follows the existing style.

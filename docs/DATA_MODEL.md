@@ -1,6 +1,15 @@
 # Data Model
 
-> **Status: design (Phase 1).** No migrations have been written yet. This is the target schema for milestone M2. Each section changes from "planned" to "implemented (migration `<file>`)" when its migration lands. Conventions: [CONVENTIONS.md §4](CONVENTIONS.md#4-database-and-migrations-postgres).
+> **Status: implemented (M2, 2026-10-12)** in `supabase/migrations/`, verified by 73 pgTAP tests (`supabase/tests/`). Conventions: [CONVENTIONS.md §4](CONVENTIONS.md#4-database-and-migrations-postgres).
+
+| Migration | Contents |
+|---|---|
+| `20261012070232_create_tenancy.sql` | Default-privilege hardening, `private` schema, `org_role`, organizations, profiles (+ new-user trigger), memberships, RLS helper functions |
+| `20261012070234_create_vessels.sql` | `vessel_type`, `vessel_status`, IMO validation, vessels |
+| `20261012070235_create_inspections.sql` | `inspection_status`, `check_result`, `severity`, inspections, inspection_items, transition/freeze triggers, `create_inspection` RPC |
+| `20261012070237_create_work_orders.sql` | `work_order_status`, work_orders, transition and assignee rules |
+| `20261012070238_create_handovers.sql` | `handover_status`, handovers, immutability and acknowledgement rules |
+| `20261012070240_create_audit_log.sql` | audit_events + audit triggers on every operational table |
 
 ## 1. Entity relationships
 
@@ -60,16 +69,16 @@ Created automatically by an `after insert on auth.users` trigger (`private.handl
 |---|---|---|
 | organization_id | uuid | FK → organizations restrict, indexed |
 | name | text | not null, 1–120 chars |
-| imo_number | text | not null, `~ '^[0-9]{7}$'`, `unique (organization_id, imo_number)` |
+| imo_number | text | not null, `private.is_valid_imo()`: 7 digits **with a valid IMO check digit**; `unique (organization_id, imo_number)` |
 | vessel_type | vessel_type | not null |
 | flag_state | text | not null, 2–60 chars |
 | status | vessel_status | not null default `active` |
-| year_built | integer | null, `between 1900 and extract(year from now()) + 1` (enforced in a trigger, because `now()` is not immutable) |
+| year_built | integer | null, `between 1900 and 2100` (the "not in the future" rule lives in the Zod schema) |
 | gross_tonnage | integer | null, `> 0` |
 | created_by | uuid | FK → profiles **set null** |
 | | | `unique (id, organization_id)` (composite FK target) |
 
-Indexes: `(organization_id, status)`, `(organization_id, name)`.
+Indexes: `(organization_id, status)`, `(created_by)`; `organization_id` lookups use the `(organization_id, imo_number)` unique index.
 
 ### inspections
 | Column | Type | Constraints |
@@ -85,7 +94,8 @@ Indexes: `(organization_id, status)`, `(organization_id, name)`.
 | | | `unique (id, organization_id)` |
 
 Derived (in a view or query, not stored): `is_overdue = status in ('scheduled','in_progress') and scheduled_for < current_date`; `requires_follow_up = exists failed item without a linked work order`.
-Indexes: `(organization_id, status, scheduled_for)`, `(vessel_id)`, `(inspector_id)`.
+Indexes: `(organization_id, status, scheduled_for)`, `(vessel_id, organization_id)` (covers the composite FK), `(inspector_id)`, `(created_by)`.
+Inspector must be a member with role admin/manager/inspector (trigger). `completed_at` is set by the trigger, never by clients.
 Transitions (trigger): `scheduled → in_progress | cancelled`, `in_progress → completed | cancelled`. `completed` and `cancelled` are terminal. An inspection can only be completed when **no item is `pending`**.
 
 ### inspection_items
@@ -101,7 +111,8 @@ Transitions (trigger): `scheduled → in_progress | cancelled`, `in_progress →
 | severity | severity | `result = 'fail'` ⇔ not null |
 | | | `unique (id, organization_id)` |
 
-Items are **frozen once the parent inspection is completed or cancelled** (trigger).
+Items are **frozen once the parent inspection is completed or cancelled** (trigger). Changing a result away from `fail` clears `severity` automatically.
+Indexes: `(inspection_id, organization_id)` (composite FK), `(organization_id, result)`; `(inspection_id, position)` unique.
 
 ### work_orders
 | Column | Type | Constraints |
@@ -121,7 +132,8 @@ Items are **frozen once the parent inspection is completed or cancelled** (trigg
 | | | `unique (id, organization_id)` |
 
 Overdue (derived): `status <> 'completed' and due_date < current_date`.
-Indexes: `(organization_id, status, due_date)`, plus the FK indexes.
+Indexes: `(organization_id, status, due_date)`, `(vessel_id, organization_id)`, `(inspection_item_id, organization_id)`, `(assignee_id)`, `(created_by)`.
+Rules (trigger): a work order raised from a checklist item requires that item to be `fail` **and** on the same vessel (an item from another organization is invisible and reported as "not found"); the assignee must be a non-viewer member; leaving `blocked` clears `blocked_reason`; `completed_at` is set on completion; users who are not admin/manager may change only `status`/`blocked_reason` (and only on work orders assigned to them, via RLS).
 Transitions (trigger, mirrored in `features/work-orders/domain.ts`):
 
 | From \ To | open | in_progress | blocked | completed |
@@ -145,7 +157,7 @@ Transitions (trigger, mirrored in `features/work-orders/domain.ts`):
 | acknowledged_at | timestamptz | `status = 'acknowledged'` ⇔ not null |
 | | | at least one of `vessel_id`, `work_order_id` not null |
 
-Rules (trigger): after insert, **content is immutable**. The only allowed update is `pending → acknowledged`, made by `to_user_id`. Corrections are made by creating a new handover, so history is never silently overwritten.
+Rules: `from_user_id` is always set to the acting user by trigger. The recipient must be a non-viewer member. When only `work_order_id` is given, `vessel_id` is copied from the work order (and must match if both are given). After insert, **content is immutable** (only `status` is updatable, by column grant). The only allowed update is `pending → acknowledged`, by `to_user_id` (RLS), which stamps `acknowledged_at`. Corrections are made by creating a new handover, so history is never silently overwritten.
 
 ### audit_events (append-only)
 | Column | Type | Constraints |
@@ -159,7 +171,7 @@ Rules (trigger): after insert, **content is immutable**. The only allowed update
 | changes | jsonb | not null default `'{}'`: changed columns only, as `{column: {old, new}}` |
 | occurred_at | timestamptz | not null default now() |
 
-Written **only** by `private.record_audit_event()` (security definer `after insert or update` trigger on each audited table). `actor_id` comes from `auth.uid()` inside the trigger, so it cannot be forged. `authenticated` gets SELECT only, with **no** insert, update or delete grants or policies.
+Written **only** by `private.record_audit_event()` (security definer `after insert or update` trigger on memberships, vessels, inspections, inspection_items, work_orders and handovers). `actor_id` comes from `auth.uid()` inside the trigger, so it cannot be forged. Insert events store a snapshot of the new row; updates store only changed columns; no-op updates are not recorded. `authenticated` gets SELECT only, with **no** insert, update or delete grants or policies.
 Indexes: `(organization_id, occurred_at desc)`, `(entity_type, entity_id, occurred_at desc)`.
 
 ## 4. Data lifecycle and retention
@@ -176,8 +188,25 @@ Indexes: `(organization_id, occurred_at desc)`, `(entity_type, entity_id, occurr
 
 | Function | Purpose |
 |---|---|
-| `public.create_inspection(vessel_id, title, scheduled_for, items jsonb)` | Inserts the inspection and its checklist items in one transaction. `security invoker`, so RLS applies. |
-| `public.raise_work_order_from_item(item_id, ...)` | Creates a work order linked to a failed item, validating the item is a failure in the same organization. |
+| `public.create_inspection(p_vessel_id, p_title, p_scheduled_for, p_inspector_id, p_notes, p_items jsonb)` ✅ | Inserts the inspection and 1–100 checklist items (`[{category, description}]`) in one transaction. `security invoker`, so RLS applies; the organization is derived from the (RLS-visible) vessel, never from client input. |
+
+Raising a work order from a failed item is a single insert (`inspection_item_id` set); the trigger validates it, so no RPC is needed.
+
+## 5a. Privileges (column-level grants)
+
+Clients can only write the columns listed below (everything else is set by defaults or triggers, or is immutable):
+
+| Table | INSERT columns | UPDATE columns |
+|---|---|---|
+| profiles | — (trigger) | `full_name` (own row) |
+| vessels | organization_id, name, imo_number, vessel_type, flag_state, status, year_built, gross_tonnage | same minus organization_id |
+| inspections | organization_id, vessel_id, inspector_id, title, scheduled_for, notes | inspector_id, title, status, scheduled_for, notes |
+| inspection_items | organization_id, inspection_id, position, category, description | result, finding, severity |
+| work_orders | organization_id, vessel_id, inspection_item_id, title, description, priority, assignee_id, due_date | title, description, priority, status, assignee_id, due_date, blocked_reason |
+| handovers | organization_id, vessel_id, work_order_id, to_user_id, summary, outstanding_tasks | status |
+| organizations, memberships, audit_events | — | — |
+
+No table grants DELETE to any app role. `anon` has no privileges at all.
 
 ## 6. Primary-key choice
 

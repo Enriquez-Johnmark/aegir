@@ -1,16 +1,19 @@
 # Security Model
 
-> **Status:** the session handling foundation is implemented. RLS policies and their tests are **designed, not yet implemented** (milestone M2). Test results will be recorded in §8 as they run. Do not claim a control is in place until §8 shows a passing test.
+> **Status (2026-10-12):** authentication, organization roles, RLS on every table, column-level grants, transition/immutability triggers and the audit log are **implemented and tested** (73 pgTAP tests, 10 Playwright auth tests). Evidence: §8. Do not claim a control is in place until §8 shows a passing test.
 
 Aegir is a portfolio demonstration using synthetic data. It is **not** a certified maritime safety system.
 
 ## 1. Authentication
 
-- Supabase Auth, email and password. **Public sign-up is disabled** (`supabase/config.toml`: `[auth] enable_signup = false`, `[auth.email] enable_signup = false`). Users are provisioned into an organization.
+- Supabase Auth, email and password. **Public sign-up is disabled** with `[auth] enable_signup = false` in `supabase/config.toml` (verified: `/auth/v1/signup` returns `signup_disabled`). Note: `[auth.email] enable_signup` must stay `true`, because in GoTrue it switches the whole email provider (password logins) off. Users are provisioned into an organization.
 - Password policy (local config): minimum 10 characters, letters and digits. Mirror this on the hosted project.
 - Sessions are stored in cookies via `@supabase/ssr`. `src/proxy.ts` refreshes them on every request with `supabase.auth.getClaims()`.
 - Server code protects pages and data with **`getClaims()`**, which validates the JWT. **`getSession()` is never trusted on the server.**
-- The proxy is **not** an authorization boundary. Every page, Server Action and DAL function re-verifies the user, and RLS verifies again in the database.
+- The proxy is **not** an authorization boundary. It only redirects optimistically (signed out → `/login?next=…`, signed in → away from `/login`). Every page, Server Action and DAL function re-verifies the user (`requireUser()` in `src/lib/auth/session.ts`), and RLS verifies again in the database.
+- `next` redirect targets are sanitised (`src/lib/safe-redirect.ts`), so off-site URLs fall back to `/dashboard` (open-redirect protection, unit- and E2E-tested).
+- Sign-in errors are generic ("Invalid email or password.") to prevent account enumeration; Supabase's rate-limit error is surfaced as "Too many sign-in attempts".
+- **Sign-out uses `scope: "local"`**: it ends only the current browser session. The default global scope would sign the same account out everywhere, which would break shared demo logins (found by the E2E suite).
 
 ## 2. Authorization: organizations and roles
 
@@ -35,28 +38,31 @@ Membership management is seed-only in the MVP (no UI).
 ## 3. Row-Level Security design
 
 - RLS is **enabled on every table in `public`**, in the migration that creates it. Explicit `GRANT`s go to `authenticated` only (Supabase no longer auto-exposes new tables to the Data API). **`anon` gets no grants on organization data.**
-- Membership helper functions (planned):
+- **Default privileges hardened:** the Supabase image still grants ALL on new `public` objects to `anon`/`authenticated`. The first migration revokes those defaults, and each table then grants only what its policies need (D-009, D-022).
+- Membership helper functions (implemented in `private`, which the Data API does not expose):
 
   ```sql
-  -- private schema: not exposed by the Data API
-  private.is_org_member(org_id uuid) returns boolean
-  private.has_org_role(org_id uuid, roles public.org_role[]) returns boolean
-  -- security definer, stable, set search_path = '', checks (select auth.uid()),
-  -- execute revoked from public/anon, granted to authenticated
+  private.my_org_ids() returns setof uuid                          -- orgs the caller belongs to
+  private.my_org_ids_with_role(roles org_role[]) returns setof uuid -- ... with one of these roles
+  private.my_colleague_ids() returns setof uuid                     -- users sharing an org with the caller
+  private.assert_member_with_role(org, user, roles, label)          -- trigger validation of assignees etc.
+  -- security definer, stable, set search_path = '', based on (select auth.uid()),
+  -- execute revoked from public, granted to authenticated
   ```
-  They are `security definer` only so that policies on `memberships` don't recurse. They return a boolean about the **calling** user and nothing else.
-- Policy pattern (example):
+  They are `security definer` only so that policies on `memberships` don't recurse, and they answer questions about the **calling** user only. `assert_member_with_role` first refuses callers outside the organization, so it cannot be used to probe another organization's members.
+- Policy pattern (uncorrelated subquery, evaluated once per statement; see D-016):
 
   ```sql
   create policy "vessels: select members" on public.vessels
     for select to authenticated
-    using ((select private.is_org_member(organization_id)));
+    using (organization_id in (select private.my_org_ids()));
 
   create policy "vessels: update managers" on public.vessels
     for update to authenticated
-    using ((select private.has_org_role(organization_id, array['admin','manager']::public.org_role[])))
-    with check ((select private.has_org_role(organization_id, array['admin','manager']::public.org_role[])));
+    using (organization_id in (select private.my_org_ids_with_role(array['admin','manager']::public.org_role[])))
+    with check (organization_id in (select private.my_org_ids_with_role(array['admin','manager']::public.org_role[])));
   ```
+- **Column-level grants** decide which columns clients may write at all ([DATA_MODEL.md §5a](DATA_MODEL.md#5a-privileges-column-level-grants)): `organization_id`, `created_by`, `from_user_id`, `completed_at`, `acknowledged_at` and IDs can never be set or changed by clients.
 - Column-level rules that RLS can't express (for example, a technician may change only `status` and `blocked_reason` on their own work orders) are enforced in `before update` triggers, which raise `P0001` with a clear message.
 - **Forgery prevention:**
   - `created_by` and `from_user_id` are checked with `with check (... = (select auth.uid()))` or set by trigger.
@@ -86,7 +92,7 @@ Membership management is seed-only in the MVP (no UI).
 - Route params (`[vesselId]`) are validated as UUIDs before querying.
 - Next.js checks the Origin header on Server Actions (CSRF). Mutations are never performed on GET.
 
-## 7. Required security tests (planned: `supabase/tests/*.test.sql`, pgTAP)
+## 7. Required security tests (`supabase/tests/*.test.sql`, pgTAP; all implemented)
 
 1. Anonymous: zero rows or a permission error on every organization table.
 2. Member of Org A: can read Org A rows; **sees zero Org B rows**.
@@ -101,10 +107,17 @@ Membership management is seed-only in the MVP (no UI).
 
 | Date | Suite | Result | Notes |
 |---|---|---|---|
-| — | — | — | No RLS tests yet (no tables). |
+| 2026-10-12 | `npx supabase test db` (6 files) | ✅ 73/73 | Tenancy (14), vessels (13), inspections (16), work orders (14), handovers (9), audit (7) |
+| 2026-10-12 | `npx supabase db advisors --type security` | ✅ no findings | Performance advisor: only "unused index" (fresh DB) |
+| 2026-10-12 | `npx supabase db lint` | ✅ no errors | plpgsql_check |
+| 2026-10-12 | Manual API probe (curl) | ✅ | Technician sees only Northwind vessels; vessel insert → 42501 RLS; Meridian manager reading a Northwind vessel → `[]`; anon → 42501; signup → `signup_disabled` |
+| 2026-10-12 | `npx playwright test` (auth) | ✅ 10/10 | Desktop + mobile: redirect to login, generic error, server validation, open-redirect guard, sign-out |
+
+Covered by pgTAP (highlights): RLS enabled on every public table; anon has zero privileges; no private function executable by anon; every security-definer function pins `search_path`; cross-organization reads return nothing; cross-organization inserts/moves rejected; forged `created_by`/`from_user_id` rejected; role limits per table; invalid transitions rejected; closed inspections and acknowledged handovers frozen; audit rows unwritable by clients and stamped with the real actor.
 
 ## 9. Known risks and limitations
 
 - **Dev-only advisory:** `npm audit` reports 5 high-severity advisories, all through `braces` in `eslint-config-next`'s lint toolchain (development only, not shipped to users). The suggested `--force` fix downgrades to Next 14's config, so it is not applied. Re-check when `eslint-config-next` updates.
-- Demo access design is pending ([DECISIONS.md D-011](DECISIONS.md#d-011)).
+- Demo access: seeded non-admin accounts (D-011). Locally every seeded user shares the password in `supabase/seed.sql`; the hosted demo must use different passwords and must not publish the admin account.
+- Supabase Auth's own login rate limits apply; there is no additional app-level rate limiting yet.
 - JWT claims refresh only on token refresh. Role changes take effect at the latest after `jwt_expiry` (3600 s). Roles are read from the table, not the JWT, so this mainly affects session validity, not role checks.

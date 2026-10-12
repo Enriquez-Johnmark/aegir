@@ -63,7 +63,9 @@ Server Actions are **public POST endpoints**: a page-level auth check does not p
 - Use **`@supabase/ssr`**: `createBrowserClient` in the browser and `createServerClient` on the server, both with the **publishable key**.
 - **Create a new server client per request.** Never store one in module scope.
 - **Protect pages and data with `supabase.auth.getClaims()`**, which verifies the JWT. **Never trust `getSession()` on the server**, because it is not revalidated. Use `getUser()` only when fresh user-record data is needed.
-- In `updateSession` (`src/lib/supabase/proxy.ts`), run no code between `createServerClient` and `getClaims()`, and return the `supabaseResponse` object unchanged.
+- In `updateSession` (`src/lib/supabase/proxy.ts`), run no code between `createServerClient` and `getClaims()`, and return the `supabaseResponse` object unchanged. A redirect from the proxy must copy the refreshed auth cookies onto the redirect response.
+- Session helpers that read the user call `await connection()` first: authentication is per request and must never be prerendered or runtime-prefetched.
+- Sign out with `signOut({ scope: "local" })`, never the global default (D-020).
 - **Authorization data never comes from `user_metadata`**, which users can edit. Roles live in the `memberships` table and are read via RLS helper functions.
 - **Data API exposure is explicit.** New tables are no longer auto-exposed: opt-in now, enforced on all projects from 2026-10-30. Every migration that creates a table includes explicit `GRANT`s to `authenticated` (never `anon` for organization data) **and** enables RLS in the same migration.
 - Multi-row writes that must be atomic (for example an inspection plus its checklist items) go through a **Postgres function called with `.rpc()`**, because supabase-js has no client-side transactions.
@@ -90,6 +92,7 @@ Server Actions are **public POST endpoints**: a page-level auth check does not p
 - Types: `text` (not `varchar(n)`), `timestamptz` (never `timestamp`), `date` for calendar dates, `bigint`/`integer` as appropriate, `boolean` for flags, `numeric` for exact values.
 - Enumerated states use Postgres `enum` types (see D-005); add values with a forward migration.
 - Express invariants as **constraints** (`not null`, `check`, `unique`, FK) rather than only in app code.
+- **Grants are column-level** for INSERT/UPDATE: grant only the columns clients may write. Server-owned columns (`organization_id` after insert, `created_by`, `from_user_id`, `completed_at`, IDs) get no grant and are set by triggers (D-017). Every table migration starts with `revoke all on <table> from anon, authenticated;`.
 - **Deletion:** FKs to historical records use `on delete restrict`. Safety records are never hard-deleted by users (no DELETE policy). Vessels are retired via status.
 - PostgreSQL has no `ADD CONSTRAINT IF NOT EXISTS`. In migrations that alter existing tables, guard with a `DO` block or rely on migration ordering.
 
@@ -107,7 +110,7 @@ Server Actions are **public POST endpoints**: a page-level auth check does not p
 - **RLS is enabled on every table in `public`**, in the same migration that creates the table.
 - Policies are **per operation** (`select`, `insert`, `update`, `delete`) and always specify **`to authenticated`**. Never use the deprecated `auth.role()`.
 - `to authenticated` alone is authentication, not authorization (IDOR). Every policy also has an organization or role predicate.
-- Wrap auth calls for per-statement caching: `(select auth.uid())`, `(select private.has_org_role(...))`.
+- Organization checks use the set-returning helpers as an **uncorrelated** subquery: `organization_id in (select private.my_org_ids())` or `organization_id in (select private.my_org_ids_with_role(array['admin','manager']::public.org_role[]))`. Wrap direct auth calls too: `(select auth.uid())` (D-016).
 - **UPDATE policies need both `using` and `with check`**, and UPDATE also needs a SELECT policy, or updates silently affect 0 rows.
 - Policy naming: `"<table>: <operation> <who>"`, e.g. `"vessels: update managers"`.
 - No DELETE policy means users cannot delete rows. That is intentional for safety records.
@@ -124,7 +127,7 @@ Project config: `base-nova` style, **Base UI** primitives (`base`), lucide icons
 - Status values use `Badge` variants. Empty states use `Empty`, loading uses `Skeleton`, callouts use `Alert`, destructive confirmations use `AlertDialog`.
 - Dialog, Sheet and Drawer always have a Title (use `sr-only` if visually hidden).
 - Icons in buttons use `data-icon="inline-start|inline-end"` and no sizing classes.
-- Base UI uses the **`render` prop** for custom triggers, not `asChild`.
+- Base UI uses the **`render` prop** for custom triggers, not `asChild`. When a `Button` renders a non-button element (e.g. `<Link>`), also pass `nativeButton={false}`.
 - Accessibility: semantic HTML landmarks (`header`, `nav`, `main`), visible focus states, labelled controls, keyboard-reachable actions, and colour never the only signal.
 - No dead buttons: if a feature isn't implemented, the control doesn't render.
 

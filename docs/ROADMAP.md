@@ -9,35 +9,37 @@ Legend: ✅ done · 🟡 in progress · ⬜ not started · ✂️ cut candidate 
 - [x] Install 4 project-local skills (copies, not symlinks); verify discovery; no global changes
 - [x] Read every SKILL.md, record conflicts (D-004, D-008, D-010, D-014)
 
-## M1: Foundation 🟡
+## M1: Foundation ✅ (2026-10-12)
 Acceptance: lint, typecheck, unit tests and build pass; local Supabase starts; docs describe the architecture, conventions, data model and security model.
 - [x] Next.js 16.4 + TS strict + Tailwind v4 + ESLint scaffold (`src/`)
 - [x] shadcn/ui init (base-nova); Supabase CLI pinned; `supabase init` with hardened auth config
 - [x] Supabase SSR clients (browser/server/proxy) + Zod env validation + unit tests
 - [x] Documentation set
-- [ ] Vitest + Playwright config for E2E (Playwright deferred to M4)
+- [x] Vitest config; Playwright added in M2 (D-021)
 
-## M2: Schema, auth and RLS (P0) ⬜
+## M2: Schema, auth and RLS (P0) ✅ (2026-10-12)
 Acceptance: `db reset` builds the schema from migrations alone; pgTAP proves cross-organization isolation and role limits for every table; types generated; login and logout work; the authenticated shell renders the user's organization.
-- [ ] Migration: enums, organizations, profiles (+ new-user trigger), memberships, `private` helper functions, RLS
-- [ ] Migration: vessels, inspections, inspection_items, work_orders (+ composite FKs, indexes, transition triggers, RLS, grants)
-- [ ] Migration: audit_events + audit triggers; handovers (P1, may slip)
-- [ ] Seed: 2 organizations (to prove isolation), users per role, realistic synthetic fleet data
-- [ ] pgTAP RLS and constraint suites
-- [ ] `src/lib/auth` (getCurrentUser / requireRole), `(auth)/login`, `(app)` shell with sidebar
-- [ ] Decide D-011 demo access
+- [x] Migration: default-privilege hardening, enums, organizations, profiles (+ new-user trigger), memberships, `private` helper functions, RLS
+- [x] Migrations: vessels, inspections (+ `create_inspection` RPC), work_orders (composite FKs, indexes, transition triggers, column grants)
+- [x] Migrations: handovers and audit_events + audit triggers (pulled forward from P1; cheap at the schema level)
+- [x] Seed: 2 organizations, 8 users across all roles, realistic synthetic fleet data driven through the real triggers
+- [x] pgTAP: 73 tests across 6 files (RLS isolation, role limits, transitions, immutability, audit)
+- [x] Generated types; `src/lib/auth` (getSessionState / requireUser, roles), `(auth)/login`, `/no-access`, `(app)` shell with sidebar and user menu
+- [x] Playwright auth E2E (10 tests, desktop + mobile)
+- [x] D-011 demo access decided (option a)
+- Found and fixed along the way: email provider accidentally disabled (D-015 correction), global sign-out (D-020), legacy default privileges (D-022)
 
-## M3: Vertical slices (P0 → P1) ⬜
+## M3: Vertical slices (P0 → P1) ⬜ ← next
 Each slice: schema already in place → DAL → actions → UI (loading, empty, error, unauthorized states) → tests → docs and ledger.
 1. [ ] Vessels: list (search, filter, sort), detail, create, edit
 2. [ ] Inspections: schedule with checklist (RPC), record results, complete, follow-up flag
 3. [ ] Work orders: create (incl. from a failed item), transitions, overdue, history
 4. [ ] Dashboard: live metrics
-5. [ ] Handovers ✂️ (P1)
-6. [ ] Audit history UI ✂️ (P1; triggers still ship in M2)
+5. [ ] Handovers UI ✂️ (P1; schema, rules and tests already done in M2)
+6. [ ] Audit history UI ✂️ (P1; audit triggers already live since M2)
 
 ## M4: Verification ⬜
-- [ ] Playwright critical flows + axe accessibility smoke
+- [ ] Playwright feature flows (auth already covered) + axe accessibility smoke
 - [ ] Responsive check (mobile/desktop)
 - [ ] `db advisors` clean; migration history reconciled
 

@@ -30,8 +30,8 @@ No secret key is needed by the deployed app (D-002).
 2. `npx supabase migration list` to compare local and remote history; investigate any drift before continuing.
 3. `npx supabase db push --dry-run` to review the pending migrations, then `npx supabase db push`.
 4. Verify: `migration list` matches; spot-check tables, policies and grants in Studio; run `npx supabase db advisors --linked`.
-5. Hosted auth settings to match `config.toml`: sign-up disabled, password policy, Site URL = Vercel URL, redirect URLs.
-6. Seed the demo organization and users with the reviewed demo-seed script (D-011), using the secret key from a local shell only.
+5. Hosted auth settings to match `config.toml`: **Email provider enabled** but **"Allow new users to sign up" disabled**, password policy (min 10, letters + digits), Site URL = Vercel URL, redirect URLs. Confirm that the Data API exposes only what our migrations grant (the hosted default may already be stricter; our migrations revoke and grant explicitly either way).
+6. Seed the demo organization and users with a reviewed demo-seed script (D-011). Do **not** run `supabase/seed.sql` against production: its local password is published. Use demo-only passwords, and never publish the admin account.
 7. Vercel: import the repo, set the env vars, deploy.
 8. Smoke test the deployed URL: sign in as each demo role; dashboard numbers match the DB; create a vessel; viewer write rejected; another organization's IDs return not found. Check Vercel and Supabase logs for errors.
 9. Record the URL and results here and in the README.

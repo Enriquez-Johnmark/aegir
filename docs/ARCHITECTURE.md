@@ -32,7 +32,7 @@ Aegir is a single **Next.js 16 (App Router)** application backed by **Supabase**
 | Validation | Zod 4 | Shared client/server schemas per feature |
 | Auth & DB | Supabase Auth + Postgres 17, `@supabase/ssr` 0.12, `supabase-js` 2.117 | Publishable key only in the app |
 | DB tooling | Supabase CLI 2.120 pinned as a devDependency | Run via `npx supabase` / npm scripts |
-| Tests | Vitest 5 (unit/integration), pgTAP via `supabase test db` (RLS), Playwright (E2E, ⬜) | |
+| Tests | Vitest 5 (unit), pgTAP via `supabase test db` (RLS, constraints, triggers), Playwright 1.64 (E2E) | |
 | Hosting | Vercel + Supabase Cloud (⬜) | |
 
 ## 3. Project folder layout
@@ -43,29 +43,30 @@ We follow Next.js's documented **"store project files outside of `app`"** strate
 aegir/
 ├── .claude/skills/              # Project-local Claude Code skills (see docs/AGENT-SKILLS.md)
 ├── docs/                        # All project documentation (this folder)
-├── e2e/                         # ⬜ Playwright specs (critical user flows)
+├── e2e/                         # ✅ Playwright specs (auth flow; more per feature)
 ├── public/                      # Static assets served as-is
 ├── supabase/
 │   ├── config.toml              # Local Supabase stack configuration (committed)
 │   ├── migrations/              # ✅ Timestamped, append-only SQL migrations (source of truth)
-│   ├── seed.sql                 # Synthetic demo data, applied by `supabase db reset` (local only)
-│   └── tests/                   # pgTAP database tests: constraints, RLS, triggers
+│   ├── seed.sql                 # ✅ Synthetic demo data + test fixture IDs (local only)
+│   └── tests/                   # ✅ pgTAP database tests: constraints, RLS, triggers
 ├── src/
-│   ├── proxy.ts                 # ✅ Session refresh only (Next 16 "proxy", formerly middleware)
+│   ├── proxy.ts                 # ✅ Session refresh + optimistic redirects (Next 16 "proxy", formerly middleware)
 │   ├── app/                     # ROUTING ONLY: layouts, pages, loading/error/not-found
 │   │   ├── layout.tsx           # ✅ Root layout (fonts, metadata)
 │   │   ├── page.tsx             # ✅ Public landing
-│   │   ├── (auth)/              # ⬜ Route group: unauthenticated pages (no URL segment)
-│   │   │   └── login/page.tsx
-│   │   └── (app)/               # ⬜ Route group: authenticated shell (sidebar layout)
-│   │       ├── layout.tsx       #    Static shell; session read happens inside <Suspense>
-│   │       ├── dashboard/page.tsx
+│   │   ├── (auth)/              # ✅ Route group: centred auth layout (no URL segment)
+│   │   │   ├── login/page.tsx   # ✅ Sign-in (searchParams read inside <Suspense>)
+│   │   │   └── no-access/page.tsx # ✅ Signed in but no organization membership
+│   │   └── (app)/               # ✅ Route group: authenticated shell (sidebar layout)
+│   │       ├── layout.tsx       # ✅ Static shell; user menu streams in behind <Suspense>
+│   │       ├── dashboard/page.tsx # ✅ Welcome card (metrics in M3)
 │   │       ├── vessels/{page.tsx, new/page.tsx, [vesselId]/page.tsx}
 │   │       ├── inspections/{page.tsx, new/page.tsx, [inspectionId]/page.tsx}
 │   │       ├── work-orders/{page.tsx, new/page.tsx, [workOrderId]/page.tsx}
 │   │       ├── handovers/{page.tsx, new/page.tsx}
 │   │       └── audit/page.tsx
-│   ├── features/                # ⬜ One folder per business capability
+│   ├── features/                # 🟡 One folder per business capability (auth ✅, dashboard 🟡)
 │   │   └── <feature>/           #    e.g. vessels, inspections, work-orders, handovers, audit, dashboard
 │   │       ├── components/      #    Feature UI (Server Components by default; "use client" only when needed)
 │   │       ├── server/
@@ -77,7 +78,7 @@ aegir/
 │   │       └── *.test.ts        #    Colocated unit tests
 │   ├── components/
 │   │   ├── ui/                  # shadcn/ui generated components (managed by the shadcn CLI)
-│   │   ├── layout/              # ⬜ App shell: sidebar, header, user menu
+│   │   ├── layout/              # ✅ App shell: app-sidebar.tsx, user-menu.tsx
 │   │   └── shared/              # ⬜ Cross-feature presentational pieces (status badges, data tables)
 │   ├── lib/
 │   │   ├── env.ts               # ✅ Zod-validated public env
@@ -86,10 +87,12 @@ aegir/
 │   │   │   ├── client.ts        # ✅ Browser client (publishable key, RLS)
 │   │   │   ├── server.ts        # ✅ Server client (server-only, per request, RLS)
 │   │   │   └── proxy.ts         # ✅ updateSession() used by src/proxy.ts
-│   │   └── auth/                # ⬜ getCurrentUser(), requireMembership(), role helpers (server-only)
-│   ├── hooks/                   # ⬜ Shared client hooks (only if reused)
+│   │   ├── auth/session.ts      # ✅ getSessionState() (React.cache) / requireUser(), server-only
+│   │   ├── auth/roles.ts        # ✅ Role labels + UI capability map (DB is authoritative)
+│   │   └── safe-redirect.ts     # ✅ Open-redirect-safe `next` handling
+│   ├── hooks/                   # ✅ use-mobile.ts (useSyncExternalStore media query)
 │   └── types/
-│       └── database.types.ts    # ⬜ Generated by `npm run db:types`. Never hand-edit
+│       └── database.types.ts    # ✅ Generated by `npm run db:types`. Never hand-edit
 ├── .env.example                 # ✅ Placeholder env vars (real values in .env.local, git-ignored)
 ├── AGENTS.md / CLAUDE.md        # Agent instructions (CLAUDE.md imports AGENTS.md)
 └── components.json              # shadcn/ui configuration

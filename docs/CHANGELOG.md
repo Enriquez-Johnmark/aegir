@@ -4,6 +4,28 @@ Meaningful functional and technical changes, newest first. Format loosely follow
 
 ## [Unreleased]
 
+### 2026-10-12: Vessels (M3 slice 1)
+
+**Added**
+- Vessels list as a **watch list**: "Attention first" default sort, Attention column (critical / overdue / blocked with icons), search, status/type filters, other sorts; table on desktop, stacked rows on mobile; whole-row click target.
+- Vessel detail (facts, open work orders, inspections, overdue signals), add and edit forms (Base UI selects, server-side Zod validation incl. IMO check digit, duplicate-IMO field error, focus on first error, save confirmation).
+- Breadcrumbs, per-vessel tab titles, forbidden/not-found/error states, `ButtonLink`, `SavedNotice`, shared `EMPTY_PANEL`; Vessels in the sidebar.
+- Unit tests (IMO, schemas, attention ordering) and Playwright vessel flows.
+
+**Changed**
+- 44px controls on touch devices (`pointer-coarse:`), 32px on desktop.
+- Vessel status badges neutralised; risk carries the colour.
+- `vitest.config.ts` renamed to `vitest.config.mts` (explicit ESM; removes Vite's CJS-loader warning).
+
+**Fixed**
+- Links styled as buttons were announced as buttons (D-027).
+- Sidebar `usePathname()` broke the build on dynamic routes under Cache Components (now suspended).
+- "Clear filters" left the old search text; empty IMO showed two errors; avatar initials contrast 4.3:1 → AA.
+
+**Reason:** P0 vessel management, then the Impeccable critique (25/40) with all P1/P2 findings fixed.
+**Affected areas:** vessels feature, shared UI, base components, tests, docs. **Breaking changes:** none. **Migrations:** none.
+**Verification:** lint ✅ · typecheck ✅ · unit 33/33 ✅ · build ✅ · E2E 20/20 ✅ · `impeccable detect` `[]` ✅ · desktop + mobile confirmation round ✅.
+
 ### 2026-10-12: Design system "The Bridge Console" (M3 step 0)
 
 **Added**

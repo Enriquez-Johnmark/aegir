@@ -61,12 +61,13 @@ aegir/
 │   │   └── (app)/               # ✅ Route group: authenticated shell (sidebar layout)
 │   │       ├── layout.tsx       # ✅ Static shell; user menu streams in behind <Suspense>
 │   │       ├── dashboard/page.tsx # ✅ Welcome card (metrics in M3)
-│   │       ├── vessels/{page.tsx, new/page.tsx, [vesselId]/page.tsx}
+│   │       ├── vessels/{page.tsx, new/, [vesselId]/, [vesselId]/edit/}  # ✅ M3 slice 1
+│   │       ├── error.tsx        # ✅ Recoverable error boundary for the app shell
 │   │       ├── inspections/{page.tsx, new/page.tsx, [inspectionId]/page.tsx}
 │   │       ├── work-orders/{page.tsx, new/page.tsx, [workOrderId]/page.tsx}
 │   │       ├── handovers/{page.tsx, new/page.tsx}
 │   │       └── audit/page.tsx
-│   ├── features/                # 🟡 One folder per business capability (auth ✅, dashboard 🟡)
+│   ├── features/                # 🟡 One folder per business capability (auth ✅, vessels ✅, dashboard 🟡)
 │   │   └── <feature>/           #    e.g. vessels, inspections, work-orders, handovers, audit, dashboard
 │   │       ├── components/      #    Feature UI (Server Components by default; "use client" only when needed)
 │   │       ├── server/
@@ -79,7 +80,7 @@ aegir/
 │   ├── components/
 │   │   ├── ui/                  # shadcn/ui generated components (managed by the shadcn CLI)
 │   │   ├── layout/              # ✅ App shell: app-sidebar.tsx, user-menu.tsx
-│   │   └── shared/              # ⬜ Cross-feature presentational pieces (status badges, data tables)
+│   │   └── shared/              # ✅ button-link, forbidden-state, saved-notice, panel (EMPTY_PANEL)
 │   ├── lib/
 │   │   ├── env.ts               # ✅ Zod-validated public env
 │   │   ├── utils.ts             # ✅ cn() helper (shadcn)

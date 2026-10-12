@@ -148,3 +148,27 @@ Migrations were created with `npx supabase migration new` and revised only while
 | UPDATE | `docs/CHANGELOG.md`, `docs/FILE-CHANGE-LOG.md` | This entry | | ✅ reconciled with `git status` |
 
 Not tracked (machine-local, outside the repo or git-ignored): `~/.impeccable/bin/0.1.14/impeccable`, `.claude/settings.local.json`, `.impeccable/config.local.json`.
+
+## 2026-10-12 · M3 slice 1: Vessels
+
+| Action | Path | Purpose | Related | Verification |
+|---|---|---|---|---|
+| RENAME | `vitest.config.ts` → `vitest.config.mts` | Explicit ESM config (Vite CJS-loader deprecation warning) | | ✅ `npm test` |
+| CREATE | `src/components/ui/{table,select,empty,input-group,breadcrumb,textarea}.tsx` | shadcn components via `shadcn@4.21.4 add` | D-012 | ✅ lint, typecheck |
+| UPDATE | `src/components/ui/{button,input,select,input-group,sidebar}.tsx` | 44px coarse-pointer targets | D-029 | ✅ measured |
+| CREATE | `src/features/vessels/domain.ts`, `schemas.ts`, `vessels.test.ts` | Labels, badge mapping, IMO check, attention ordering; Zod form + URL params | D-028 | ✅ unit |
+| CREATE | `src/features/vessels/server/queries.ts`, `server/mutations.ts`, `actions.ts` | Server-only DAL (attention counts, detail, edit values), writes with role checks, thin Server Actions | D-028 | ✅ E2E |
+| CREATE | `src/features/vessels/components/{vessels-list,vessel-filters,vessel-detail,vessel-form,vessel-status-badge,attention-signals}.tsx` | Vessels UI | D-028 | ✅ E2E, detector |
+| CREATE | `src/app/(app)/vessels/page.tsx`, `new/page.tsx`, `[vesselId]/page.tsx`, `[vesselId]/edit/page.tsx`, `[vesselId]/not-found.tsx` | Vessel routes | | ✅ build (partial prerender) |
+| CREATE | `src/app/(app)/error.tsx` | App-shell error boundary | | ✅ build |
+| CREATE | `src/components/layout/page-header.tsx` | Title, badge outside h1, breadcrumbs, actions | | ✅ |
+| CREATE | `src/components/shared/{button-link,forbidden-state,saved-notice}.tsx`, `src/components/shared/panel.ts` | Shared UI primitives | D-027 | ✅ |
+| CREATE | `src/lib/format.ts` | Date/number formatting, today's ISO date | | ✅ |
+| UPDATE | `src/components/layout/app-sidebar.tsx` | Vessels nav item; active-state lookup behind Suspense | | ✅ build |
+| UPDATE | `src/components/layout/user-menu.tsx` | Avatar initials contrast | | ✅ detector |
+| UPDATE | `src/app/page.tsx` | Landing sign-in uses `ButtonLink` | D-027 | ✅ |
+| CREATE | `e2e/helpers.ts`, `e2e/vessels.spec.ts` | Shared sign-in/IMO helpers; vessel flows | D-030 | ✅ 20/20 |
+| UPDATE | `e2e/auth.spec.ts` | Use shared helpers | | ✅ |
+| CREATE | `.impeccable/critique/2026-10-12T09-13-47Z__src-app-app-vessels.md` | Critique snapshot (read by `impeccable polish`) | D-024 | ✅ |
+| UPDATE | `DESIGN.md` | Vessel status mapping, attention signals, wayfinding, Deck Hand Rule | | ✅ |
+| UPDATE | `docs/{DECISIONS,CONVENTIONS,SECURITY,TESTING,ARCHITECTURE,ROADMAP,CHANGELOG,FILE-CHANGE-LOG}.md`, `README.md` | D-027 – D-030, conventions, evidence | | ✅ reconciled with `git status` |

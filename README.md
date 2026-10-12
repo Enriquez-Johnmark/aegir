@@ -13,7 +13,7 @@
 | Next.js 16 + Supabase SSR foundation, env validation | ✅ |
 | Auth (sign in/out), organizations, 5 roles, RLS on every table | ✅ |
 | Database: vessels, inspections, work orders, handovers, audit log, with rules enforced in Postgres | ✅ |
-| Vessels UI: list, search, detail, create, edit | ⬜ |
+| Vessels: watch list (attention first), search and filters, detail, create, edit | ✅ |
 | Inspections UI with checklists and failed-check follow-up | ⬜ |
 | Work orders UI with enforced status transitions | ⬜ |
 | Task handovers UI with acknowledgement | ⬜ |

@@ -75,10 +75,16 @@ rollback;
 | 2026-10-12 | `npm run test:e2e` | ✅ 10/10 (5 auth tests × desktop + mobile) |
 | 2026-10-12 | `impeccable detect --json` (globals.css, badge, auth/app routes, layout, features) | ✅ `[]` no findings |
 | 2026-10-12 | Design inspection round (Playwright screenshots, desktop 1280×800 + Pixel 7: landing, login errors, dashboard) | ✅ after 1 fix: header separator used a Radix selector and rendered as a stray line |
+| 2026-10-12 | `npm test` (after M3 vessels) | ✅ 33/33 (env, roles, safe-redirect, vessels: IMO, schemas, attention ordering) |
+| 2026-10-12 | `npm run test:e2e` (after M3 vessels) | ✅ 20/20 (auth 5 + vessels 5, × desktop + mobile), three consecutive green runs after fixes |
+| 2026-10-12 | Impeccable `critique` (vessels, dual-agent) | 25/40 Acceptable before fixes; all 3 P1 and 4 P2 issues fixed (D-027 – D-029); snapshot `.impeccable/critique/2026-10-12T09-13-47Z__src-app-app-vessels.md` |
+| 2026-10-12 | Confirmation round after fixes | ✅ `impeccable detect` `[]`; 44px controls under `(pointer: coarse)`, 32px on desktop; focus moves to the first invalid field; screenshots desktop + mobile |
 | 2026-10-12 | Token contrast (OKLCH→sRGB WCAG script) | ✅ all pairs ≥ 4.5:1 text, ring ≥ 3:1; shadcn default destructive-on-tint was 3.99:1 (fixed, D-026) |
 
 ## Known gaps
 
 - No Vitest integration tests against the local stack yet (planned with the M3 DAL).
 - Accessibility checks (axe via Playwright) are planned for M4.
-- E2E covers authentication only so far; feature flows are added with each M3 slice.
+- E2E covers authentication and vessels; inspections, work orders and the dashboard are added with their slices.
+- E2E locator policy under Cache Components: see D-030 (role locators, `visible` filter, scoped to `main`).
+- E2E runs leave test vessels in the local database (no deletes by design); `npm run db:reset` restores the demo data.

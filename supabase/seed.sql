@@ -1,0 +1,2 @@
+-- Synthetic demo data for LOCAL development, applied by `npm run db:reset`.
+-- Populated in milestone M2 once the schema migrations exist. Never put real data here.

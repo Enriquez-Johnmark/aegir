@@ -4,24 +4,25 @@
 
 > Portfolio project, under active development. Synthetic data only. Aegir is **not** a certified maritime safety system and makes no regulatory compliance claims.
 
-**Status:** foundation in place (M1). The schema, auth and features are in progress; see the [roadmap](docs/ROADMAP.md). Live demo: _not yet deployed_.
+**Status:** database, security model and sign-in are done (M2). Feature screens are next; see the [roadmap](docs/ROADMAP.md). Live demo: _not yet deployed_.
 
 ## Features (MVP scope)
 
 | Area | Status |
 |---|---|
 | Next.js 16 + Supabase SSR foundation, env validation | ✅ |
-| Auth, organizations, role-based access, RLS | ⬜ |
-| Vessels: list, search, detail, create, edit | ⬜ |
-| Inspections with checklists and failed-check follow-up | ⬜ |
-| Work orders with enforced status transitions | ⬜ |
-| Task handovers with acknowledgement | ⬜ |
-| Tamper-resistant audit history | ⬜ |
-| Live operational dashboard | ⬜ |
+| Auth (sign in/out), organizations, 5 roles, RLS on every table | ✅ |
+| Database: vessels, inspections, work orders, handovers, audit log, with rules enforced in Postgres | ✅ |
+| Vessels UI: list, search, detail, create, edit | ⬜ |
+| Inspections UI with checklists and failed-check follow-up | ⬜ |
+| Work orders UI with enforced status transitions | ⬜ |
+| Task handovers UI with acknowledgement | ⬜ |
+| Audit history UI | ⬜ |
+| Live operational dashboard | 🟡 (shell + welcome) |
 
 ## Tech stack
 
-Next.js 16 (App Router, Cache Components) · React 19 · TypeScript (strict) · Tailwind CSS v4 · shadcn/ui (Base UI) · Zod · Supabase (Auth, Postgres 17, RLS) · Supabase CLI · Vitest · pgTAP · Playwright (planned) · Vercel (planned)
+Next.js 16 (App Router, Cache Components) · React 19 · TypeScript (strict) · Tailwind CSS v4 · shadcn/ui (Base UI) · Zod · Supabase (Auth, Postgres 17, RLS) · Supabase CLI · Vitest · pgTAP · Playwright · Vercel (planned)
 
 ## Getting started
 
@@ -30,6 +31,7 @@ Prerequisites: Node ≥ 22 (`.nvmrc` pins 24), Docker running.
 ```bash
 npm ci
 npm run db:start                      # local Supabase in Docker (first run downloads images)
+npm run db:reset                      # apply migrations + seed demo data (local only)
 cp .env.example .env.local            # then paste the API URL + publishable key from:
 npx supabase status
 npm run dev                           # http://localhost:3000
@@ -60,7 +62,9 @@ Applied migrations are never edited; changes go forward in new migrations. See [
 ## Testing
 
 ```bash
-npm run lint && npm run typecheck && npm test && npm run build
+npm run lint && npm run typecheck && npm test && npm run build   # app checks
+npm run db:test                                                  # 73 pgTAP tests (RLS, rules, audit)
+npm run test:e2e                                                 # Playwright (local stack must be running + seeded)
 ```
 
 Strategy and latest results: [docs/TESTING.md](docs/TESTING.md).
@@ -81,10 +85,22 @@ Strategy and latest results: [docs/TESTING.md](docs/TESTING.md).
 
 ## Demo access
 
-Planned: seeded, non-privileged demo accounts ([D-011](docs/DECISIONS.md#d-011)).
+**Local:** after `npm run db:reset`, sign in with any seeded account. All use the password `AegirDemo2026` (local development only).
+
+| Role | Email (Northwind Shipping) |
+|---|---|
+| Fleet manager | `marcus.reyes@northwind.example` |
+| Safety inspector | `ingrid.solberg@northwind.example` |
+| Technician | `tomas.okafor@northwind.example` |
+| Viewer (read-only) | `vera.lindqvist@northwind.example` |
+| Administrator | `amelia.hart@northwind.example` |
+
+A second organization, Meridian Tankers (`owen.price@meridian.example`), exists to show that organizations never see each other's data.
+
+**Hosted demo:** planned with non-admin accounts only ([D-011](docs/DECISIONS.md#d-011)).
 
 ## Known limitations
 
-- Early development: most features are not built yet (see the table above).
+- Feature screens are not built yet (see the table above); the rules behind them already live in the database.
 - Not deployed yet.
 - `npm audit` flags a dev-only lint dependency (`braces` via `eslint-config-next`); see [SECURITY.md §9](docs/SECURITY.md#9-known-risks-and-limitations).

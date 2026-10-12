@@ -66,3 +66,54 @@ Scaffolded with `create-next-app@16.4.0` in a scratch directory (it refuses non-
 | CREATE | `docs/CHANGELOG.md` | Change history | | ✅ |
 | CREATE | `docs/FILE-CHANGE-LOG.md` | This ledger | | ✅ reconciled with `git status` |
 | CREATE | `docs/AGENT-SKILLS.md` | Skill sources, commits, verification, conflicts | | ✅ |
+
+## 2026-10-12 · M2: Database schema, RLS and tests
+
+Migrations were created with `npx supabase migration new` and revised only while local-only (never pushed), per the migration policy: composite FK indexes after `db advisors`, and an accurate "not found" error in the work-order trigger after a failing pgTAP test.
+
+| Action | Path | Purpose | Related | Verification |
+|---|---|---|---|---|
+| CREATE | `supabase/migrations/20261012070232_create_tenancy.sql` | Default-privilege hardening, `private` schema, organizations, profiles, memberships, RLS helpers | D-009, D-016, D-022 | ✅ `db reset`, pgTAP 01 |
+| CREATE | `supabase/migrations/20261012070234_create_vessels.sql` | Vessels, IMO check-digit validation, column grants, RLS | D-017 | ✅ pgTAP 02 |
+| CREATE | `supabase/migrations/20261012070235_create_inspections.sql` | Inspections, checklist items, transition/freeze triggers, `create_inspection` RPC | D-006 | ✅ pgTAP 03 |
+| CREATE | `supabase/migrations/20261012070237_create_work_orders.sql` | Work orders, transitions, assignee-only status changes, follow-up integrity | D-006 | ✅ pgTAP 04 |
+| CREATE | `supabase/migrations/20261012070238_create_handovers.sql` | Immutable handovers, recipient acknowledgement | | ✅ pgTAP 05 |
+| CREATE | `supabase/migrations/20261012070240_create_audit_log.sql` | Append-only audit log + triggers | | ✅ pgTAP 06 |
+| CREATE | `supabase/tests/01_tenancy.test.sql` … `06_audit.test.sql` (6 files) | 73 pgTAP tests: RLS isolation, role limits, rules, audit | TESTING | ✅ 73/73 |
+| UPDATE | `supabase/seed.sql` | Synthetic demo data (2 orgs, 8 users, fleet) + fixture contract | D-011, D-018 | ✅ `db reset`; sign-in via API |
+| UPDATE | `supabase/config.toml` | Re-enable email provider (`[auth.email] enable_signup = true`); sign-ups stay disabled globally | D-015 correction | ✅ login 200; signup `signup_disabled` |
+| CREATE | `src/types/database.types.ts` | Generated DB types (`npm run db:types`) | | ✅ typecheck |
+
+## 2026-10-12 · M2: Authentication and app shell
+
+| Action | Path | Purpose | Related | Verification |
+|---|---|---|---|---|
+| UPDATE | `package.json`, `package-lock.json` | Add `prettier` (types formatting), `@playwright/test`, Base UI deps from shadcn; scripts `db:types`, `test:e2e` | D-021, D-023 | ✅ `npm ci`-compatible lockfile |
+| UPDATE | `src/lib/supabase/client.ts`, `src/lib/supabase/server.ts` | Typed with generated `Database` | | ✅ typecheck |
+| UPDATE | `src/lib/supabase/proxy.ts` | Optimistic redirects that carry refreshed cookies | ARCHITECTURE §6 | ✅ E2E |
+| CREATE | `src/lib/auth/session.ts` | `getSessionState()` (React.cache, `connection()`, `getClaims()`) / `requireUser()` | D-019 | ✅ E2E |
+| CREATE | `src/lib/auth/roles.ts`, `src/lib/auth/roles.test.ts` | Role labels + UI capability map mirroring SECURITY matrix | | ✅ unit 5/5 |
+| CREATE | `src/lib/safe-redirect.ts`, `src/lib/safe-redirect.test.ts` | Open-redirect-safe `next` handling | SECURITY §1 | ✅ unit 10/10, E2E |
+| CREATE | `src/features/auth/schemas.ts`, `src/features/auth/actions.ts` | Sign-in validation; sign-in/out Server Actions (local sign-out) | D-020 | ✅ E2E |
+| CREATE | `src/features/auth/components/login-form.tsx` | Accessible login form (`Field`, `aria-invalid`, pending state) | | ✅ E2E |
+| CREATE | `src/app/(auth)/layout.tsx`, `src/app/(auth)/login/page.tsx`, `src/app/(auth)/no-access/page.tsx` | Auth route group pages | | ✅ build, E2E |
+| CREATE | `src/app/(app)/layout.tsx`, `src/app/(app)/dashboard/page.tsx` | Authenticated shell + dashboard | D-007 | ✅ build (partial prerender), E2E |
+| CREATE | `src/features/dashboard/components/welcome-card.tsx` | Signed-in identity, organization, role | | ✅ E2E |
+| CREATE | `src/components/layout/app-sidebar.tsx`, `src/components/layout/user-menu.tsx` | Sidebar navigation and user menu with sign-out | | ✅ E2E (desktop + mobile) |
+| CREATE | `src/components/ui/{alert,avatar,badge,button,card,dropdown-menu,field,input,label,separator,sheet,sidebar,skeleton,spinner,tooltip}.tsx` | shadcn components via `shadcn@4.21.4 add` | D-012 | ✅ lint, typecheck |
+| CREATE | `src/hooks/use-mobile.ts` | Added by shadcn; rewritten to `useSyncExternalStore` (lint: setState in effect) | | ✅ lint |
+| UPDATE | `src/app/layout.tsx` | Wrap app in `TooltipProvider` | | ✅ build |
+| UPDATE | `src/app/page.tsx` | Landing gets a real "Sign in" link (`nativeButton={false}`) | | ✅ build |
+| CREATE | `playwright.config.ts`, `e2e/auth.spec.ts` | E2E config (desktop + mobile, serial locally) and auth flow tests | D-021 | ✅ 10/10 twice |
+
+## 2026-10-12 · M2: Documentation
+
+| Action | Path | Purpose | Verification |
+|---|---|---|---|
+| UPDATE | `docs/DATA_MODEL.md` | Design → implemented; migrations table; column-grant matrix | ✅ matches migrations |
+| UPDATE | `docs/SECURITY.md` | Implemented controls, helper functions, test evidence | ✅ |
+| UPDATE | `docs/DECISIONS.md` | D-011 accepted; D-015 correction; D-016 – D-023 | ✅ |
+| UPDATE | `docs/CONVENTIONS.md` | RLS helper pattern, column grants, proxy cookies, `connection()`, local sign-out, `nativeButton` | ✅ |
+| UPDATE | `docs/ARCHITECTURE.md`, `docs/TESTING.md`, `docs/ROADMAP.md`, `docs/DEPLOYMENT.md` | Status, commands, results, hosted-auth notes | ✅ |
+| UPDATE | `README.md`, `AGENTS.md` | Status, local demo accounts, test commands | ✅ |
+| UPDATE | `docs/CHANGELOG.md`, `docs/FILE-CHANGE-LOG.md` | M2 entries | ✅ reconciled with `git status` |

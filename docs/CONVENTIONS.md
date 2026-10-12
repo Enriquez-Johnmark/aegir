@@ -131,6 +131,13 @@ Project config: `base-nova` style, **Base UI** primitives (`base`), lucide icons
 - Accessibility: semantic HTML landmarks (`header`, `nav`, `main`), visible focus states, labelled controls, keyboard-reachable actions, and colour never the only signal.
 - No dead buttons: if a feature isn't implemented, the control doesn't render.
 
+### UX review with Impeccable (`.claude/skills/impeccable`)
+- App screens are Impeccable **Operate** mode: clarity, scanability and consistency first; brand lives in precise details. The landing page is **Persuade** mode (D-024).
+- After building each UI slice, run `/impeccable critique <route>` (UX heuristics) and `/impeccable audit <route>` (a11y, performance, responsive), fix what they find in the same slice, then `/impeccable polish` before marking it done.
+- Use `harden` for loading, empty, error and permission states; `clarify` for labels, validation and error copy; `adapt` for mobile layouts.
+- shadcn rules above win on component structure and tokens; Impeccable must not introduce raw colours, custom primitives or decorative motion on operational screens.
+- Engine, `hooks on` and `live` mode are opt-in (owner approval; D-024).
+
 ## 7. Testing conventions
 
 See [TESTING.md](TESTING.md). In short: pure domain rules get unit tests; every migration with RLS gets pgTAP tests; critical flows get Playwright tests. A green build is not evidence of correctness.

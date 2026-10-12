@@ -117,3 +117,17 @@ Migrations were created with `npx supabase migration new` and revised only while
 | UPDATE | `docs/ARCHITECTURE.md`, `docs/TESTING.md`, `docs/ROADMAP.md`, `docs/DEPLOYMENT.md` | Status, commands, results, hosted-auth notes | ✅ |
 | UPDATE | `README.md`, `AGENTS.md` | Status, local demo accounts, test commands | ✅ |
 | UPDATE | `docs/CHANGELOG.md`, `docs/FILE-CHANGE-LOG.md` | M2 entries | ✅ reconciled with `git status` |
+
+## 2026-10-12 · Impeccable UI/UX skill
+
+| Action | Path | Purpose | Related | Verification |
+|---|---|---|---|---|
+| CREATE | `.claude/skills/impeccable/**` (SKILL.md, reference/ (42), scripts/, agents/; 62 files) | Project-local UI/UX design skill | D-024 | ✅ copies, discovered, audited |
+| UPDATE | `skills-lock.json` | Add `impeccable` source + content hash | AGENT-SKILLS | ✅ inspected diff |
+| UPDATE | `eslint.config.mjs` | Ignore `.claude/**` (vendored skills; Impeccable's bundled JS produced 94 lint warnings) | | ✅ `npm run lint` clean |
+| UPDATE | `docs/AGENT-SKILLS.md` | Source, commit, verification, audit notes, conflicts | | ✅ |
+| UPDATE | `docs/DECISIONS.md` | D-024 (Operate mode, precedence, opt-in engine/hooks), D-025 (PRODUCT/DESIGN authority, proposed) | | ✅ |
+| UPDATE | `docs/CONVENTIONS.md` | §6 UX review workflow with Impeccable | | ✅ |
+| UPDATE | `AGENTS.md` | Skill list + Impeccable guardrails | | ✅ |
+| UPDATE | `docs/ROADMAP.md` | Impeccable pass in each M3 slice; DESIGN.md task | | ✅ |
+| UPDATE | `docs/CHANGELOG.md`, `docs/FILE-CHANGE-LOG.md` | This entry | | ✅ reconciled with `git status` |

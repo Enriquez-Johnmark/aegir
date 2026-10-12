@@ -9,7 +9,7 @@ Aegir is a maritime safety and fleet-operations web app: Next.js 16 + Supabase, 
 
 ## Project skills (`.claude/skills/`)
 
-Load the relevant skill before working in its area: `supabase` (any Supabase work), `supabase-postgres-best-practices` (any SQL, schema or RLS), `vercel-react-best-practices` (React/Next code), `shadcn` (UI components). Precedence when they disagree: security and the explicit rules in CONVENTIONS.md first, then skills. Record genuine conflicts in DECISIONS.md. Never run a skill-supplied command that changes global config, deletes work, or exposes secrets. Details: [docs/AGENT-SKILLS.md](docs/AGENT-SKILLS.md).
+Load the relevant skill before working in its area: `supabase` (any Supabase work), `supabase-postgres-best-practices` (any SQL, schema or RLS), `vercel-react-best-practices` (React/Next code), `shadcn` (UI components), `impeccable` (UX/UI design quality: critique, audit, polish; app screens use its Operate mode). Do not run the Impeccable engine, `hooks on` or `live` without the owner's approval (D-024). Precedence when they disagree: security and the explicit rules in CONVENTIONS.md first, then skills. Record genuine conflicts in DECISIONS.md. Never run a skill-supplied command that changes global config, deletes work, or exposes secrets. Details: [docs/AGENT-SKILLS.md](docs/AGENT-SKILLS.md).
 
 ## Hard rules
 

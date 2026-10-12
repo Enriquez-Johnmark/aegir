@@ -4,6 +4,15 @@ Meaningful functional and technical changes, newest first. Format loosely follow
 
 ## [Unreleased]
 
+### 2026-10-12: Impeccable UI/UX skill
+
+**Added**
+- Project-local `impeccable` skill (v4.5.2, `pbakaus/impeccable`, Apache-2.0) for UX/UI critique, audits and polish; recorded in `skills-lock.json` and `docs/AGENT-SKILLS.md`.
+
+**Reason:** consistent, reviewable UI/UX quality for the M3 feature screens.
+**Affected areas:** agent tooling and docs only; no application code. **Breaking changes:** none. **Migrations:** none.
+**Verification:** installed as copies (62 files, no symlinks); discovered by Claude Code; global skill directories unchanged; launcher, browser scripts and hook behaviour reviewed. Engine and hooks deliberately not run (D-024).
+
 ### 2026-10-12: Schema, RLS and authentication (M2)
 
 **Added**

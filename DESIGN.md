@@ -168,6 +168,9 @@ Charts (`--chart-1…5`) are a single navy lightness ramp so data series read as
 **The Ledger Rule.** Any number that is compared, totalled or scanned in a column uses `tabular-nums`.
 **The Fixed Scale Rule.** No fluid (`clamp`) type on Operate screens; steps stay at 12/14/16/24px.
 
+### Touch
+**The Deck Hand Rule.** On coarse pointers (phones, tablets) every interactive control is at least 44px tall (`pointer-coarse:` variant in Button, Input, InputGroup, SelectTrigger and sidebar items); fine pointers keep the compact 32px density. New interactive components must follow it.
+
 ## Layout
 
 App shell: collapsible sidebar (`16rem`, icon rail `3rem`, sheet on mobile `18rem`) plus a 56px page header with the sidebar trigger. Page content uses `p-4` (16px) on mobile and `md:p-6` (24px) from 768px up. Vertical rhythm is `gap-6` (24px) between page sections and `gap-4` (16px) inside cards and forms (card padding 16px, `size="sm"` 12px). Spacing follows the 4px Tailwind grid. Tables are full-width inside their card. On mobile, wide tables become stacked rows, not horizontal scroll, when a row has more than about four columns. Forms are single-column up to `max-w-2xl`. Auth screens centre a `max-w-sm` card on a Deck Grey wash.
@@ -193,6 +196,8 @@ Gently rounded and consistent: base radius 10px (`--radius: 0.625rem`), controls
 
 ### Status badges (signature component)
 - **Style:** pill, 20px tall, 12px medium text, signal colour on its own 10% tint (`variant="destructive" | "warning" | "success" | "info"`; neutral states use `secondary`/`outline`).
+- **Vessel status is context, not risk:** active → `outline`, in maintenance → `info`, laid up → `secondary`, decommissioned → `outline`. Risk is carried by the attention signals below.
+- **Attention signals** (`AttentionSignals`): `destructive` + icon for "N critical" and "N overdue", `warning` + icon for "N blocked", muted "On track" otherwise. Severity badges always carry an icon.
 - **Mapping:**
   - critical severity, overdue, failed → `destructive`
   - blocked, high severity, due soon → `warning`
@@ -213,9 +218,14 @@ Gently rounded and consistent: base radius 10px (`--radius: 0.625rem`), controls
 ### Navigation
 - Sidebar on Console Panel; items 32px, icon + label; the current route uses `isActive` (Console Panel Hover fill, medium weight). Collapses to an icon rail with tooltips on desktop and to a sheet on mobile (`SidebarTrigger`). The user menu sits in the sidebar footer.
 
+### Wayfinding
+- Record and form pages show a breadcrumb above the page title (`PageHeader breadcrumbs`). Status badges sit beside the `h1`, never inside it, so the heading's accessible name is the record name. Browser tab titles name the record (`generateMetadata`).
+- Links that look like buttons are real links (`ButtonLink`), never a `Button` rendering an `<a>`.
+- After a save, the record page shows a dismissible `SavedNotice` ("Vessel added", "Changes saved").
+
 ### Loading and empty states
 - Loading: `Skeleton` blocks shaped like the content they replace, behind `<Suspense>`; never a spinner in the middle of content.
-- Empty: `Empty` component that says what belongs here and, when the role allows it, offers the action that creates it.
+- Empty: `Empty` component that says what belongs here and, when the role allows it, offers the action that creates it. Use the shared `EMPTY_PANEL` style (sized to content, hairline ring), never a viewport-tall dashed box. A filtered-empty state names the active filters.
 
 ## Do's and Don'ts
 

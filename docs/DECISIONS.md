@@ -149,3 +149,21 @@ Format: context → decision → alternatives → consequences. Status: **Accept
 **Status:** Accepted · 2026-10-12
 
 **Decision:** `npm run db:types` pipes `supabase gen types` through `prettier` (pinned devDependency) because the CLI emits unformatted TypeScript. Prettier is used only for this generated file; source formatting follows the existing style.
+
+## D-024 — Impeccable for UI/UX quality, in Operate mode, with opt-in engine and hooks {#d-024}
+**Status:** Accepted · 2026-10-12
+
+**Context:** The owner asked for [Impeccable](https://impeccable.style/) (`pbakaus/impeccable`, Apache-2.0) as the project's UI/UX skill. It adds design vocabulary, review commands (`critique`, `audit`, `polish`, `harden`, `clarify`, …) and a design-defaults detector. Its default stance is maximal ("go all out, dream big and bold"). Its launcher downloads a native engine binary into `~/.impeccable`, and `hooks on` installs an edit-time detector hook.
+**Decision:**
+1. Installed project-locally like the other skills (`.claude/skills/impeccable/`, copies, recorded in `skills-lock.json`).
+2. **Aegir's app surfaces are Impeccable's _Operate_ mode** (dashboards, forms, tables): scanability, consistency and native expectations beat expression. The public landing page is the only _Persuade_ surface. `bolder`, `overdrive`, `delight` and `animate` are not used on operational screens unless explicitly requested.
+3. **Precedence for UI work:** security and accessibility → [CONVENTIONS.md §6](CONVENTIONS.md#6-ui-shadcnui-tailwind-v4) and the `shadcn` skill (components, semantic tokens, `Field` forms) → Impeccable for UX judgment, hierarchy, copy, states and review. Impeccable never overrides component APIs or introduces raw palette colours.
+4. **Engine and hooks are opt-in.** Running `scripts/impeccable` (which may download engine 0.1.14 to `~/.impeccable`, SHA-256-checked) and `impeccable hooks on` (writes `.claude/settings.local.json` and `.impeccable/config.json`) each need the owner's explicit approval, which is then recorded here. Without the engine, the skill reads PRODUCT.md and DESIGN.md directly (its documented fallback).
+5. Scope discipline still applies: Impeccable's "complete deliverable" principle does not expand a task beyond its milestone; findings outside scope go into ROADMAP.md.
+**Consequences:** Every M3 UI slice ends with an Impeccable `critique` + `audit` pass. Fixes land in the same slice, and the results are noted in TESTING.md.
+
+## D-025 — One product authority: `docs/PRODUCT.md`; design system in `DESIGN.md` {#d-025}
+**Status:** Proposed · 2026-10-12, finalize at the start of M3
+
+**Context:** Impeccable's `init` writes `PRODUCT.md` at the repo root unless its context resolver finds an existing file. Ours is `docs/PRODUCT.md`, and two product documents would drift.
+**Decision (proposed):** `docs/PRODUCT.md` stays the single product authority. When Impeccable needs product context, it reads that file. If the engine insists on a root `PRODUCT.md`, the root file is a short pointer to `docs/PRODUCT.md`, never a second copy. The visual design system is captured once with `impeccable document` as `DESIGN.md` (root, Impeccable's convention; linked from the README and ARCHITECTURE) at the start of M3, generated from the existing shadcn tokens rather than invented.

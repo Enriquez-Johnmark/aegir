@@ -180,3 +180,27 @@ Format: context → decision → alternatives → consequences. Status: **Accept
 - Every text/background pair was computed with an OKLCH→sRGB contrast script (not estimated); all pass AA.
 - Named rules: Signal, Lit Instrument, Two-Channel, Ledger, Fixed Scale, Quiet Hull.
 **Consequences:** M3 screens use semantic tokens and badge variants only; colour always means state.
+
+## D-027 — `ButtonLink` for links styled as buttons {#d-027}
+**Status:** Accepted · 2026-10-12 (supersedes the `nativeButton={false}` guidance from M2)
+
+**Context:** The vessels E2E suite found "Add vessel" exposed as `button`, not `link`. With `render={<Link />}` and `nativeButton={false}`, Base UI's Button adds `role="button"` to the `<a>`, so assistive technology announces a button that navigates.
+**Decision:** `src/components/shared/button-link.tsx`: a real Next `<Link>` styled with shadcn's exported `buttonVariants`. All eight usages were migrated (landing, empty, not-found, forbidden, detail, form).
+
+## D-028 — The vessels list is a watch list {#d-028}
+**Status:** Accepted · 2026-10-12 (owner's choice after the Impeccable critique)
+
+**Decision:** The default sort is "Attention first" (`compareByAttention` in `features/vessels/domain.ts`): critical open work, then overdue work and inspections, then blocked, then open-work volume, then name. A–Z, recently updated and newest build year remain one click away. Each row shows an Attention column (critical/overdue/blocked signals). Vessel status badges were neutralised (active → outline, laid up → secondary), so colour means risk (DESIGN.md: The Signal Rule).
+**Implementation:** attention counts come from two extra RLS-scoped queries (open work orders; scheduled or in-progress inspections past their date), run in parallel and aggregated in the DAL. Sorting by attention happens in memory, which is fine at fleet scale (tens to hundreds of vessels). Revisit with a SQL view if fleets grow to thousands.
+
+## D-029 — 44px touch targets on coarse pointers only {#d-029}
+**Status:** Accepted · 2026-10-12 (owner's choice)
+
+**Context:** The critique's browser pass measured 32px controls (sidebar toggle 28px) on a Pixel 7.
+**Decision:** Base components get `pointer-coarse:min-h-11` (44px; icon buttons also `min-w-11`). Desktop keeps 32px (comfortable-compact density). Verified by measurement: every control is 44px under `(pointer: coarse)` and 32px otherwise. Recorded as DESIGN.md's Deck Hand Rule.
+
+## D-030 — E2E locator policy under Cache Components {#d-030}
+**Status:** Accepted · 2026-10-12
+
+**Context:** With Cache Components, Next 16 keeps previously visited routes mounted but hidden after client navigation, and streaming can briefly duplicate a resolved boundary. `getByLabel`/`getByText` also match hidden nodes, which caused strict-mode violations (for example, the hidden `/vessels` search box on `/vessels/new`).
+**Decision:** E2E uses role locators for controls (which exclude hidden elements) and `.filter({ visible: true })` for text, scoped to `main` where the sidebar could match. Tests that create data use random valid IMO numbers and never assert global totals. Local data from E2E runs is reset with `npm run db:reset` (local only).

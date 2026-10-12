@@ -89,7 +89,9 @@ Membership management is seed-only in the MVP (no UI).
 ## 6. Application-layer controls
 
 - Server Actions are public endpoints. Each one re-verifies the session, validates input with Zod, derives identity server-side and returns minimal results ([CONVENTIONS.md §2](CONVENTIONS.md#server-actions)).
-- Route params (`[vesselId]`) are validated as UUIDs before querying.
+- Route params (`[vesselId]`) are validated as UUIDs before querying. Bound Server Action arguments (`updateVesselAction.bind(null, vesselId)`) travel through the client, so they are re-validated in the action.
+- List search text is sanitised before use in a PostgREST `.or()` filter, so URL input cannot inject extra filter clauses (unit-tested in `vessels.test.ts`).
+- Vessel writes take `organization_id` from the session, never from the form; a 23505 duplicate-IMO error maps to a field message, and 42501 maps to a permission message.
 - Next.js checks the Origin header on Server Actions (CSRF). Mutations are never performed on GET.
 
 ## 7. Required security tests (`supabase/tests/*.test.sql`, pgTAP; all implemented)

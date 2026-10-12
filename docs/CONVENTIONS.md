@@ -69,6 +69,7 @@ Server Actions are **public POST endpoints**: a page-level auth check does not p
 - **Authorization data never comes from `user_metadata`**, which users can edit. Roles live in the `memberships` table and are read via RLS helper functions.
 - **Data API exposure is explicit.** New tables are no longer auto-exposed: opt-in now, enforced on all projects from 2026-10-30. Every migration that creates a table includes explicit `GRANT`s to `authenticated` (never `anon` for organization data) **and** enables RLS in the same migration.
 - Multi-row writes that must be atomic (for example an inspection plus its checklist items) go through a **Postgres function called with `.rpc()`**, because supabase-js has no client-side transactions.
+- Filters read from the URL are untrusted: validate them with Zod (`.catch(undefined)` for unknown values) and sanitise free text before it is interpolated into a PostgREST filter expression such as `.or()` (letters, digits, spaces, `'` and `-` only).
 - Check `{ error }` on every Supabase call. Map Postgres error codes (`23505` unique, `23514` check, `42501` RLS/permission, `P0001` raised by our triggers) to user-friendly messages in the DAL.
 - Re-generate types after every migration: `npm run db:types`.
 - Before implementing any Supabase feature, check the [changelog](https://supabase.com/changelog.md) for breaking changes and the current docs, as the `supabase` skill requires.
@@ -127,8 +128,12 @@ Project config: `base-nova` style, **Base UI** primitives (`base`), lucide icons
 - Status values use `Badge` variants. Empty states use `Empty`, loading uses `Skeleton`, callouts use `Alert`, destructive confirmations use `AlertDialog`.
 - Dialog, Sheet and Drawer always have a Title (use `sr-only` if visually hidden).
 - Icons in buttons use `data-icon="inline-start|inline-end"` and no sizing classes.
-- Base UI uses the **`render` prop** for custom triggers, not `asChild`. When a `Button` renders a non-button element (e.g. `<Link>`), also pass `nativeButton={false}`.
+- Base UI uses the **`render` prop** for custom triggers, not `asChild`.
+- **Links that look like buttons use `ButtonLink`** (`src/components/shared/button-link.tsx`: a real `<Link>` styled with `buttonVariants`). Never render a link through `Button` (`render={<Link />}` + `nativeButton={false}`): Base UI then adds `role="button"`, so screen readers announce a button that navigates (D-027; this replaced earlier guidance in this file).
 - Base UI state attributes are `data-vertical`, `data-horizontal`, `data-active`, … (Tailwind `data-vertical:h-4`), **not** Radix's `data-[orientation=vertical]`. Radix-style selectors copied from examples silently do nothing.
+- Every new interactive control honours the 44px coarse-pointer minimum (`pointer-coarse:min-h-11`; DESIGN.md: The Deck Hand Rule).
+- Empty, forbidden and error states use `EMPTY_PANEL` (`src/components/shared/panel.ts`); record pages use `PageHeader` with `breadcrumbs` and a `badge` outside the `h1`.
+- Forms move focus to the first invalid field after a failed submit, keep field hints visible alongside errors, and redirect with `?saved=…` so the record page shows a `SavedNotice`.
 - Visual rules live in [DESIGN.md](../DESIGN.md) ("The Bridge Console"). Status uses `Badge` variants `destructive | warning | success | info | outline` with the mapping in DESIGN.md; numbers in tables and metrics use `tabular-nums`.
 - Accessibility: semantic HTML landmarks (`header`, `nav`, `main`), visible focus states, labelled controls, keyboard-reachable actions, and colour never the only signal.
 - No dead buttons: if a feature isn't implemented, the control doesn't render.

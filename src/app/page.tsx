@@ -1,6 +1,5 @@
-import Link from "next/link";
 
-import { Button } from "@/components/ui/button";
+import { ButtonLink } from "@/components/shared/button-link";
 
 export default function Home() {
   return (
@@ -12,9 +11,9 @@ export default function Home() {
           handovers in one audited workspace.
         </p>
       </div>
-      <Button size="lg" nativeButton={false} render={<Link href="/login" />}>
+      <ButtonLink size="lg" href="/login">
         Sign in
-      </Button>
+      </ButtonLink>
     </main>
   );
 }

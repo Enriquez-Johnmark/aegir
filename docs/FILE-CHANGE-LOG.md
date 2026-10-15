@@ -172,3 +172,26 @@ Not tracked (machine-local, outside the repo or git-ignored): `~/.impeccable/bin
 | CREATE | `.impeccable/critique/2026-10-12T09-13-47Z__src-app-app-vessels.md` | Critique snapshot (read by `impeccable polish`) | D-024 | ✅ |
 | UPDATE | `DESIGN.md` | Vessel status mapping, attention signals, wayfinding, Deck Hand Rule | | ✅ |
 | UPDATE | `docs/{DECISIONS,CONVENTIONS,SECURITY,TESTING,ARCHITECTURE,ROADMAP,CHANGELOG,FILE-CHANGE-LOG}.md`, `README.md` | D-027 – D-030, conventions, evidence | | ✅ reconciled with `git status` |
+
+## 2026-10-15 · M3 slice 2: Inspections
+
+| Action | Path | Purpose | Related | Verification |
+|---|---|---|---|---|
+| CREATE | `supabase/migrations/20261014174645_require_inspector_role_for_item_updates.sql` | Fix forward: role re-check in the `inspection_items` update policy (`npx supabase migration new`) | D-031 | ✅ `db reset`, pgTAP |
+| CREATE | `supabase/tests/07_inspection_results.test.sql` | Who may record results; demoted inspector blocked | D-031 | ✅ red on old policy, green on new |
+| CREATE | `src/components/ui/{alert-dialog,toggle,toggle-group}.tsx` | shadcn components (`shadcn add`; `button.tsx` overwrite declined) | | ✅ typecheck |
+| UPDATE | `src/components/ui/toggle.tsx` | 44px coarse-pointer target | D-029 | ✅ screenshots |
+| CREATE | `src/components/shared/url-filters.tsx` | Shared URL-synced filters | D-033 | ✅ vessels + inspections E2E |
+| UPDATE | `src/features/vessels/components/vessel-filters.tsx` | Use shared filters | D-033 | ✅ |
+| UPDATE | `src/features/vessels/components/vessel-detail.tsx` | Schedule inspection action, inspection links, shared status badge | | ✅ |
+| UPDATE | `src/components/layout/page-header.tsx` | Actions wrap on narrow screens | | ✅ screenshots |
+| UPDATE | `src/components/layout/app-sidebar.tsx` | Inspections nav item | | ✅ |
+| CREATE | `src/features/inspections/{domain,schemas}.ts`, `inspections.test.ts` | Rules (conduct rights, overdue, checklist summary, templates), Zod schemas | D-032 | ✅ unit 16 |
+| CREATE | `src/features/inspections/server/{queries,mutations}.ts`, `actions.ts` | DAL, RPC + status/result writes, Server Actions | D-032, D-033 | ✅ E2E |
+| CREATE | `src/features/inspections/components/{inspection-badges,inspection-filters,inspections-list,inspection-detail,inspection-actions,checklist-item,schedule-inspection-form}.tsx` | Inspections UI | D-032 | ✅ detector hook clean, screenshots |
+| CREATE | `src/app/(app)/inspections/page.tsx`, `new/page.tsx`, `[inspectionId]/page.tsx`, `[inspectionId]/not-found.tsx` | Inspection routes | | ✅ build |
+| UPDATE | `e2e/helpers.ts` | Inspector user | | ✅ |
+| CREATE | `e2e/inspections.spec.ts` | Inspection flows (lifecycle, validation, viewer, cross-org) | D-030 | ✅ 28/28 suite |
+| UPDATE | `DESIGN.md` | Inspection badge mapping, checklist recording pattern | | ✅ |
+| UPDATE | `docs/{DECISIONS,CONVENTIONS,SECURITY,DATA_MODEL,TESTING,ARCHITECTURE,ROADMAP,CHANGELOG,FILE-CHANGE-LOG}.md`, `README.md` | D-031 – D-033, evidence | | ✅ reconciled with `git status` |
+

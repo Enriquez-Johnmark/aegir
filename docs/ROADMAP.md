@@ -29,11 +29,11 @@ Acceptance: `db reset` builds the schema from migrations alone; pgTAP proves cro
 - [x] D-011 demo access decided (option a)
 - Found and fixed along the way: email provider accidentally disabled (D-015 correction), global sign-out (D-020), legacy default privileges (D-022)
 
-## M3: Vertical slices (P0 → P1) ⬜ ← next
+## M3: Vertical slices (P0 → P1) 🟡 ← in progress
 Each slice: schema already in place → DAL → actions → UI (loading, empty, error, unauthorized states) → Impeccable `critique` + `audit`, fixes, `polish` (D-024) → tests → docs and ledger.
 0. [x] D-025 accepted; design system captured with `impeccable document` → `DESIGN.md` "The Bridge Console" (D-026); engine + hooks enabled (D-024)
 1. [x] Vessels: watch-list (attention first), search, filters, detail, create, edit; Impeccable critique 25/40 → all P1/P2 fixed (D-027 – D-030)
-2. [ ] Inspections: schedule with checklist (RPC), record results, complete, follow-up flag
+2. [x] Inspections: schedule with checklist (RPC + templates), start, record results (pass/N/A one tap, fail with finding + severity), complete/cancel, derived follow-up flag; RLS role re-check fixed forward (D-031 – D-033)
 3. [ ] Work orders: create (incl. from a failed item), transitions, overdue, history
 4. [ ] Dashboard: live metrics
 5. [ ] Handovers UI ✂️ (P1; schema, rules and tests already done in M2)

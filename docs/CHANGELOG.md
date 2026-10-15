@@ -4,6 +4,27 @@ Meaningful functional and technical changes, newest first. Format loosely follow
 
 ## [Unreleased]
 
+### 2026-10-15: Inspections (M3 slice 2)
+
+**Added**
+- Inspections list: open inspections oldest first (overdue lead), completed / cancelled / all views, vessel filter, checklist progress and findings (failed checks, follow-ups needed); table on desktop, stacked rows on mobile.
+- Schedule form: vessel (preselected from a vessel page), date, title, inspector, notes and a checklist builder (add/remove checks, category suggestions, "Add from template" with three synthetic templates). Created atomically through the `create_inspection` RPC.
+- Inspection detail: lifecycle actions (Start, Complete when nothing is pending, Cancel with confirmation), facts, checklist with one-tap Pass / N/A and a Fail panel (finding + severity), derived "Needs follow-up" flag and linked work orders.
+- Vessel page: "Schedule inspection" action, inspection titles link to their detail, "View all".
+- Inspections in the sidebar; shadcn `alert-dialog`, `toggle`, `toggle-group` (toggle gets 44px coarse-pointer targets).
+- Unit tests (16) and Playwright inspection flows; pgTAP `07_inspection_results` (5).
+
+**Changed**
+- Vessel filters use the new shared `useUrlFilters` / `FilterSelect` (D-033); page-header actions wrap.
+
+**Fixed**
+- **Security (fix forward):** a former inspector whose role changed could still record results on a checklist they had been assigned (D-031, migration `20261014174645`).
+- An inspector scheduling an inspection was left unassigned and could not conduct it; the inspector now defaults to them (D-032).
+
+**Reason:** P0 inspections slice. **Affected areas:** inspections feature, vessels detail/filters, shared UI, RLS policy, tests, docs.
+**Breaking changes:** none. **Migrations:** `20261014174645_require_inspector_role_for_item_updates.sql`.
+**Verification:** lint ✅ · typecheck ✅ · unit 49/49 ✅ · build ✅ · pgTAP 78/78 ✅ · E2E 28/28 ✅ · db lint/advisors ✅ · `impeccable detect` `[]` ✅ · desktop + mobile inspection round ✅. Impeccable critique for this slice: not run yet.
+
 ### 2026-10-12: Vessels (M3 slice 1)
 
 **Added**

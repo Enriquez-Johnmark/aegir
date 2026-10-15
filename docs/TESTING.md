@@ -79,12 +79,20 @@ rollback;
 | 2026-10-12 | `npm run test:e2e` (after M3 vessels) | ✅ 20/20 (auth 5 + vessels 5, × desktop + mobile), three consecutive green runs after fixes |
 | 2026-10-12 | Impeccable `critique` (vessels, dual-agent) | 25/40 Acceptable before fixes; all 3 P1 and 4 P2 issues fixed (D-027 – D-029); snapshot `.impeccable/critique/2026-10-12T09-13-47Z__src-app-app-vessels.md` |
 | 2026-10-12 | Confirmation round after fixes | ✅ `impeccable detect` `[]`; 44px controls under `(pointer: coarse)`, 32px on desktop; focus moves to the first invalid field; screenshots desktop + mobile |
+| 2026-10-15 | `npm run db:test` (after M3 inspections) | ✅ 78/78 (7 files; new `07_inspection_results`, red against the old policy first) |
+| 2026-10-15 | `npm run db:reset` | ✅ 7 migrations + seed apply on a fresh DB |
+| 2026-10-15 | `npm test` (after M3 inspections) | ✅ 49/49 (+16 inspections: conduct rights, overdue, checklist summary, completion, schedule/result/list schemas) |
+| 2026-10-15 | `npm run lint` / `npm run typecheck` / `npm run build` | ✅ (inspection routes partially prerendered) |
+| 2026-10-15 | Design inspection round (desktop 1360×900 + Pixel 7: list, in-progress detail, fail form, completed detail, schedule form) | ✅ no console errors; one UX gap found by E2E and fixed (inspector default, D-032) |
+| 2026-10-15 | `npm run test:e2e` (after M3 inspections) | ✅ 28/28 (auth 5 + inspections 4 + vessels 5, × desktop + mobile), two consecutive green runs. An earlier run failed at sign-in when the local Docker engine stalled after the machine slept (tests took 15–20 min against a 30 s timeout); not a code failure, rerun green |
+| 2026-10-15 | `npm run db:lint` / `supabase db advisors --local` / `impeccable detect` (inspections UI) | ✅ no errors / no issues / `[]` |
 | 2026-10-12 | Token contrast (OKLCH→sRGB WCAG script) | ✅ all pairs ≥ 4.5:1 text, ring ≥ 3:1; shadcn default destructive-on-tint was 3.99:1 (fixed, D-026) |
 
 ## Known gaps
 
 - No Vitest integration tests against the local stack yet (planned with the M3 DAL).
 - Accessibility checks (axe via Playwright) are planned for M4.
-- E2E covers authentication and vessels; inspections, work orders and the dashboard are added with their slices.
+- E2E covers authentication, vessels and inspections; work orders and the dashboard are added with their slices.
+- Inputs with a `list` (datalist) are exposed as `combobox`, not `textbox`; locate them by that role.
 - E2E locator policy under Cache Components: see D-030 (role locators, `visible` filter, scoped to `main`).
-- E2E runs leave test vessels in the local database (no deletes by design); `npm run db:reset` restores the demo data.
+- E2E runs leave test vessels and inspections in the local database (no deletes by design); `npm run db:reset` restores the demo data.

@@ -14,7 +14,7 @@
 | Auth (sign in/out), organizations, 5 roles, RLS on every table | ✅ |
 | Database: vessels, inspections, work orders, handovers, audit log, with rules enforced in Postgres | ✅ |
 | Vessels: watch list (attention first), search and filters, detail, create, edit | ✅ |
-| Inspections UI with checklists and failed-check follow-up | ⬜ |
+| Inspections: schedule with checklist templates, start, record pass/fail/N/A with findings, complete or cancel, follow-up flags | ✅ |
 | Work orders UI with enforced status transitions | ⬜ |
 | Task handovers UI with acknowledgement | ⬜ |
 | Audit history UI | ⬜ |

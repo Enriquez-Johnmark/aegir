@@ -24,7 +24,8 @@ export const ALL = "__all__";
 /**
  * List filters live in the URL so results are shareable and the server does the
  * filtering. Returns the current params, a setter that replaces one key (in a
- * transition, without scrolling), and whether a navigation is pending.
+ * transition, without scrolling), and whether a navigation is pending. `clear`
+ * drops keys that a new filter invalidates, such as a page cursor.
  */
 export function useUrlFilters() {
   const router = useRouter();
@@ -32,8 +33,11 @@ export function useUrlFilters() {
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
 
-  function setParam(key: string, value: string) {
+  function setParam(key: string, value: string, { clear = [] }: { clear?: readonly string[] } = {}) {
     const params = new URLSearchParams(searchParams);
+    for (const stale of clear) {
+      params.delete(stale);
+    }
     if (value && value !== ALL) {
       params.set(key, value);
     } else {

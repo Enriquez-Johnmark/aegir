@@ -5,6 +5,7 @@ import {
   ArrowRightLeftIcon,
   ClipboardCheckIcon,
   LayoutDashboardIcon,
+  ScrollTextIcon,
   ShipIcon,
   WrenchIcon,
 } from "lucide-react";
@@ -24,6 +25,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
+  useSidebar,
 } from "@/components/ui/sidebar";
 
 // Only routes that exist are listed; features join the nav as they ship.
@@ -33,15 +35,17 @@ const NAV_ITEMS = [
   { title: "Inspections", href: "/inspections", icon: ClipboardCheckIcon },
   { title: "Work orders", href: "/work-orders", icon: WrenchIcon },
   { title: "Handovers", href: "/handovers", icon: ArrowRightLeftIcon },
+  { title: "Audit log", href: "/audit", icon: ScrollTextIcon },
 ] as const;
 
 export function AppSidebar({ footer }: { footer: React.ReactNode }) {
+  const closeOnPhone = useCloseOnPhone();
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" render={<Link href="/dashboard" />}>
+            <SidebarMenuButton size="lg" render={<Link href="/dashboard" onClick={closeOnPhone} />}>
               <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
                 <AnchorIcon />
               </div>
@@ -77,7 +81,19 @@ function ActiveNavItems() {
   return <NavItems pathname={usePathname()} />;
 }
 
+/**
+ * On phones the sidebar is a modal sheet: following a link must close it, or the
+ * new page stays covered (and hidden from screen readers) until it is dismissed.
+ */
+function useCloseOnPhone() {
+  const { isMobile, setOpenMobile } = useSidebar();
+  return () => {
+    if (isMobile) setOpenMobile(false);
+  };
+}
+
 function NavItems({ pathname }: { pathname: string | null }) {
+  const closeOnPhone = useCloseOnPhone();
   return (
     <SidebarMenu>
       {NAV_ITEMS.map((item) => {
@@ -85,7 +101,7 @@ function NavItems({ pathname }: { pathname: string | null }) {
         return (
           <SidebarMenuItem key={item.href}>
             <SidebarMenuButton
-              render={<Link href={item.href} aria-current={active ? "page" : undefined} />}
+              render={<Link href={item.href} aria-current={active ? "page" : undefined} onClick={closeOnPhone} />}
               isActive={active}
               tooltip={item.title}
             >

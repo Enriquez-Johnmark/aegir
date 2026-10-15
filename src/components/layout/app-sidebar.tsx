@@ -1,6 +1,6 @@
 "use client";
 
-import { AnchorIcon, ClipboardCheckIcon, LayoutDashboardIcon, ShipIcon } from "lucide-react";
+import { AnchorIcon, ClipboardCheckIcon, LayoutDashboardIcon, ShipIcon, WrenchIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Suspense } from "react";
@@ -24,6 +24,7 @@ const NAV_ITEMS = [
   { title: "Dashboard", href: "/dashboard", icon: LayoutDashboardIcon },
   { title: "Vessels", href: "/vessels", icon: ShipIcon },
   { title: "Inspections", href: "/inspections", icon: ClipboardCheckIcon },
+  { title: "Work orders", href: "/work-orders", icon: WrenchIcon },
 ] as const;
 
 export function AppSidebar({ footer }: { footer: React.ReactNode }) {

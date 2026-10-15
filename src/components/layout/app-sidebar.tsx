@@ -49,11 +49,13 @@ export function AppSidebar({ footer }: { footer: React.ReactNode }) {
         <SidebarGroup>
           <SidebarGroupLabel>Operations</SidebarGroupLabel>
           <SidebarGroupContent>
-            {/* The pathname of a dynamic route is request-time data under Cache
-                Components, so only the active-state lookup waits behind Suspense. */}
-            <Suspense fallback={<NavItems pathname={null} />}>
-              <ActiveNavItems />
-            </Suspense>
+            <nav aria-label="Main">
+              {/* The pathname of a dynamic route is request-time data under Cache
+                  Components, so only the active-state lookup waits behind Suspense. */}
+              <Suspense fallback={<NavItems pathname={null} />}>
+                <ActiveNavItems />
+              </Suspense>
+            </nav>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
@@ -70,18 +72,21 @@ function ActiveNavItems() {
 function NavItems({ pathname }: { pathname: string | null }) {
   return (
     <SidebarMenu>
-      {NAV_ITEMS.map((item) => (
-        <SidebarMenuItem key={item.href}>
-          <SidebarMenuButton
-            render={<Link href={item.href} />}
-            isActive={pathname === item.href || Boolean(pathname?.startsWith(`${item.href}/`))}
-            tooltip={item.title}
-          >
-            <item.icon />
-            <span>{item.title}</span>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
-      ))}
+      {NAV_ITEMS.map((item) => {
+        const active = pathname === item.href || Boolean(pathname?.startsWith(`${item.href}/`));
+        return (
+          <SidebarMenuItem key={item.href}>
+            <SidebarMenuButton
+              render={<Link href={item.href} aria-current={active ? "page" : undefined} />}
+              isActive={active}
+              tooltip={item.title}
+            >
+              <item.icon />
+              <span>{item.title}</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        );
+      })}
     </SidebarMenu>
   );
 }

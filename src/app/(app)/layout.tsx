@@ -16,6 +16,13 @@ import { requireUser } from "@/lib/auth/session";
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <SidebarProvider>
+      {/* Bypass block (WCAG 2.4.1): keyboard users skip the sidebar and its controls. */}
+      <a
+        href="#content"
+        className="sr-only z-50 rounded-lg bg-background px-3 py-2 text-sm font-medium ring-2 ring-ring focus:not-sr-only focus:fixed focus:top-3 focus:left-3"
+      >
+        Skip to content
+      </a>
       <AppSidebar
         footer={
           <Suspense fallback={<Skeleton className="h-12" />}>
@@ -30,7 +37,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           <Separator orientation="vertical" className="mr-2 data-vertical:h-4 data-vertical:self-center" />
           <span className="text-sm font-medium text-muted-foreground">Aegir</span>
         </header>
-        <div className="flex flex-1 flex-col gap-6 p-4 md:p-6">{children}</div>
+        <div id="content" tabIndex={-1} className="flex flex-1 flex-col gap-6 p-4 outline-none md:p-6">
+          {children}
+        </div>
       </SidebarInset>
     </SidebarProvider>
   );

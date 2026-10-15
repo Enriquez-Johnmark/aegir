@@ -5,6 +5,7 @@ export const PASSWORD = "AegirDemo2026";
 
 export const USERS = {
   manager: { email: "marcus.reyes@northwind.example", name: "Marcus Reyes" },
+  inspector: { email: "ingrid.solberg@northwind.example", name: "Ingrid Solberg" },
   technician: { email: "tomas.okafor@northwind.example", name: "Tomas Okafor" },
   viewer: { email: "vera.lindqvist@northwind.example", name: "Vera Lindqvist" },
 } as const;

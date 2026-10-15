@@ -116,16 +116,20 @@ rollback;
 | 2026-10-15 | Production smoke test (https://aegir-eight.vercel.app) | ✅ 31/31, see DEPLOYMENT.md log (read-only and permission checks; no data created) |
 | 2026-10-15 | Security headers (D-039): unit + E2E | ✅ unit 83/83 (+3 header tests); E2E 48/48 twice in a row (+2 tests × 2 projects: headers on `/` and `/login`; no CSP violation across sign-in, dashboard, lists, the raise form and a select popup) |
 | 2026-10-15 | Production after the header deploy (`1944fd8`) | ✅ headers live on `/` and `/login`; smoke test 31/31, no console errors |
+| 2026-10-15 | axe (`e2e/accessibility.spec.ts`, WCAG 2.2 A/AA) | ✅ 0 violations on 2 signed-out + 13 signed-in routes + the open Fail panel, desktop and Pixel 7, after giving the login and no-access pages an `h1`. Sanity: 22 rules pass on `/login`; injected `image-alt` / `button-name` failures are caught |
+| 2026-10-15 | Lists and filters at 200% text (desktop 1360, Pixel 7) | Before: desktop tables clipped whole columns (Priority, Status, half of Due) behind `overflow-hidden`; work-order titles truncated even at normal size; phone filter values clipped. After (container queries, wrapping titles and values): no overflow, no clipping (only intentional `sr-only`), titles ≥ 348px; filter triggers 32px desktop / 44px Pixel 7 (a first attempt regressed them to 38px; caught by measurement and fixed) |
+| 2026-10-15 | `npm run test:e2e` with `globalSetup` reset (3 consecutive runs) | ⚠️ 54/54, 53/54, 54/54: the mobile viewer inspection test failed once, with output kept: a text locator matched a hidden duplicate (D-030). Fixed by applying the `visible` filter to every user-facing text assertion (isolation checks stay unfiltered) → ✅ 54/54 ×3 consecutive |
+| 2026-10-15 | `npm test` / lint / typecheck / `impeccable detect` / pgTAP (fresh seed) | ✅ 83/83 / 0 problems / ✅ / `[]` / 85/85 |
 | 2026-10-12 | Token contrast (OKLCH→sRGB WCAG script) | ✅ all pairs ≥ 4.5:1 text, ring ≥ 3:1; shadcn default destructive-on-tint was 3.99:1 (fixed, D-026) |
 
 ## Known gaps
 
 - No Vitest integration tests against the local stack yet (planned with the M3 DAL).
-- Accessibility checks (axe via Playwright) are planned for M4.
+- axe covers WCAG 2.2 A/AA rules only; it cannot judge everything (e.g. whether a heading names its section well). The dashboard and inspection/work-order critiques cover the rest.
 - pgTAP uses the seed as its fixture (D-018): run `npm run db:reset` before `npm run db:test` after any manual, agent or screenshot clicking in the local app, or seeded-row tests fail on drifted data.
-- Two intermittent E2E failures are unexplained (2026-10-15): the dashboard follow-up row not found within 10 s in a slow run, and once the mobile inspections viewer test. Neither reproduced in repeats. Next time one fails, keep the full output and the trace (`test-results/`) before rerunning; M4 should look at test isolation (E2E data accumulates between runs).
+- Intermittent E2E failures: the mobile inspections viewer failure was explained and fixed (hidden duplicate matched by an unfiltered text locator, D-040). The earlier dashboard one (row not found within 10 s, ~4× slower run) hasn't recurred in 6 fresh-seed runs; it stays listed until it has a clean history. When a test fails, keep the log and `test-results/` (traces are retained on failure) before rerunning.
 - E2E covers authentication, dashboard, vessels, inspections and work orders. Dashboard tests compare figures before and after their own actions instead of asserting global totals (D-030).
-- Tests that change state create their own records (seeded work orders and inspections are never moved), so reruns stay valid without a reset.
+- Tests that change state create their own records (seeded work orders and inspections are never moved), and since M4 every run also starts from a fresh seed (`e2e/global-setup.ts` runs `supabase db reset --local`; `E2E_SKIP_DB_RESET=1` skips it for quick reruns of one spec).
 - Inputs with a `list` (datalist) are exposed as `combobox`, not `textbox`; locate them by that role.
 - E2E locator policy under Cache Components: see D-030 (role locators, `visible` filter, scoped to `main`).
-- E2E runs leave test vessels and inspections in the local database (no deletes by design); `npm run db:reset` restores the demo data.
+- E2E runs leave their records in the local database until the next run's reset; pgTAP needs a fresh seed too (`npm run db:reset` before `npm run db:test`).

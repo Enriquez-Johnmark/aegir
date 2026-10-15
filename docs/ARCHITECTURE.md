@@ -43,7 +43,7 @@ We follow Next.js's documented **"store project files outside of `app`"** strate
 aegir/
 ├── .claude/skills/              # Project-local Claude Code skills (see docs/AGENT-SKILLS.md)
 ├── docs/                        # All project documentation (this folder)
-├── e2e/                         # ✅ Playwright specs (auth flow; more per feature)
+├── e2e/                         # ✅ Playwright specs per feature + accessibility (axe) + security headers; global-setup resets the LOCAL db
 ├── public/                      # Static assets served as-is
 ├── scripts/                     # ✅ demo-seed.mjs (+ test): hosted demo seed from supabase/seed.sql (D-011)
 ├── supabase/

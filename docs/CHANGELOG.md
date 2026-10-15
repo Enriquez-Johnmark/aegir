@@ -4,6 +4,23 @@ Meaningful functional and technical changes, newest first. Format loosely follow
 
 ## [Unreleased]
 
+### 2026-10-15: M4 verification
+
+**Added**
+- Accessibility gate: `@axe-core/playwright` 4.13.0 (pinned dev dependency) checks WCAG 2.2 A/AA on every route, signed out and in, desktop and Pixel 7 (`e2e/accessibility.spec.ts`).
+- E2E isolation: Playwright `globalSetup` rebuilds the local database from the seed before every run (`supabase db reset --local`; `E2E_SKIP_DB_RESET=1` to skip).
+
+**Fixed**
+- The login and no-access pages had no level-1 heading.
+- At 200% text the vessel, inspection and work-order tables clipped whole columns; lists now switch to wrapping stacked rows by their own width (container queries), titles wrap instead of truncating, and filter values wrap. Touch targets unchanged (44px).
+- The intermittent mobile E2E failure: an unfiltered text locator matched a hidden duplicate (D-030). All user-facing text assertions now filter to visible elements; tenant-isolation checks are stricter (unfiltered).
+
+**Changed**
+- SECURITY.md: the `npm audit` note re-counted (9 entries, one `braces` advisory via the lint config and the `shadcn` CLI; tooling only).
+
+**Reason:** M4 verification (D-040). **Affected areas:** lists, filters, auth pages, E2E, Vitest/Playwright config, docs. **Breaking changes:** none. **Migrations:** none.
+**Verification:** unit 83/83 ✅ · lint/typecheck ✅ · pgTAP 85/85 ✅ · `impeccable detect` `[]` ✅ · E2E 54/54 ✅ three consecutive fresh-seed runs.
+
 ### 2026-10-15: Security headers
 
 **Added**

@@ -304,3 +304,16 @@ Not tracked (machine-local, outside the repo or git-ignored): `~/.impeccable/bin
 | CREATE | `e2e/security-headers.spec.ts` | Headers present; no CSP violations through the main screens | D-039 | ✅ 48/48 ×2 |
 | UPDATE | `docs/{SECURITY,DECISIONS,ARCHITECTURE,ROADMAP,TESTING,CHANGELOG,FILE-CHANGE-LOG}.md` | D-039, CSP trade-off in known risks | D-039 | ✅ reconciled with `git status` |
 | UPDATE | `docs/{DEPLOYMENT,TESTING,CHANGELOG}.md` | Header deploy verified in production | D-039 | ✅ |
+
+## 2026-10-15 · M4 verification (D-040)
+
+| Action | Path | Purpose | Related | Verification |
+|---|---|---|---|---|
+| UPDATE | `package.json`, `package-lock.json` | `@axe-core/playwright` 4.13.0 (dev, pinned) | D-040 | ✅ `npm ls`: nested axe-core 4.13.0; audit unchanged (9, pre-existing) |
+| CREATE | `e2e/accessibility.spec.ts` | WCAG 2.2 A/AA on every route, desktop + Pixel 7 | D-040 | ✅ 6/6, sanity-checked |
+| CREATE | `e2e/global-setup.ts`; UPDATE `playwright.config.ts` | Fresh local seed before every run (`--local`) | D-040 | ✅ 3 runs |
+| UPDATE | `src/app/(auth)/{login,no-access}/page.tsx` | Titles are `h1` | D-040 | ✅ axe spec |
+| UPDATE | `src/features/{vessels,inspections,work-orders}/components/*-list.tsx` | Table vs stacked rows by container width; titles wrap | D-040 | ✅ measured at 200% text |
+| UPDATE | `src/features/{vessels,inspections,work-orders}/components/*-filters.tsx`, `src/components/shared/url-filters.tsx` | Container-query filter bars; values wrap; 32/44px kept | D-040 | ✅ measured |
+| UPDATE | `e2e/{auth,dashboard,inspections,work-orders,vessels}.spec.ts` | `visible` filter on user-facing text assertions; isolation checks unfiltered | D-040 | ✅ 54/54 ×3 |
+| UPDATE | `DESIGN.md`, `docs/{CONVENTIONS,DECISIONS,SECURITY,TESTING,ROADMAP,ARCHITECTURE,CHANGELOG,FILE-CHANGE-LOG}.md` | D-040, layout rule, audit note, evidence | D-040 | ✅ reconciled with `git status` |

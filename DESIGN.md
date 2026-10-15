@@ -173,7 +173,7 @@ Charts (`--chart-1…5`) are a single navy lightness ramp so data series read as
 
 ## Layout
 
-App shell: collapsible sidebar (`16rem`, icon rail `3rem`, sheet on mobile `18rem`) plus a 56px page header with the sidebar trigger. Page content uses `p-4` (16px) on mobile and `md:p-6` (24px) from 768px up. Vertical rhythm is `gap-6` (24px) between page sections and `gap-4` (16px) inside cards and forms (card padding 16px, `size="sm"` 12px). Spacing follows the 4px Tailwind grid. Tables are full-width inside their card. On mobile, wide tables become stacked rows, not horizontal scroll, when a row has more than about four columns. Forms are single-column up to `max-w-2xl`. Auth screens centre a `max-w-sm` card on a Deck Grey wash.
+App shell: collapsible sidebar (`16rem`, icon rail `3rem`, sheet on mobile `18rem`) plus a 56px page header with the sidebar trigger. Page content uses `p-4` (16px) on mobile and `md:p-6` (24px) from 768px up. Vertical rhythm is `gap-6` (24px) between page sections and `gap-4` (16px) inside cards and forms (card padding 16px, `size="sm"` 12px). Spacing follows the 4px Tailwind grid. Tables are full-width inside their card. Wide tables become stacked rows, not horizontal scroll, when a row has more than about four columns, and the switch follows **the list's own width in rem** (container queries, `@4xl`), not the viewport: enlarged text gets the stacked rows too, so nothing is clipped. Titles wrap; they are never truncated. Filter bars follow the same rule (`@xs` two columns, `@3xl` one row), and a long filter value wraps rather than being cut off. Forms are single-column up to `max-w-2xl`. Auth screens centre a `max-w-sm` card on a Deck Grey wash.
 
 ## Elevation & Depth
 

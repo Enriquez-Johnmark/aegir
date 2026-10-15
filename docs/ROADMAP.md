@@ -43,9 +43,10 @@ Each slice: schema already in place → DAL → actions → UI (loading, empty, 
 ## M4: Verification 🟡
 - [x] Dashboard slice closed out: Impeccable doctor (product pointer, D-025), critique 28/40 and audit 15/20 → accessibility and touch fixes (D-038); "For you" band and quieter signals deferred
 - [ ] Dark theme (light-only MVP, D-038)
-- [ ] Playwright feature flows (auth already covered) + axe accessibility smoke
-- [ ] Responsive check (mobile/desktop)
-- [ ] `db advisors` clean; migration history reconciled
+- [x] Playwright feature flows (auth, dashboard, vessels, inspections, work orders, security headers) + axe WCAG 2.2 AA on every route, desktop and Pixel 7 (D-040)
+- [x] Responsive check: lists, filters and dashboard at 320px–1360px and 200% text (D-038, D-040)
+- [x] `db advisors` clean locally and on the hosted project; migration history local = remote (8/8)
+- [x] E2E isolation: every run starts from the seed (`globalSetup`, `db reset --local`)
 
 ## M5: Deployment ✅ (2026-10-15)
 - [x] Supabase Cloud + Vercel per [DEPLOYMENT.md](DEPLOYMENT.md): https://aegir-eight.vercel.app; schema 8/8, advisors clean, demo seed; smoke test 31/31 on the live URL

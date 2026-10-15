@@ -4,7 +4,9 @@
 
 > Portfolio project, under active development. Synthetic data only. Aegir is **not** a certified maritime safety system and makes no regulatory compliance claims.
 
-**Status:** database, security model and sign-in are done (M2). Feature screens are next; see the [roadmap](docs/ROADMAP.md). Live demo: _not yet deployed_.
+**Live demo: [aegir-eight.vercel.app](https://aegir-eight.vercel.app)** · sign in with a [demo account](#demo-access).
+
+**Status:** MVP deployed (Vercel + Supabase Cloud). Dashboard, vessels, inspections and work orders are live; handovers and audit-history screens are next. See the [roadmap](docs/ROADMAP.md).
 
 ## Features (MVP scope)
 
@@ -22,7 +24,7 @@
 
 ## Tech stack
 
-Next.js 16 (App Router, Cache Components) · React 19 · TypeScript (strict) · Tailwind CSS v4 · shadcn/ui (Base UI) · Zod · Supabase (Auth, Postgres 17, RLS) · Supabase CLI · Vitest · pgTAP · Playwright · Vercel (planned)
+Next.js 16 (App Router, Cache Components) · React 19 · TypeScript (strict) · Tailwind CSS v4 · shadcn/ui (Base UI) · Zod · Supabase (Auth, Postgres 17, RLS) · Supabase CLI · Vitest · pgTAP · Playwright · Vercel
 
 ## Getting started
 
@@ -63,7 +65,7 @@ Applied migrations are never edited; changes go forward in new migrations. See [
 
 ```bash
 npm run lint && npm run typecheck && npm test && npm run build   # app checks
-npm run db:test                                                  # 73 pgTAP tests (RLS, rules, audit)
+npm run db:test                                                  # 85 pgTAP tests (RLS, rules, audit)
 npm run test:e2e                                                 # Playwright (local stack must be running + seeded)
 ```
 
@@ -98,10 +100,20 @@ Strategy and latest results: [docs/TESTING.md](docs/TESTING.md).
 
 A second organization, Meridian Tankers (`owen.price@meridian.example`), exists to show that organizations never see each other's data.
 
-**Hosted demo:** planned with non-admin accounts only ([D-011](docs/DECISIONS.md#d-011)).
+**Hosted demo:** [aegir-eight.vercel.app](https://aegir-eight.vercel.app). Four demo accounts in Northwind Shipping, all with the password **`ShipShape2026`**:
+
+| Role | Email | What you can try |
+|---|---|---|
+| Fleet manager | `marcus.reyes@northwind.example` | Everything: vessels, scheduling, assigning and editing work |
+| Safety inspector | `ingrid.solberg@northwind.example` | Conduct inspections assigned to you, record failures, raise work orders |
+| Technician | `tomas.okafor@northwind.example` | Work the jobs assigned to you: start, block (with a reason), complete |
+| Viewer (read-only) | `vera.lindqvist@northwind.example` | See everything, change nothing |
+
+Everyone shares these accounts and safety records can't be deleted (by design), so you may see other visitors' changes. The administrator and the Meridian Tankers accounts are not published ([D-011](docs/DECISIONS.md#d-011)); the demo password is for this demo only.
 
 ## Known limitations
 
-- Feature screens are not built yet (see the table above); the rules behind them already live in the database.
-- Not deployed yet.
+- Handovers and audit-history screens are not built yet (see the table above); their rules already live in the database, and the dashboard lists pending handovers.
+- Light theme only for now (D-038).
+- Shared demo accounts: data entered by visitors stays (no deletes by design).
 - `npm audit` flags a dev-only lint dependency (`braces` via `eslint-config-next`); see [SECURITY.md §9](docs/SECURITY.md#9-known-risks-and-limitations).

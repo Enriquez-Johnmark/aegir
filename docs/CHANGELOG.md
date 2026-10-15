@@ -4,6 +4,17 @@ Meaningful functional and technical changes, newest first. Format loosely follow
 
 ## [Unreleased]
 
+### 2026-10-15: Deployed (M5)
+
+**Added**
+- Live demo at https://aegir-eight.vercel.app (Vercel) on Supabase Cloud (`ap-southeast-1`): 8 migrations applied, advisors clean, demo data from `scripts/demo-seed.mjs`.
+- README: live URL and the four demo logins (password `ShipShape2026`, demo-only); administrator and the second organization stay unpublished (D-011).
+
+**Changed**
+- `scripts/demo-seed.mjs` exits quietly when psql closes the pipe early.
+
+**Verification:** production smoke test 31/31 (DEPLOYMENT.md). Hosted `db advisors`: no issues.
+
 ### 2026-10-15: Hosted demo seed and deployment prerequisites
 
 **Added**

@@ -1,6 +1,19 @@
 # Deployment
 
-> **Status: not deployed.** No hosted Supabase project or Vercel project is linked yet. Nothing below has been run against a remote environment.
+> **Status: deployed (2026-10-15).** https://aegir-eight.vercel.app (Vercel production domain, region `sin1`) on Supabase project "Aegir" (ref `lerdmictefgrcmbovlft`, `ap-southeast-1`, Postgres 17.11) with all 8 migrations and the demo seed. Per-deployment and team URLs stay behind Vercel Authentication (Standard Protection); the production domain is public.
+
+### Deployment log
+
+| Date | Step | Result |
+|---|---|---|
+| 2026-10-15 | Link (scoped read-only token; `projects list` shows only this project) | ✅ `ACTIVE_HEALTHY`, Postgres 17.11 (same as local). Changelog "Postgres 15.19 / 17.11 breaking changes" checked: we use no `ltree`, `btree_gist`, PGP functions or custom operators, so no action |
+| 2026-10-15 | `migration list` / `db push --dry-run` (owner's terminal, password in session env) | ✅ remote empty; exactly the 8 committed migrations pending |
+| 2026-10-15 | `db push` (owner's explicit go-ahead) | ✅ 8/8 applied in order; no seed |
+| 2026-10-15 | `migration list` / `db advisors --linked` | ✅ local = remote for all 8; advisors "No issues found". (`db advisors --linked` needs `database_write` through the read-only token, so the owner ran it with the password; the token was not widened) |
+| 2026-10-15 | Demo seed (`scripts/demo-seed.mjs` → session pooler, single transaction) | ✅ 2 organizations, 8 users and memberships, 8 vessels, 7 inspections, 22 checklist items, 7 work orders, 4 handovers; no password echoed. Demo password chosen by the owner; admin password random and unrecorded |
+| 2026-10-15 | Vercel import (root `./`, Next.js preset, `NEXT_PUBLIC_SUPABASE_URL` + publishable key only) | ✅ production deployment of `437dd75` succeeded |
+| 2026-10-15 | Supabase Auth URL configuration (Site URL + redirect `https://aegir-eight.vercel.app/**`) | ⬜ owner to confirm (password sign-in works without it; needed for any email links) |
+| 2026-10-15 | Smoke test (Playwright against production; read-only and permission checks, no data created) | ✅ 31/31: `/` and `/login` 200; `/dashboard` signed out → 307 to `/login`; all four demo roles sign in (2.2–3.1 s to dashboard content); figures match the seed (4 of 6 vessels active, 3 inspections due / 2 overdue, 5 open work orders / 2 overdue / 1 blocked, 0 follow-ups, 2 pending handovers); no Meridian data; another organization's inspection, vessel and work order are not found; viewer sees no write controls and `/vessels/new`, `/inspections/new` refuse; admin and Meridian logins refused with the demo password; no console errors (desktop + Pixel 7) |
 
 ## Environments
 
@@ -44,7 +57,8 @@ No secret key is needed by the deployed app (D-002).
    Verified locally on 2026-10-15 (`db reset --no-seed`, then the script): no password echoed; published logins sign in with the demo password and not the local one; the admin and the second organization are refused with it; a re-run, a weak password and a missing variable are refused; pgTAP 85/85 on the demo-seeded data (it is the fixture data). Publish the demo password in the README only once the demo is live.
 7. Vercel: import the repo, set the env vars, deploy.
 8. Smoke test the deployed URL: sign in as each demo role; dashboard numbers match the DB; create a vessel; viewer write rejected; another organization's IDs return not found. Check Vercel and Supabase logs for errors.
-9. Record the URL and results here and in the README.
+9. Record the URL and results here and in the README. ✅ 2026-10-15
+10. Revoke the scoped access token once no further CLI work against the project is planned (owner).
 
 ## Subsequent deployments
 

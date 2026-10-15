@@ -47,8 +47,8 @@ Each slice: schema already in place → DAL → actions → UI (loading, empty, 
 - [ ] Responsive check (mobile/desktop)
 - [ ] `db advisors` clean; migration history reconciled
 
-## M5: Deployment ⬜
-- [ ] Supabase Cloud + Vercel per [DEPLOYMENT.md](DEPLOYMENT.md); smoke tests on the live URL
+## M5: Deployment ✅ (2026-10-15)
+- [x] Supabase Cloud + Vercel per [DEPLOYMENT.md](DEPLOYMENT.md): https://aegir-eight.vercel.app; schema 8/8, advisors clean, demo seed; smoke test 31/31 on the live URL
 
 ## M6: Portfolio polish and independent review ⬜
 - [ ] Real screenshots, README live URL, limitations

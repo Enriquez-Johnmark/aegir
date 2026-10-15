@@ -112,6 +112,8 @@ rollback;
 | 2026-10-15 | `npm run test:e2e` (after D-038) | ⚠️ 43/44 then ✅ 44/44. The failure was the mobile "a viewer follows inspections" test (not touched by this change); 10/10 in repeats; error output not captured. **Second unexplained intermittent** (see Known gaps) |
 | 2026-10-15 | `impeccable detect` (dashboard, app shell, layout) | ✅ `[]` |
 | 2026-10-15 | Demo seed (`scripts/demo-seed.mjs`), local end-to-end | ✅ unit 3 (admin never published; password replaced exactly once; refuses an unrecognised seed). Against `db reset --no-seed`: weak password, missing variable (psql exit 3) and re-run refused; 0 output lines contain a password; sign-in via the Auth API: published manager 200 with demo / 400 with local password, admin 400 with demo / 200 with private, other organization 400 with demo; pgTAP 85/85 on the demo-seeded DB. Local seed restored afterwards |
+| 2026-10-15 | Hosted Supabase (`lerdmictefgrcmbovlft`): `db push` + `migration list` + `db advisors --linked` | ✅ 8/8 migrations applied, local = remote, advisors "No issues found" |
+| 2026-10-15 | Production smoke test (https://aegir-eight.vercel.app) | ✅ 31/31, see DEPLOYMENT.md log (read-only and permission checks; no data created) |
 | 2026-10-12 | Token contrast (OKLCH→sRGB WCAG script) | ✅ all pairs ≥ 4.5:1 text, ring ≥ 3:1; shadcn default destructive-on-tint was 3.99:1 (fixed, D-026) |
 
 ## Known gaps

@@ -289,3 +289,8 @@ Not tracked (machine-local, outside the repo or git-ignored): `~/.impeccable/bin
 | CREATE | `scripts/demo-seed.test.mjs` | Admin never published; single replacement; refuses unknown seed | D-011 | ✅ 3/3 |
 | UPDATE | `vitest.config.mts` | Also run `scripts/**/*.test.mjs` | | ✅ 80/80 |
 | UPDATE | `docs/{DEPLOYMENT,DECISIONS,ARCHITECTURE,TESTING,CHANGELOG,FILE-CHANGE-LOG}.md` | Token scope, demo-seed procedure, evidence | D-011 | ✅ reconciled with `git status` |
+| UPDATE | `docs/{DEPLOYMENT,TESTING,SECURITY}.md` | Hosted database linked, migrated (8/8) and advisor-checked | D-011 | ✅ owner-run output reviewed |
+| UPDATE | `scripts/demo-seed.mjs` | Exit quietly (status 1) when psql closes the pipe early | D-011 | ✅ unit 80/80, lint |
+| UPDATE | `docs/DEPLOYMENT.md` | Demo seed applied to the hosted project | D-011 | ✅ owner-run output reviewed |
+| UPDATE | `README.md` | Live URL, demo logins (`ShipShape2026`), status, test count, limitations | D-011 | ✅ |
+| UPDATE | `docs/{DEPLOYMENT,ROADMAP,TESTING,CHANGELOG}.md` | Deployment log, M5 done, smoke test 31/31 | | ✅ reconciled with `git status` |

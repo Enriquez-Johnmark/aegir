@@ -205,6 +205,12 @@ Gently rounded and consistent: base radius 10px (`--radius: 0.625rem`), controls
   - in progress, scheduled → `info`
   - open, pending, not applicable → `outline`
 - **Copy:** the product's own words ("Overdue", "Blocked", "Needs follow-up"), never colour alone.
+- **Inspections:** an overdue inspection shows `Overdue` (destructive + clock icon) instead of its lifecycle badge; otherwise scheduled / in progress → `info`, completed → `success`, cancelled → `outline`. Check results: pass → `success`, fail → `destructive`, N/A and not checked → `outline`, each with an icon. Finding severity: critical → `destructive`, high → `warning`, medium and low → `secondary`, always with an icon and the word "severity". A failed check without a work order carries `Needs follow-up` (`warning` + flag icon).
+
+### Recording results (inspection checklist)
+- Each check is a numbered row: category (label size, muted), the check itself, and a three-way `ToggleGroup` (Pass / Fail / N/A, outline, joined). The pressed option takes its signal tint (success, destructive, neutral), so the row reads at a glance.
+- Pass and N/A save on tap with an inline "Saving / Saved" status; Fail opens an inline panel (Deck Grey wash, no card) with the finding and severity, saved by "Record failure". No modal.
+- Lifecycle actions sit above the record: one primary (Start or Complete), Cancel as outline behind an `AlertDialog`. A disabled Complete always says why ("Record 2 more checks…").
 
 ### Cards / Containers
 - **Corner:** 14px. **Background:** Chart White. **Border:** hairline ring. **Shadow:** none. **Padding:** 16px (12px `sm`).

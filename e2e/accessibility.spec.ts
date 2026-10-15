@@ -21,6 +21,9 @@ const SIGNED_IN = [
   "/work-orders/new",
   "/work-orders/a4000000-0000-4000-8000-000000000002",
   "/work-orders/a4000000-0000-4000-8000-000000000002/edit",
+  "/handovers",
+  "/handovers/new",
+  "/handovers/a5000000-0000-4000-8000-000000000003",
 ];
 
 async function violations(page: Page) {

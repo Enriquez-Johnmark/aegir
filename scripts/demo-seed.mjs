@@ -85,5 +85,10 @@ ${seedSql
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  // If psql exits early (e.g. it can't connect), it has already said why; don't add a stack trace.
+  process.stdout.on("error", (error) => {
+    if (error.code === "EPIPE") process.exit(1);
+    throw error;
+  });
   process.stdout.write(buildDemoSeed(readFileSync(SEED, "utf8")));
 }

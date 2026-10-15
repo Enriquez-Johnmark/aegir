@@ -4,6 +4,7 @@ import { cn } from "cn";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTransition } from "react";
 
+import { WRAPPING_SELECT_TRIGGER } from "@/components/shared/wrapping-select";
 import {
   Select,
   SelectContent,
@@ -13,8 +14,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-/** The "no filter" option value; selecting it removes the key from the URL. */
-export const ALL = "all";
+/**
+ * The "no filter" option value; selecting it removes the key from the URL. A
+ * reserved token, so it can't collide with a real option such as an "all" view
+ * (it did: "All work orders" / "All inspections" used to fall back to the default).
+ */
+export const ALL = "__all__";
 
 /**
  * List filters live in the URL so results are shareable and the server does the
@@ -58,14 +63,11 @@ export function FilterSelect({
   onChange: (value: string) => void;
   className?: string;
 }) {
+  // URL values are untrusted: show only a known option, otherwise the default (listed first).
+  const current = options.includes(value) ? value : (options[0] ?? ALL);
   return (
-    <Select items={items} value={value} onValueChange={(next) => onChange(String(next ?? ALL))}>
-      <SelectTrigger aria-label={label} className={cn(
-        // A long value wraps instead of being clipped when text is enlarged (WCAG 1.4.4).
-        // Plain min-h-8 (not a data-attribute variant) so the trigger's pointer-coarse:min-h-11 still wins on touch.
-        "min-h-8 w-full py-1 text-left whitespace-normal data-[size=default]:h-auto *:data-[slot=select-value]:line-clamp-none @3xl:w-44",
-        className,
-      )}>
+    <Select items={items} value={current} onValueChange={(next) => onChange(String(next ?? ALL))}>
+      <SelectTrigger aria-label={label} className={cn(WRAPPING_SELECT_TRIGGER, "w-full @3xl:w-44", className)}>
         {icon}
         <SelectValue />
       </SelectTrigger>

@@ -294,3 +294,12 @@ Not tracked (machine-local, outside the repo or git-ignored): `~/.impeccable/bin
 | UPDATE | `docs/DEPLOYMENT.md` | Demo seed applied to the hosted project | D-011 | ✅ owner-run output reviewed |
 | UPDATE | `README.md` | Live URL, demo logins (`ShipShape2026`), status, test count, limitations | D-011 | ✅ |
 | UPDATE | `docs/{DEPLOYMENT,ROADMAP,TESTING,CHANGELOG}.md` | Deployment log, M5 done, smoke test 31/31 | | ✅ reconciled with `git status` |
+
+## 2026-10-15 · Security headers (D-039)
+
+| Action | Path | Purpose | Related | Verification |
+|---|---|---|---|---|
+| CREATE | `src/lib/security-headers.ts`, `src/lib/security-headers.test.ts` | CSP and security headers, pure and unit-tested | D-039 | ✅ 3/3 |
+| UPDATE | `next.config.ts` | Apply the headers to every route; drop the template comment | D-039 | ✅ build, E2E |
+| CREATE | `e2e/security-headers.spec.ts` | Headers present; no CSP violations through the main screens | D-039 | ✅ 48/48 ×2 |
+| UPDATE | `docs/{SECURITY,DECISIONS,ARCHITECTURE,ROADMAP,TESTING,CHANGELOG,FILE-CHANGE-LOG}.md` | D-039, CSP trade-off in known risks | D-039 | ✅ reconciled with `git status` |

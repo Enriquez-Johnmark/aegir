@@ -4,6 +4,15 @@ Meaningful functional and technical changes, newest first. Format loosely follow
 
 ## [Unreleased]
 
+### 2026-10-15: Security headers
+
+**Added**
+- Content-Security-Policy and security headers on every response (`src/lib/security-headers.ts` via `next.config.ts`, D-039): no framing, no plugins, `connect-src 'self'`, `form-action 'self'`, `base-uri 'self'`, `X-Frame-Options`, `nosniff`, `Referrer-Policy`, `Permissions-Policy`, `Cross-Origin-Opener-Policy`; `upgrade-insecure-requests` on Vercel only.
+- Unit tests (3) and `e2e/security-headers.spec.ts` (headers present; zero CSP violations through the main screens).
+
+**Reason:** the live site sent only HSTS. **Affected areas:** next.config, all responses. **Breaking changes:** none (inline scripts stay allowed; no third-party origins are used). **Migrations:** none.
+**Verification:** unit 83/83 ✅ · typecheck/lint ✅ · E2E 48/48 ✅ twice in a row · production check after deploy: pending.
+
 ### 2026-10-15: Deployed (M5)
 
 **Added**

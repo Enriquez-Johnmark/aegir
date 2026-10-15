@@ -50,7 +50,8 @@ Each slice: schema already in place → DAL → actions → UI (loading, empty, 
 ## M5: Deployment ✅ (2026-10-15)
 - [x] Supabase Cloud + Vercel per [DEPLOYMENT.md](DEPLOYMENT.md): https://aegir-eight.vercel.app; schema 8/8, advisors clean, demo seed; smoke test 31/31 on the live URL
 
-## M6: Portfolio polish and independent review ⬜
+## M6: Portfolio polish and independent review 🟡
+- [x] Security headers and CSP (D-039)
 - [ ] Real screenshots, README live URL, limitations
 - [ ] Independent review (security, migrations, tests, docs); fix high-impact findings
 

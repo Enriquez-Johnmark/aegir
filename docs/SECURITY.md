@@ -93,6 +93,7 @@ Membership management is seed-only in the MVP (no UI).
 - List search text is sanitised before use in a PostgREST `.or()` filter, so URL input cannot inject extra filter clauses (unit-tested in `vessels.test.ts`).
 - Vessel writes take `organization_id` from the session, never from the form; a 23505 duplicate-IMO error maps to a field message, and 42501 maps to a permission message.
 - Next.js checks the Origin header on Server Actions (CSRF). Mutations are never performed on GET.
+- **HTTP security headers on every response** (`src/lib/security-headers.ts`, applied in `next.config.ts`, D-039): Content-Security-Policy (`default-src 'self'`, `connect-src 'self'`, `object-src 'none'`, `base-uri 'self'`, `form-action 'self'`, `frame-ancestors 'none'`, `upgrade-insecure-requests` on Vercel), `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, a restrictive `Permissions-Policy` and `Cross-Origin-Opener-Policy: same-origin`. Vercel adds HSTS. The browser never calls Supabase directly, so no third-party origin is allowed at all.
 
 ## 7. Required security tests (`supabase/tests/*.test.sql`, pgTAP; all implemented)
 
@@ -121,6 +122,8 @@ Membership management is seed-only in the MVP (no UI).
 Covered by pgTAP (highlights): RLS enabled on every public table; anon has zero privileges; no private function executable by anon; every security-definer function pins `search_path`; cross-organization reads return nothing; cross-organization inserts/moves rejected; forged `created_by`/`from_user_id` rejected; role limits per table; invalid transitions rejected; closed inspections and acknowledged handovers frozen; audit rows unwritable by clients and stamped with the real actor.
 
 ## 9. Known risks and limitations
+
+- **CSP allows inline scripts and styles** (`'unsafe-inline'`). Nonce-based CSP is incompatible with the prerendered static shells Aegir uses (Partial Prerendering), and Next's streamed React payload is inline script. The remaining protection against script injection is React's output escaping and the absence of `dangerouslySetInnerHTML`; every other directive is strict (D-039). Revisit if Next supports nonces or hashes for prerendered shells.
 
 - **Dev-only advisory:** `npm audit` reports 5 high-severity advisories, all through `braces` in `eslint-config-next`'s lint toolchain (development only, not shipped to users). The suggested `--force` fix downgrades to Next 14's config, so it is not applied. Re-check when `eslint-config-next` updates.
 - Demo access: seeded non-admin accounts (D-011). Locally every seeded user shares the password in `supabase/seed.sql`; the hosted demo must use different passwords and must not publish the admin account.

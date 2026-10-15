@@ -337,3 +337,21 @@ Not tracked (machine-local, outside the repo or git-ignored): `~/.impeccable/bin
 | UPDATE | `src/app/(app)/{vessels,inspections,work-orders}/[*]/not-found.tsx` | Titles are `h1` | D-041 | ✅ |
 | CREATE | `.impeccable/critique/2026-10-15T10-29-24Z__src-app-app-handovers.md` | Critique snapshot (29/40) | D-024 | ✅ |
 | UPDATE | `DESIGN.md`, `README.md`, `docs/{DECISIONS,CONVENTIONS,ARCHITECTURE,ROADMAP,SECURITY,TESTING,CHANGELOG,FILE-CHANGE-LOG}.md` | D-041, patterns, evidence | D-041 | ✅ reconciled with `git status` |
+
+## 2026-10-15 · M3 slice 6: Audit history (D-042)
+
+| Action | Path | Purpose | Related | Verification |
+|---|---|---|---|---|
+| CREATE | `src/features/audit/{domain,schemas}.ts`, `audit.test.ts` | Entry wording per record type, URL params (slugs, cursor) | D-042 | ✅ unit 19 |
+| CREATE | `src/features/audit/server/queries.ts` | Log page (keyset on occurred_at, id), record history (inspection includes checks), people; names and record context looked up | D-042 | ✅ E2E, live paging walk |
+| CREATE | `src/features/audit/components/{audit-entry,audit-log,audit-filters,record-history}.tsx` | Shared entry, log, filters, History card | D-042 | ✅ detector, axe, screenshots |
+| CREATE | `src/app/(app)/audit/page.tsx` | Audit log route | D-042 | ✅ build (PPR) |
+| CREATE | `supabase/tests/10_audit_log_access.test.sql` | Viewer reads the whole log, names resolve, paging tie-break, cross-organization names | D-042 | ✅ 96/96 |
+| CREATE | `e2e/audit.spec.ts`; UPDATE `e2e/accessibility.spec.ts` | Change → record history → log as auditor, paging, isolation and bad URLs, inspection checks; axe on `/audit` | D-042 | ✅ 76/76 ×2 |
+| UPDATE | `e2e/vessels.spec.ts`, `e2e/work-orders.spec.ts` | Locators no longer collide with the History card | D-042 | ✅ |
+| UPDATE | `src/features/{vessels,inspections,work-orders,handovers}/components/*-detail.tsx` | History card behind Suspense | D-042 | ✅ |
+| UPDATE | `src/features/work-orders/{domain.ts,server/queries.ts,work-orders.test.ts}` | Work-order-only history removed (now shared) | D-042, D-034 | ✅ |
+| UPDATE | `src/components/shared/url-filters.tsx` | `setParam(key, value, { clear })` | D-042 | ✅ E2E |
+| UPDATE | `src/components/layout/app-sidebar.tsx` | Audit log nav item; links close the phone menu sheet (pre-existing bug) | D-042 | ✅ E2E (red before the fix) |
+| CREATE | `.impeccable/critique/2026-10-15T14-39-24Z__src-app-app-audit.md` | Critique snapshot (28/40) | D-024 | ✅ |
+| UPDATE | `DESIGN.md`, `README.md`, `docs/{DECISIONS,ARCHITECTURE,ROADMAP,SECURITY,TESTING,CHANGELOG,FILE-CHANGE-LOG}.md` | D-042, entry patterns, evidence | D-042 | ✅ reconciled with `git status` |

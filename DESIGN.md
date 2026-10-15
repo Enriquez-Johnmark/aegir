@@ -223,6 +223,12 @@ Gently rounded and consistent: base radius 10px (`--radius: 0.625rem`), controls
 - A work order raised from a failed check returns to the inspection, whose notice links to the new work order.
 - History is a plain chronological list (what changed, who, when in UTC), never editable.
 
+### Reading the audit trail
+- **One entry, one shape** (log and History cards alike): the record (in the log, a link; on an inspection, the check's name), then what happened, then who and when. Creation uses the product's verb (Added, Scheduled, Raised, Handed over to …, Joined as …); status moves read `Status: Open → In progress`; field changes read `Priority: Low → High`. The arrow is hidden from screen readers, who hear "to".
+- **Short values are shown, long text is named** ("Finding added", "Description changed"), so the trail stays scannable; the block reason is quoted once, as the note on the move into Blocked (D-042).
+- **The log is grouped by day** (h2 per UTC day, times in a left column when there's room) and pages 50 at a time with "Older changes" / "Newest changes". No colour or badges: the log is evidence, not a signal surface.
+- Seed events with no actor read "System (seed data)"; people who left read "Former member".
+
 ### Recording results (inspection checklist)
 - Each check is a numbered row: category (label size, muted), the check itself, and a three-way `ToggleGroup` (Pass / Fail / N/A, outline, joined). The pressed option takes its signal tint (success, destructive, neutral), so the row reads at a glance.
 - Pass and N/A save on tap with an inline "Saving / Saved" status; Fail opens an inline panel (Deck Grey wash, no card) with the finding and severity, saved by "Record failure". No modal. Severity is four choice cards (radio group) that show each level's full guidance, never a truncated dropdown.

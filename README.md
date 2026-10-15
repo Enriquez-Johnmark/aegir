@@ -6,7 +6,7 @@
 
 **Live demo: [aegir-eight.vercel.app](https://aegir-eight.vercel.app)** · sign in with a [demo account](#demo-access).
 
-**Status:** MVP deployed (Vercel + Supabase Cloud). Dashboard, vessels, inspections, work orders and handovers are live; the audit-history screen is next. See the [roadmap](docs/ROADMAP.md).
+**Status:** MVP deployed (Vercel + Supabase Cloud). Dashboard, vessels, inspections, work orders, handovers and the audit log are live; screenshots and an independent review are next. See the [roadmap](docs/ROADMAP.md).
 
 ## Features (MVP scope)
 
@@ -17,9 +17,9 @@
 | Database: vessels, inspections, work orders, handovers, audit log, with rules enforced in Postgres | ✅ |
 | Vessels: watch list (attention first), search and filters, detail, create, edit | ✅ |
 | Inspections: schedule with checklist templates, start, record pass/fail/N/A with findings, complete or cancel, follow-up flags | ✅ |
-| Work orders: urgency queue, raise from a failed check, start / block (with reason) / resume / complete, manager edits, audit-log history | ✅ |
+| Work orders: urgency queue, raise from a failed check, start / block (with reason) / resume / complete, manager edits | ✅ |
 | Handovers: send unfinished work to a colleague from a work order or vessel; the recipient acknowledges; immutable after sending | ✅ |
-| Audit history UI | ⬜ |
+| Audit log: every change in the organization, newest first, by record type and person; a History card on every record (who, what, when; old → new for short fields) | ✅ |
 | Live operational dashboard: fleet figures, work queue, inspections due, failed checks needing follow-up, vessels needing attention, pending handovers | ✅ |
 
 ## Tech stack

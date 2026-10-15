@@ -67,8 +67,8 @@ aegir/
 │   │       ├── inspections/{page.tsx, new/, [inspectionId]/}  # ✅ M3 slice 2
 │   │       ├── work-orders/{page.tsx, new/, [workOrderId]/, [workOrderId]/edit/}  # ✅ M3 slice 3
 │   │       ├── handovers/{page.tsx, new/, [handoverId]/}  # ✅ M3 slice 5
-│   │       └── audit/page.tsx
-│   ├── features/                # 🟡 One folder per business capability (auth ✅, vessels ✅, inspections ✅, work-orders ✅, dashboard ✅, handovers ✅)
+│   │       └── audit/page.tsx   # ✅ M3 slice 6: organization-wide audit log (D-042)
+│   ├── features/                # 🟡 One folder per business capability (auth ✅, vessels ✅, inspections ✅, work-orders ✅, dashboard ✅, handovers ✅, audit ✅)
 │   │   └── <feature>/           #    e.g. vessels, inspections, work-orders, handovers, audit, dashboard
 │   │       ├── components/      #    Feature UI (Server Components by default; "use client" only when needed)
 │   │       ├── server/
@@ -152,7 +152,7 @@ aegir/
 | inspections | `inspections`, `inspection_items` | vessels, profiles |
 | work-orders | `work_orders` | vessels, inspection_items, profiles |
 | handovers | `handovers` | vessels, work_orders, profiles |
-| audit | `audit_events` (written by triggers only) | all of the above |
+| audit | `audit_events` (written by triggers only; read by the log and every record's History card, D-042) | all of the above |
 | dashboard | none (read-only aggregates) | all of the above |
 
 See [DATA_MODEL.md](DATA_MODEL.md) for tables and [SECURITY.md](SECURITY.md) for the permission matrix.

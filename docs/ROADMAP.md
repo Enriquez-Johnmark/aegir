@@ -38,7 +38,7 @@ Each slice: schema already in place → DAL → actions → UI (loading, empty, 
 4. [x] Dashboard: live figures (fleet, inspections due/overdue, open/overdue/blocked work, failed checks needing follow-up, pending handovers) and queues; a failed check without work is never truncated (D-035)
 4a. [x] Impeccable critique of inspections + work orders (29/40) → P1/P2 fixes (D-036) → re-critique 27/40 with one new, pre-existing P1 (a recorded failure can be erased by one tap) → P1 + P2 fixed (D-037: DB lock + inline confirm, follow-ups return to the inspection, one primary per sub-task, tiered urgency). Open from the re-critique: P3 tall Fail panel on phones, "Pass remaining", inspections "Assigned to me", blocked-for-N-days, closing note on completion
 5. [x] Handovers: inbox list (yours first), detail with recipient-only acknowledgement, send from a work order or vessel, dashboard rows link through (D-041)
-6. [ ] Audit history UI ✂️ (P1; audit triggers already live since M2)
+6. [x] Audit history: organization-wide Audit log (`/audit`, by record type and person, keyset paging) and a History card on every record; critique 28/40, audit 16/20 → P1/P2/quick P3 fixes (D-042). Deferred: date and vessel filters, sticky day headings, collapsed runs
 
 ## M4: Verification 🟡
 - [x] Dashboard slice closed out: Impeccable doctor (product pointer, D-025), critique 28/40 and audit 15/20 → accessibility and touch fixes (D-038); "For you" band and quieter signals deferred

@@ -4,6 +4,24 @@ Meaningful functional and technical changes, newest first. Format loosely follow
 
 ## [Unreleased]
 
+### 2026-10-15: Audit history (M3 slice 6)
+
+**Added**
+- **Audit log** (`/audit`, in the sidebar): every change in the organization, newest first, grouped by UTC day, 50 per page ("Older changes" / "Newest changes"), filtered by record type and by person (including "System (seed data)" and former members). Each entry names the record, its type and where it belongs (a check's inspection and vessel; a work order's, inspection's or handover's vessel) and links to it across the whole row.
+- **History card** on vessel, inspection (with its checks, by name), work-order and handover pages; oldest first, latest 100.
+- Entry wording: the most important change leads (a check's result, a work order's priority); old → new for short fields, long text named ("Finding added"); creation states what the record started as ("Added to the checklist as Fail (High severity)", "Raised with High priority"); "by" before the actor; seed events explained where the record names a person.
+- Tests: unit (+19), pgTAP `10_audit_log_access` (6), E2E `audit.spec.ts` (4 flows), axe on `/audit`.
+
+**Changed**
+- Work-order history uses the shared audit code; the work-order-only `describeAuditEvent` and its query are gone.
+- `useUrlFilters().setParam` takes `{ clear }` to drop keys a new filter invalidates (the log's page cursor).
+
+**Fixed**
+- **On phones, the menu sheet stayed open over the page after following a link** (since the app shell shipped; confirmed on production). Links in the sidebar now close it.
+
+**Reason:** P1 audit history slice; Impeccable critique 28/40 and audit 16/20 fixes (D-042). **Affected areas:** audit, record pages, work orders, sidebar, shared filters, E2E. **Breaking changes:** none. **Migrations:** none.
+**Verification:** unit 109/109 ✅ · pgTAP 96/96 ✅ · lint/typecheck/build ✅ · `db lint` ✅ · `impeccable detect` `[]` ✅ · E2E 76/76 ✅ twice in a row (fresh seed).
+
 ### 2026-10-15: Handovers (M3 slice 5)
 
 **Added**

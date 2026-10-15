@@ -6,7 +6,31 @@
 
 **Live demo: [aegir-eight.vercel.app](https://aegir-eight.vercel.app)** · sign in with a [demo account](#demo-access).
 
-**Status:** MVP deployed (Vercel + Supabase Cloud). Dashboard, vessels, inspections, work orders, handovers and the audit log are live; screenshots and an independent review are next. See the [roadmap](docs/ROADMAP.md).
+**Status:** MVP complete and deployed (Vercel + Supabase Cloud): dashboard, vessels, inspections, work orders, handovers and the audit log are live. An independent review is next. See the [roadmap](docs/ROADMAP.md).
+
+## Screenshots
+
+Taken from the live demo with the published accounts (synthetic data). Refresh with `scripts/capture-screenshots.mjs`.
+
+![Dashboard: live fleet figures, the work queue (most urgent first) and inspections due](docs/screenshots/dashboard.png)
+
+| | |
+|---|---|
+| ![Vessel watch list, vessels needing attention first](docs/screenshots/vessels.png) | ![Handovers inbox, pending handovers for you first](docs/screenshots/handovers.png) |
+| **Vessels:** the watch list puts critical, blocked and overdue work first. | **Handovers:** unfinished work passed between shifts; the recipient acknowledges. |
+| ![Inspection with two failed checks, each linked to the work order raised for it](docs/screenshots/inspection.png) | ![Blocked work order with its reason, the failed check it came from, and its history](docs/screenshots/work-order.png) |
+| **Inspections:** failures carry a finding and severity, and link to the work raised. | **Work orders:** blocked with a reason, traced to the failed check, with its history. |
+
+<table>
+<tr>
+<td width="70%"><img src="docs/screenshots/audit-log.png" alt="Audit log: every change, newest first, with the record, what changed and who"></td>
+<td width="30%"><img src="docs/screenshots/phone-dashboard.png" alt="Dashboard on a phone (Pixel 7)"></td>
+</tr>
+<tr>
+<td><b>Audit log:</b> every change recorded by the database, by record type and person. Demo data was loaded by the database itself, so its entries read "System (seed data)".</td>
+<td><b>Phone:</b> the same dashboard on a Pixel 7.</td>
+</tr>
+</table>
 
 ## Features (MVP scope)
 
@@ -65,7 +89,7 @@ Applied migrations are never edited; changes go forward in new migrations. See [
 
 ```bash
 npm run lint && npm run typecheck && npm test && npm run build   # app checks
-npm run db:test                                                  # 85 pgTAP tests (RLS, rules, audit)
+npm run db:test                                                  # 96 pgTAP tests (RLS, rules, audit)
 npm run test:e2e                                                 # Playwright (local stack must be running + seeded)
 ```
 
@@ -113,7 +137,7 @@ Everyone shares these accounts and safety records can't be deleted (by design), 
 
 ## Known limitations
 
-- The audit-history screen is not built yet; audit events are recorded by the database and shown per work order.
+- The audit log has no date or vessel filter yet, and demo-data entries show as "System (seed data)" because the seed is loaded by the database, not by a person (D-042).
 - Light theme only for now (D-038).
 - At very large text sizes on tablet-width windows the sidebar stays open and pages scroll sideways; phone layouts and normal sizes are unaffected.
 - Shared demo accounts: data entered by visitors stays (no deletes by design).

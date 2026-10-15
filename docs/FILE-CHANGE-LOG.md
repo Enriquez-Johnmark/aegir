@@ -355,3 +355,12 @@ Not tracked (machine-local, outside the repo or git-ignored): `~/.impeccable/bin
 | UPDATE | `src/components/layout/app-sidebar.tsx` | Audit log nav item; links close the phone menu sheet (pre-existing bug) | D-042 | ✅ E2E (red before the fix) |
 | CREATE | `.impeccable/critique/2026-10-15T14-39-24Z__src-app-app-audit.md` | Critique snapshot (28/40) | D-024 | ✅ |
 | UPDATE | `DESIGN.md`, `README.md`, `docs/{DECISIONS,ARCHITECTURE,ROADMAP,SECURITY,TESTING,CHANGELOG,FILE-CHANGE-LOG}.md` | D-042, entry patterns, evidence | D-042 | ✅ reconciled with `git status` |
+
+## 2026-10-16 · M6: README screenshots
+
+| Action | Path | Purpose | Related | Verification |
+|---|---|---|---|---|
+| CREATE | `docs/screenshots/{dashboard,vessels,inspection,work-order,handovers,audit-log,phone-dashboard}.png` | README screenshots from the live demo (1440×900 @2x; lists clipped to content; Pixel 7) | M6 | ✅ captured by the script below, reviewed |
+| CREATE | `scripts/capture-screenshots.mjs` | Reproducible, read-only capture; password from the environment | D-011 | ✅ run against production, eslint |
+| UPDATE | `README.md` | Screenshots section; status, pgTAP count, limitations | M6 | ✅ |
+| UPDATE | `docs/{ROADMAP,CHANGELOG,FILE-CHANGE-LOG}.md` | M6 item, change entries | M6 | ✅ reconciled with `git status` |

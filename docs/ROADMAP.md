@@ -53,7 +53,7 @@ Each slice: schema already in place → DAL → actions → UI (loading, empty, 
 
 ## M6: Portfolio polish and independent review 🟡
 - [x] Security headers and CSP (D-039)
-- [ ] Real screenshots, README live URL, limitations
+- [x] Real screenshots from the live demo (7: dashboard, vessels, inspection, work order, handovers, audit log, phone), README live URL, limitations; `scripts/capture-screenshots.mjs` refreshes them
 - [ ] Independent review (security, migrations, tests, docs); fix high-impact findings
 
 ## Blockers / prerequisites

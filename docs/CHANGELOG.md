@@ -4,6 +4,18 @@ Meaningful functional and technical changes, newest first. Format loosely follow
 
 ## [Unreleased]
 
+### 2026-10-16: README screenshots (M6)
+
+**Added**
+- Seven screenshots from the live demo in `docs/screenshots/` (dashboard, vessels, inspection with failed checks, blocked work order, handovers, audit log, phone dashboard), shown in a new README section with captions.
+- `scripts/capture-screenshots.mjs`: re-captures them from the hosted demo or a local site (read-only, navigation only; the demo password comes from `DEMO_PASSWORD`, never the file).
+
+**Changed**
+- README: status (MVP complete), pgTAP count (96), limitations (audit log filters, seed attribution) brought up to date.
+
+**Reason:** M6 portfolio polish. **Affected areas:** README, docs, scripts. **Breaking changes:** none. **Migrations:** none.
+**Verification:** script run against production ✅ (7 images, 1.8 MB, no console errors during capture) · `eslint` on the script ✅.
+
 ### 2026-10-15: Audit history (M3 slice 6)
 
 **Added**

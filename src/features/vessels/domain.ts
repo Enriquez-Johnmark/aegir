@@ -58,6 +58,61 @@ export type VesselAttention = {
   overdueInspections: number;
 };
 
+export function emptyAttention(): VesselAttention {
+  return {
+    openWorkOrders: 0,
+    criticalWorkOrders: 0,
+    overdueWorkOrders: 0,
+    blockedWorkOrders: 0,
+    overdueInspections: 0,
+  };
+}
+
+/**
+ * Attention counts per vessel from its unfinished work orders and inspections.
+ * Completed work and closed inspections are ignored, so callers may pass wider
+ * result sets. Shared by the vessel watch list and the dashboard.
+ */
+export function tallyAttention(
+  workOrders: readonly {
+    vesselId: string;
+    priority: Database["public"]["Enums"]["severity"];
+    status: Database["public"]["Enums"]["work_order_status"];
+    dueDate: string | null;
+  }[],
+  inspections: readonly {
+    vesselId: string;
+    status: Database["public"]["Enums"]["inspection_status"];
+    scheduledFor: string;
+  }[],
+  today: string,
+): Map<string, VesselAttention> {
+  const attention = new Map<string, VesselAttention>();
+  const entry = (vesselId: string) => {
+    let value = attention.get(vesselId);
+    if (!value) {
+      value = emptyAttention();
+      attention.set(vesselId, value);
+    }
+    return value;
+  };
+  for (const wo of workOrders) {
+    if (wo.status === "completed") continue;
+    const counts = entry(wo.vesselId);
+    counts.openWorkOrders += 1;
+    if (wo.priority === "critical") counts.criticalWorkOrders += 1;
+    if (wo.status === "blocked") counts.blockedWorkOrders += 1;
+    if (wo.dueDate !== null && wo.dueDate < today) counts.overdueWorkOrders += 1;
+  }
+  for (const inspection of inspections) {
+    const open = inspection.status === "scheduled" || inspection.status === "in_progress";
+    if (open && inspection.scheduledFor < today) {
+      entry(inspection.vesselId).overdueInspections += 1;
+    }
+  }
+  return attention;
+}
+
 export function needsAttention(attention: VesselAttention): boolean {
   return (
     attention.criticalWorkOrders + attention.overdueWorkOrders + attention.overdueInspections > 0

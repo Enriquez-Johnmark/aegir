@@ -4,6 +4,8 @@ import { cache } from "react";
 
 import {
   compareByAttention,
+  emptyAttention,
+  tallyAttention,
   type VesselAttention,
   type VesselStatus,
   type VesselType,
@@ -68,7 +70,7 @@ export async function listVessels(params: VesselListParams): Promise<VesselListI
       .neq("status", "completed"),
     supabase
       .from("inspections")
-      .select("vessel_id")
+      .select("vessel_id, status, scheduled_for")
       .eq("organization_id", orgId)
       .in("status", ["scheduled", "in_progress"])
       .lt("scheduled_for", today),
@@ -80,31 +82,21 @@ export async function listVessels(params: VesselListParams): Promise<VesselListI
     }
   }
 
-  const attention = new Map<string, VesselAttention>();
-  const entry = (vesselId: string) => {
-    let value = attention.get(vesselId);
-    if (!value) {
-      value = {
-        openWorkOrders: 0,
-        criticalWorkOrders: 0,
-        overdueWorkOrders: 0,
-        blockedWorkOrders: 0,
-        overdueInspections: 0,
-      };
-      attention.set(vesselId, value);
-    }
-    return value;
-  };
-  for (const wo of openWork.data ?? []) {
-    const counts = entry(wo.vessel_id);
-    counts.openWorkOrders += 1;
-    if (wo.priority === "critical") counts.criticalWorkOrders += 1;
-    if (wo.status === "blocked") counts.blockedWorkOrders += 1;
-    if (wo.due_date !== null && wo.due_date < today) counts.overdueWorkOrders += 1;
-  }
-  for (const inspection of lateInspections.data ?? []) {
-    entry(inspection.vessel_id).overdueInspections += 1;
-  }
+  const attention = tallyAttention(
+    (openWork.data ?? []).map((wo) => ({
+      vesselId: wo.vessel_id,
+      priority: wo.priority,
+      status: wo.status,
+      dueDate: wo.due_date,
+    })),
+    (lateInspections.data ?? []).map((inspection) => ({
+      vesselId: inspection.vessel_id,
+      status: inspection.status,
+      scheduledFor: inspection.scheduled_for,
+    })),
+    today,
+  );
+  const entry = (vesselId: string) => attention.get(vesselId) ?? emptyAttention();
 
   const items = (vessels.data ?? []).map((vessel) => ({
     id: vessel.id,

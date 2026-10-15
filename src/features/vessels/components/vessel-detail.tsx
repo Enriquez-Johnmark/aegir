@@ -8,12 +8,14 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 
 import { PageHeader } from "@/components/layout/page-header";
 import { ButtonLink } from "@/components/shared/button-link";
 import { SavedNotice } from "@/components/shared/saved-notice";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
+import { RecordHistory, RecordHistorySkeleton } from "@/features/audit/components/record-history";
 import { InspectionStatusBadge } from "@/features/inspections/components/inspection-badges";
 import { PriorityBadge, WorkOrderStatusBadge } from "@/features/work-orders/components/work-order-badges";
 import { VesselStatusBadge } from "@/features/vessels/components/vessel-status-badge";
@@ -81,6 +83,10 @@ export async function VesselDetail({ vesselId, saved }: { vesselId: string; save
         <WorkOrdersCard vesselId={vessel.id} workOrders={vessel.workOrders} />
         <InspectionsCard vesselId={vessel.id} inspections={vessel.inspections} />
       </div>
+
+      <Suspense fallback={<RecordHistorySkeleton className="max-w-3xl" />}>
+        <RecordHistory table="vessels" id={vessel.id} className="max-w-3xl" />
+      </Suspense>
     </>
   );
 }

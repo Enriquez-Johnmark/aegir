@@ -5,9 +5,7 @@ import { cache } from "react";
 import {
   ASSIGNEE_ROLES,
   compareByUrgency,
-  describeAuditEvent,
   isWorkOrderOverdue,
-  type HistoryEntry,
   type Priority,
   type WorkOrderStatus,
 } from "@/features/work-orders/domain";
@@ -98,8 +96,6 @@ export async function listWorkOrders(params: WorkOrderListParams): Promise<WorkO
   return isQueue ? items.toSorted(compareByUrgency) : items;
 }
 
-export type WorkOrderHistoryItem = HistoryEntry & { id: number; occurredAt: string; actorName: string | null };
-
 export type WorkOrderDetail = {
   id: string;
   title: string;
@@ -121,7 +117,6 @@ export type WorkOrderDetail = {
     severity: Priority | null;
     inspection: { id: string; title: string } | null;
   } | null;
-  history: WorkOrderHistoryItem[];
 };
 
 /**
@@ -132,51 +127,29 @@ export const getWorkOrderDetail = cache(async (workOrderId: string): Promise<Wor
   const user = await requireUser();
   const supabase = await createClient();
 
-  const [workOrder, events] = await Promise.all([
-    supabase
-      .from("work_orders")
-      .select(
-        `id, title, description, priority, status, due_date, completed_at, blocked_reason, created_at,
-         vessel:vessels!work_orders_vessel_id_organization_id_fkey (id, name),
-         assignee:profiles!work_orders_assignee_id_fkey (id, full_name),
-         creator:profiles!work_orders_created_by_fkey (full_name),
-         item:inspection_items!work_orders_inspection_item_id_organization_id_fkey (
-           description, finding, severity,
-           inspection:inspections!inspection_items_inspection_id_organization_id_fkey (id, title)
-         )`,
-      )
-      .eq("id", workOrderId)
-      .eq("organization_id", user.organization.id)
-      .maybeSingle(),
-    supabase
-      .from("audit_events")
-      .select("id, actor_id, action, changes, occurred_at")
-      .eq("organization_id", user.organization.id)
-      .eq("entity_type", "work_orders")
-      .eq("entity_id", workOrderId)
-      .order("occurred_at", { ascending: true })
-      .limit(100),
-  ]);
+  const workOrder = await supabase
+    .from("work_orders")
+    .select(
+      `id, title, description, priority, status, due_date, completed_at, blocked_reason, created_at,
+       vessel:vessels!work_orders_vessel_id_organization_id_fkey (id, name),
+       assignee:profiles!work_orders_assignee_id_fkey (id, full_name),
+       creator:profiles!work_orders_created_by_fkey (full_name),
+       item:inspection_items!work_orders_inspection_item_id_organization_id_fkey (
+         description, finding, severity,
+         inspection:inspections!inspection_items_inspection_id_organization_id_fkey (id, title)
+       )`,
+    )
+    .eq("id", workOrderId)
+    .eq("organization_id", user.organization.id)
+    .maybeSingle();
 
-  for (const result of [workOrder, events]) {
-    if (result.error) {
-      throw new Error("Could not load the work order.", { cause: result.error });
-    }
+  if (workOrder.error) {
+    throw new Error("Could not load the work order.", { cause: workOrder.error });
   }
   const row = workOrder.data;
   if (!row?.vessel) {
     return null;
   }
-
-  // audit_events.actor_id has no foreign key (history outlives users), so names are looked up.
-  const actorIds = [...new Set((events.data ?? []).flatMap((event) => (event.actor_id ? [event.actor_id] : [])))];
-  const actors = actorIds.length
-    ? await supabase.from("profiles").select("id, full_name").in("id", actorIds)
-    : { data: [], error: null };
-  if (actors.error) {
-    throw new Error("Could not load the work order history.", { cause: actors.error });
-  }
-  const actorNames = new Map((actors.data ?? []).map((profile) => [profile.id, profile.full_name]));
 
   return {
     id: row.id,
@@ -200,19 +173,6 @@ export const getWorkOrderDetail = cache(async (workOrderId: string): Promise<Wor
           inspection: row.item.inspection ? { id: row.item.inspection.id, title: row.item.inspection.title } : null,
         }
       : null,
-    history: (events.data ?? []).flatMap((event) => {
-      const entry = describeAuditEvent(event.action, event.changes);
-      return entry
-        ? [
-            {
-              ...entry,
-              id: event.id,
-              occurredAt: event.occurred_at,
-              actorName: event.actor_id ? (actorNames.get(event.actor_id) ?? "Former member") : null,
-            },
-          ]
-        : [];
-    }),
   };
 });
 

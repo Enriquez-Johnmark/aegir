@@ -4,7 +4,6 @@ import {
   canTransition,
   canUpdateStatus,
   compareByUrgency,
-  describeAuditEvent,
   isWorkOrderOverdue,
   type Priority,
 } from "./domain";
@@ -81,27 +80,6 @@ describe("compareByUrgency", () => {
     const critical = wo("Critical blocked", "critical", "2026-10-18");
     const lateLow = wo("Railing", "low", "2026-10-05", true);
     expect([lateLow, critical].toSorted(compareByUrgency)[0]).toBe(critical);
-  });
-});
-
-describe("describeAuditEvent", () => {
-  it("turns audit rows into timeline entries", () => {
-    expect(describeAuditEvent("insert", { title: "x" })).toEqual({ kind: "created" });
-    expect(
-      describeAuditEvent("status_change", {
-        status: { old: "in_progress", new: "blocked" },
-        blocked_reason: { old: null, new: "Waiting for parts" },
-      }),
-    ).toEqual({ kind: "status", from: "in_progress", to: "blocked", reason: "Waiting for parts" });
-    expect(describeAuditEvent("update", { priority: { old: "low", new: "high" }, due_date: {} })).toEqual({
-      kind: "updated",
-      fields: ["priority", "due date"],
-    });
-  });
-
-  it("ignores events with nothing recognisable", () => {
-    expect(describeAuditEvent("update", { completed_at: {} })).toBeNull();
-    expect(describeAuditEvent("update", null)).toBeNull();
   });
 });
 

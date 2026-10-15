@@ -1,12 +1,14 @@
 import { ArrowRightLeftIcon, CirclePauseIcon, ClipboardCheckIcon, PencilIcon } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 
 import { PageHeader } from "@/components/layout/page-header";
 import { ButtonLink } from "@/components/shared/button-link";
 import { SavedNotice } from "@/components/shared/saved-notice";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { RecordHistory, RecordHistorySkeleton } from "@/features/audit/components/record-history";
 import { SeverityBadge } from "@/features/inspections/components/inspection-badges";
 import {
   OverdueBadge,
@@ -14,25 +16,13 @@ import {
   WorkOrderStatusBadge,
 } from "@/features/work-orders/components/work-order-badges";
 import { WorkOrderStatusActions } from "@/features/work-orders/components/work-order-status-actions";
-import {
-  canManage,
-  canUpdateStatus,
-  WORK_ORDER_STATUS_LABELS,
-} from "@/features/work-orders/domain";
+import { canManage, canUpdateStatus } from "@/features/work-orders/domain";
 import { getWorkOrderDetail, type WorkOrderDetail as Detail } from "@/features/work-orders/server/queries";
 import { can } from "@/lib/auth/roles";
 import { requireUser } from "@/lib/auth/session";
 import { formatDate } from "@/lib/format";
 
 const SAVED_MESSAGES = { created: "Work order raised", updated: "Changes saved" } as const;
-
-const dateTimeFormatter = new Intl.DateTimeFormat("en-GB", {
-  day: "numeric",
-  month: "short",
-  hour: "2-digit",
-  minute: "2-digit",
-  timeZone: "UTC",
-});
 
 export async function WorkOrderDetail({ workOrderId, saved }: { workOrderId: string; saved: string | null }) {
   const [user, workOrder] = await Promise.all([requireUser(), getWorkOrderDetail(workOrderId)]);
@@ -143,7 +133,9 @@ export async function WorkOrderDetail({ workOrderId, saved }: { workOrderId: str
 
       <div className="grid gap-6 lg:grid-cols-2">
         {workOrder.finding ? <FindingCard finding={workOrder.finding} /> : null}
-        <HistoryCard workOrder={workOrder} />
+        <Suspense fallback={<RecordHistorySkeleton />}>
+          <RecordHistory table="work_orders" id={workOrder.id} />
+        </Suspense>
       </div>
     </>
   );
@@ -184,47 +176,6 @@ function FindingCard({ finding }: { finding: NonNullable<Detail["finding"]> }) {
           <span>
             <SeverityBadge severity={finding.severity} />
           </span>
-        ) : null}
-      </CardContent>
-    </Card>
-  );
-}
-
-function HistoryCard({ workOrder }: { workOrder: Detail }) {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>
-          <h2>History</h2>
-        </CardTitle>
-        <CardDescription>Every change is recorded by the database and can&apos;t be edited.</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <ol className="flex flex-col gap-3">
-          {workOrder.history.map((entry) => (
-            <li key={entry.id} className="flex flex-col gap-0.5 text-sm">
-              <span>
-                {entry.kind === "created" ? (
-                  "Raised"
-                ) : entry.kind === "status" ? (
-                  <>
-                    {WORK_ORDER_STATUS_LABELS[entry.from]} → <span className="font-medium">{WORK_ORDER_STATUS_LABELS[entry.to]}</span>
-                  </>
-                ) : (
-                  `Changed ${entry.fields.join(", ")}`
-                )}
-              </span>
-              {entry.kind === "status" && entry.reason ? (
-                <span className="max-w-prose text-muted-foreground">“{entry.reason}”</span>
-              ) : null}
-              <span className="text-xs text-muted-foreground tabular-nums">
-                {entry.actorName ?? "System (seed data)"} · {dateTimeFormatter.format(new Date(entry.occurredAt))} UTC
-              </span>
-            </li>
-          ))}
-        </ol>
-        {workOrder.history.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No recorded changes yet.</p>
         ) : null}
       </CardContent>
     </Card>

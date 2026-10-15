@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 
 import { PageHeader } from "@/components/layout/page-header";
 import { SavedNotice } from "@/components/shared/saved-notice";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { RecordHistory, RecordHistorySkeleton } from "@/features/audit/components/record-history";
 import { AcknowledgeHandover } from "@/features/handovers/components/acknowledge-handover";
 import { ForYouBadge, HandoverStatusBadge } from "@/features/handovers/components/handover-badges";
 import { canAcknowledge } from "@/features/handovers/domain";
@@ -103,6 +105,10 @@ export async function HandoverDetail({ handoverId, saved }: { handoverId: string
           />
         </dl>
       </div>
+
+      <Suspense fallback={<RecordHistorySkeleton className="max-w-3xl" />}>
+        <RecordHistory table="handovers" id={handover.id} className="max-w-3xl" />
+      </Suspense>
     </>
   );
 }

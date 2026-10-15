@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 
 import { PageHeader } from "@/components/layout/page-header";
 import { SavedNotice } from "@/components/shared/saved-notice";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { RecordHistory, RecordHistorySkeleton } from "@/features/audit/components/record-history";
 import { ChecklistEditingProvider, CompleteHint } from "@/features/inspections/components/checklist-editing";
 import { ChecklistItem } from "@/features/inspections/components/checklist-item";
 import { CompleteInspection } from "@/features/inspections/components/complete-inspection";
@@ -148,6 +150,10 @@ export async function InspectionDetail({
       {inspection.createdByName ? (
         <p className="text-xs text-muted-foreground">Scheduled by {inspection.createdByName}.</p>
       ) : null}
+
+      <Suspense fallback={<RecordHistorySkeleton className="max-w-3xl" />}>
+        <RecordHistory table="inspections" id={inspection.id} className="max-w-3xl" />
+      </Suspense>
     </>
   );
 }

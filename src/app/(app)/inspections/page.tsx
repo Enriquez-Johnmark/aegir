@@ -8,7 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { InspectionFilters } from "@/features/inspections/components/inspection-filters";
 import { InspectionsList } from "@/features/inspections/components/inspections-list";
 import { inspectionListParamsSchema } from "@/features/inspections/schemas";
-import { listVesselNames } from "@/features/inspections/server/queries";
+import { listVesselNames } from "@/features/vessels/server/queries";
 import { can } from "@/lib/auth/roles";
 import { requireUser } from "@/lib/auth/session";
 

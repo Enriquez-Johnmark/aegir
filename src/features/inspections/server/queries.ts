@@ -224,18 +224,3 @@ export async function getScheduleFormOptions(): Promise<ScheduleFormOptions> {
       .toSorted((a, b) => a.name.localeCompare(b.name)),
   };
 }
-
-/** Every vessel in the organization (including decommissioned), for the list's vessel filter. */
-export async function listVesselNames(): Promise<{ id: string; name: string }[]> {
-  const user = await requireUser();
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("vessels")
-    .select("id, name")
-    .eq("organization_id", user.organization.id)
-    .order("name", { ascending: true });
-  if (error) {
-    throw new Error("Could not load vessels.", { cause: error });
-  }
-  return data ?? [];
-}

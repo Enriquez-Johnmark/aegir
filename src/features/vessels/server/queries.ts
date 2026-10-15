@@ -243,3 +243,18 @@ export async function getVesselForEdit(vesselId: string) {
     },
   };
 }
+
+/** Every vessel in the organization (including decommissioned), for list filters. */
+export async function listVesselNames(): Promise<{ id: string; name: string }[]> {
+  const user = await requireUser();
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("vessels")
+    .select("id, name")
+    .eq("organization_id", user.organization.id)
+    .order("name", { ascending: true });
+  if (error) {
+    throw new Error("Could not load vessels.", { cause: error });
+  }
+  return data ?? [];
+}

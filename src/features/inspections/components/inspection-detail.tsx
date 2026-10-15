@@ -82,26 +82,29 @@ export async function InspectionDetail({
           </p>
         ) : null}
 
-        <dl className="grid grid-cols-2 gap-x-6 gap-y-4 rounded-xl p-4 ring-1 ring-foreground/10 md:grid-cols-4">
-          <Fact
-            label="Vessel"
-            value={
-              <Link href={`/vessels/${inspection.vessel.id}`} className="font-medium text-primary underline-offset-4 hover:underline">
-                {inspection.vessel.name}
-              </Link>
-            }
-          />
-          <Fact label="Inspector" value={inspection.inspector?.name ?? "Unassigned"} />
-          <Fact label="Scheduled for" value={formatDate(inspection.scheduledFor)} />
-          {inspection.status === "cancelled" ? <Fact label="Outcome" value="Cancelled before completion" /> : null}
-          {inspection.completedAt ? <Fact label="Completed" value={formatDate(inspection.completedAt)} /> : null}
-          {inspection.notes ? (
-            <div className="col-span-2 flex flex-col gap-0.5 md:col-span-4">
-              <dt className="text-xs font-medium text-muted-foreground">Notes</dt>
-              <dd className="max-w-prose whitespace-pre-line">{inspection.notes}</dd>
-            </div>
-          ) : null}
-        </dl>
+        {/* By the record's own width (rem container queries), so enlarged text gets fewer columns, not overlaps. */}
+        <div className="@container">
+          <dl className="grid grid-cols-1 gap-x-6 gap-y-4 rounded-xl p-4 ring-1 ring-foreground/10 @xs:grid-cols-2 @3xl:grid-cols-4">
+            <Fact
+              label="Vessel"
+              value={
+                <Link href={`/vessels/${inspection.vessel.id}`} className="font-medium text-primary underline-offset-4 hover:underline">
+                  {inspection.vessel.name}
+                </Link>
+              }
+            />
+            <Fact label="Inspector" value={inspection.inspector?.name ?? "Unassigned"} />
+            <Fact label="Scheduled for" value={formatDate(inspection.scheduledFor)} />
+            {inspection.status === "cancelled" ? <Fact label="Outcome" value="Cancelled before completion" /> : null}
+            {inspection.completedAt ? <Fact label="Completed" value={formatDate(inspection.completedAt)} /> : null}
+            {inspection.notes ? (
+              <div className="flex flex-col gap-0.5 @xs:col-span-2 @3xl:col-span-4">
+                <dt className="text-xs font-medium text-muted-foreground">Notes</dt>
+                <dd className="max-w-prose min-w-0 whitespace-pre-line wrap-break-word">{inspection.notes}</dd>
+              </div>
+            ) : null}
+          </dl>
+        </div>
 
         <Card>
           <CardHeader>
@@ -177,7 +180,7 @@ function Fact({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-0.5">
       <dt className="text-xs font-medium text-muted-foreground">{label}</dt>
-      <dd className="tabular-nums">{value}</dd>
+      <dd className="min-w-0 tabular-nums wrap-break-word">{value}</dd>
     </div>
   );
 }

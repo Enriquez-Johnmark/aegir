@@ -1,4 +1,4 @@
-import { CirclePauseIcon, ClipboardCheckIcon, PencilIcon } from "lucide-react";
+import { ArrowRightLeftIcon, CirclePauseIcon, ClipboardCheckIcon, PencilIcon } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -20,6 +20,7 @@ import {
   WORK_ORDER_STATUS_LABELS,
 } from "@/features/work-orders/domain";
 import { getWorkOrderDetail, type WorkOrderDetail as Detail } from "@/features/work-orders/server/queries";
+import { can } from "@/lib/auth/roles";
 import { requireUser } from "@/lib/auth/session";
 import { formatDate } from "@/lib/format";
 
@@ -61,12 +62,22 @@ export async function WorkOrderDetail({ workOrderId, saved }: { workOrderId: str
               : "no due date"
         }`}
         actions={
-          !completed && canManage(user.role) ? (
-            <ButtonLink variant="outline" href={`/work-orders/${workOrder.id}/edit`}>
-              <PencilIcon data-icon="inline-start" />
-              Edit details
-            </ButtonLink>
-          ) : null
+          completed ? null : (
+            <>
+              {can(user.role, "handovers:create") ? (
+                <ButtonLink variant="outline" href={`/handovers/new?workOrder=${workOrder.id}`}>
+                  <ArrowRightLeftIcon data-icon="inline-start" />
+                  Hand over
+                </ButtonLink>
+              ) : null}
+              {canManage(user.role) ? (
+                <ButtonLink variant="outline" href={`/work-orders/${workOrder.id}/edit`}>
+                  <PencilIcon data-icon="inline-start" />
+                  Edit details
+                </ButtonLink>
+              ) : null}
+            </>
+          )
         }
       />
 
@@ -91,41 +102,44 @@ export async function WorkOrderDetail({ workOrderId, saved }: { workOrderId: str
         </p>
       ) : null}
 
-      <dl className="grid grid-cols-2 gap-x-6 gap-y-4 rounded-xl p-4 ring-1 ring-foreground/10 md:grid-cols-4">
-        <Fact
-          label="Vessel"
-          value={
-            <Link
-              href={`/vessels/${workOrder.vessel.id}`}
-              className="font-medium text-primary underline-offset-4 hover:underline"
-            >
-              {workOrder.vessel.name}
-            </Link>
-          }
-        />
-        <Fact label="Assignee" value={workOrder.assignee?.name ?? "Unassigned"} />
-        <Fact label="Priority" value={<PriorityBadge priority={workOrder.priority} />} />
-        <Fact
-          label={completed ? "Completed" : "Due"}
-          value={
-            completed ? (
-              formatDate(workOrder.completedAt)
-            ) : workOrder.dueDate ? (
-              <span className={workOrder.isOverdue ? "font-medium text-destructive" : undefined}>
-                {formatDate(workOrder.dueDate)}
-              </span>
-            ) : (
-              "No due date"
-            )
-          }
-        />
-        {workOrder.description ? (
-          <div className="col-span-2 flex flex-col gap-0.5 md:col-span-4">
-            <dt className="text-xs font-medium text-muted-foreground">Description</dt>
-            <dd className="max-w-prose whitespace-pre-line">{workOrder.description}</dd>
-          </div>
-        ) : null}
-      </dl>
+      {/* By the record's own width (rem container queries), so enlarged text gets fewer columns, not overlaps. */}
+      <div className="@container">
+        <dl className="grid grid-cols-1 gap-x-6 gap-y-4 rounded-xl p-4 ring-1 ring-foreground/10 @xs:grid-cols-2 @3xl:grid-cols-4">
+          <Fact
+            label="Vessel"
+            value={
+              <Link
+                href={`/vessels/${workOrder.vessel.id}`}
+                className="font-medium text-primary underline-offset-4 hover:underline"
+              >
+                {workOrder.vessel.name}
+              </Link>
+            }
+          />
+          <Fact label="Assignee" value={workOrder.assignee?.name ?? "Unassigned"} />
+          <Fact label="Priority" value={<PriorityBadge priority={workOrder.priority} />} />
+          <Fact
+            label={completed ? "Completed" : "Due"}
+            value={
+              completed ? (
+                formatDate(workOrder.completedAt)
+              ) : workOrder.dueDate ? (
+                <span className={workOrder.isOverdue ? "font-medium text-destructive" : undefined}>
+                  {formatDate(workOrder.dueDate)}
+                </span>
+              ) : (
+                "No due date"
+              )
+            }
+          />
+          {workOrder.description ? (
+            <div className="flex flex-col gap-0.5 @xs:col-span-2 @3xl:col-span-4">
+              <dt className="text-xs font-medium text-muted-foreground">Description</dt>
+              <dd className="max-w-prose min-w-0 whitespace-pre-line wrap-break-word">{workOrder.description}</dd>
+            </div>
+          ) : null}
+        </dl>
+      </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
         {workOrder.finding ? <FindingCard finding={workOrder.finding} /> : null}
@@ -139,7 +153,7 @@ function Fact({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-0.5">
       <dt className="text-xs font-medium text-muted-foreground">{label}</dt>
-      <dd className="tabular-nums">{value}</dd>
+      <dd className="min-w-0 tabular-nums wrap-break-word">{value}</dd>
     </div>
   );
 }

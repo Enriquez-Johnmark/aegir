@@ -18,7 +18,9 @@ export default function InspectionNotFound() {
         <EmptyMedia variant="icon">
           <ClipboardCheckIcon />
         </EmptyMedia>
-        <EmptyTitle>Inspection not found</EmptyTitle>
+        <EmptyTitle>
+          <h1>Inspection not found</h1>
+        </EmptyTitle>
         <EmptyDescription>
           The link may be mistyped, or it points to an inspection in another organization.
         </EmptyDescription>

@@ -50,7 +50,7 @@ export async function getDashboard(): Promise<Dashboard> {
     supabase
       .from("handovers")
       .select(
-        `id, summary, created_at, to_user_id,
+        `id, summary, created_at, from_user_id, to_user_id,
          sender:profiles!handovers_from_user_id_fkey (full_name),
          recipient:profiles!handovers_to_user_id_fkey (full_name),
          vessel:vessels!handovers_vessel_id_organization_id_fkey (name)`,
@@ -121,6 +121,7 @@ export async function getDashboard(): Promise<Dashboard> {
         id: handover.id,
         summary: handover.summary,
         createdAt: handover.created_at,
+        fromUserId: handover.from_user_id,
         fromName: handover.sender?.full_name ?? null,
         toUserId: handover.to_user_id,
         toName: handover.recipient?.full_name ?? null,

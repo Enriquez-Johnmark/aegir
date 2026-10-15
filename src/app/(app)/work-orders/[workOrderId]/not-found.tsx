@@ -18,7 +18,9 @@ export default function WorkOrderNotFound() {
         <EmptyMedia variant="icon">
           <WrenchIcon />
         </EmptyMedia>
-        <EmptyTitle>Work order not found</EmptyTitle>
+        <EmptyTitle>
+          <h1>Work order not found</h1>
+        </EmptyTitle>
         <EmptyDescription>
           The link may be mistyped, or it points to a work order in another organization.
         </EmptyDescription>

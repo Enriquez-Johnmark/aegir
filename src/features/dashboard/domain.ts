@@ -19,8 +19,6 @@ export const DUE_SOON_DAYS = 7;
 export const RECENT_FAILURE_DAYS = 30;
 /** Rows per queue panel; the panel links to the full list for the rest. */
 export const PANEL_LIMIT = 5;
-/** Handovers have no list screen yet, so the panel shows more before it truncates. */
-export const HANDOVER_LIMIT = 8;
 
 /** Adds whole days to a YYYY-MM-DD date (UTC calendar arithmetic). */
 export function addDays(isoDate: string, days: number): string {
@@ -75,6 +73,7 @@ export type DashboardInput = {
     id: string;
     summary: string;
     createdAt: string;
+    fromUserId: string;
     fromName: string | null;
     toUserId: string;
     toName: string | null;
@@ -109,7 +108,7 @@ export type DashboardFailedCheck = Omit<DashboardInput["failedChecks"][number], 
 
 export type DashboardVessel = VesselAttention & { id: string; name: string };
 
-export type DashboardHandover = DashboardInput["pendingHandovers"][number] & { isForMe: boolean };
+export type DashboardHandover = DashboardInput["pendingHandovers"][number] & { isForMe: boolean; isFromMe: boolean };
 
 export type Dashboard = {
   today: string;
@@ -213,7 +212,7 @@ export function buildDashboard(
 
   // Handovers: the ones addressed to me first, then the longest-waiting.
   const handovers = input.pendingHandovers
-    .map((handover) => ({ ...handover, isForMe: handover.toUserId === userId }))
+    .map((handover) => ({ ...handover, isForMe: handover.toUserId === userId, isFromMe: handover.fromUserId === userId }))
     .toSorted((a, b) => Number(b.isForMe) - Number(a.isForMe) || a.createdAt.localeCompare(b.createdAt));
 
   return {
@@ -232,6 +231,6 @@ export function buildDashboard(
     failedChecksTotal: failedChecks.length,
     vesselsNeedingAttention: watch.slice(0, PANEL_LIMIT),
     vesselsNeedingAttentionTotal: watch.length,
-    handovers: handovers.slice(0, HANDOVER_LIMIT),
+    handovers: handovers.slice(0, PANEL_LIMIT),
   };
 }

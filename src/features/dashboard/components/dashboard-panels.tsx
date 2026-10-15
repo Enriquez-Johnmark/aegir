@@ -1,5 +1,5 @@
 import { cn } from "cn";
-import { FlagIcon, InboxIcon, WrenchIcon } from "lucide-react";
+import { FlagIcon, WrenchIcon } from "lucide-react";
 import Link from "next/link";
 
 import { ButtonLink } from "@/components/shared/button-link";
@@ -14,6 +14,7 @@ import {
   type DashboardVessel,
   type DashboardWorkOrder,
 } from "@/features/dashboard/domain";
+import { ForYouBadge } from "@/features/handovers/components/handover-badges";
 import { InspectionStatusBadge, SeverityBadge } from "@/features/inspections/components/inspection-badges";
 import { AttentionSignals } from "@/features/vessels/components/attention-signals";
 import {
@@ -22,7 +23,7 @@ import {
   WorkOrderStatusBadge,
 } from "@/features/work-orders/components/work-order-badges";
 import { WORK_ORDER_STATUS_LABELS } from "@/features/work-orders/domain";
-import { formatDate } from "@/lib/format";
+import { formatDate, formatDateTime } from "@/lib/format";
 
 // ---------------------------------------------------------------------------
 // Panel shell and rows
@@ -344,6 +345,7 @@ export function HandoversPanel({
       id="handovers"
       title="Pending handovers"
       description="Waiting to be acknowledged. Yours first, then the longest-waiting."
+      action={total > 0 ? <ViewAll href="/handovers">All {total} pending</ViewAll> : null}
       className={className}
     >
       {items.length === 0 ? (
@@ -354,21 +356,15 @@ export function HandoversPanel({
             {items.map((handover) => (
               <Row
                 key={handover.id}
+                href={`/handovers/${handover.id}`}
                 title={handover.summary}
-                aside={
-                  handover.isForMe ? (
-                    <Badge variant="info">
-                      <InboxIcon data-icon="inline-start" />
-                      For you
-                    </Badge>
-                  ) : null
-                }
+                aside={handover.isForMe ? <ForYouBadge /> : null}
                 meta={
                   <>
-                    From {handover.fromName ?? "a former member"} to{" "}
+                    From {handover.isFromMe ? "you" : (handover.fromName ?? "a former member")} to{" "}
                     {handover.isForMe ? "you" : (handover.toName ?? "a former member")}
                     {handover.vesselName ? ` · ${handover.vesselName}` : null} · Handed over{" "}
-                    {formatDate(handover.createdAt)}
+                    {formatDateTime(handover.createdAt)}
                   </>
                 }
               />

@@ -18,7 +18,9 @@ export default function VesselNotFound() {
         <EmptyMedia variant="icon">
           <ShipIcon />
         </EmptyMedia>
-        <EmptyTitle>Vessel not found</EmptyTitle>
+        <EmptyTitle>
+          <h1>Vessel not found</h1>
+        </EmptyTitle>
         <EmptyDescription>
           It may have been removed from your fleet, or the link points to a vessel in another
           organization.

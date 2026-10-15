@@ -6,7 +6,6 @@ import {
   addDays,
   buildDashboard,
   compareFailedChecks,
-  HANDOVER_LIMIT,
   PANEL_LIMIT,
   type DashboardInput,
 } from "./domain";
@@ -63,6 +62,7 @@ function handover(overrides: Partial<HandoverRow> & { id: string }): HandoverRow
   return {
     summary: overrides.id,
     createdAt: `${TODAY}T08:00:00+00:00`,
+    fromUserId: "someone",
     fromName: "Ana",
     toUserId: "someone-else",
     toName: "Ben",
@@ -272,11 +272,11 @@ describe("buildDashboard: handovers", () => {
     expect(dashboard.summary.handovers).toEqual({ pending: 3, forMe: 1 });
   });
 
-  it("caps the panel at HANDOVER_LIMIT", () => {
-    const rows = Array.from({ length: HANDOVER_LIMIT + 1 }, (_, index) => handover({ id: `h-${index}` }));
+  it("caps the panel at PANEL_LIMIT (the full list is /handovers)", () => {
+    const rows = Array.from({ length: PANEL_LIMIT + 1 }, (_, index) => handover({ id: `h-${index}` }));
     const dashboard = build({ pendingHandovers: rows });
-    expect(dashboard.handovers).toHaveLength(HANDOVER_LIMIT);
-    expect(dashboard.summary.handovers.pending).toBe(HANDOVER_LIMIT + 1);
+    expect(dashboard.handovers).toHaveLength(PANEL_LIMIT);
+    expect(dashboard.summary.handovers.pending).toBe(PANEL_LIMIT + 1);
   });
 });
 

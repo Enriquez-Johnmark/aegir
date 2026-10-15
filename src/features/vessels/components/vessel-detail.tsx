@@ -1,4 +1,11 @@
-import { CalendarPlusIcon, ClipboardCheckIcon, ClockAlertIcon, PencilIcon, WrenchIcon } from "lucide-react";
+import {
+  ArrowRightLeftIcon,
+  CalendarPlusIcon,
+  ClipboardCheckIcon,
+  ClockAlertIcon,
+  PencilIcon,
+  WrenchIcon,
+} from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -39,6 +46,12 @@ export async function VesselDetail({ vesselId, saved }: { vesselId: string; save
                 Schedule inspection
               </ButtonLink>
             ) : null}
+            {can(user.role, "handovers:create") ? (
+              <ButtonLink variant="outline" href={`/handovers/new?vessel=${vessel.id}`}>
+                <ArrowRightLeftIcon data-icon="inline-start" />
+                Hand over
+              </ButtonLink>
+            ) : null}
             {can(user.role, "vessels:write") ? (
               <ButtonLink variant="outline" href={`/vessels/${vessel.id}/edit`}>
                 <PencilIcon data-icon="inline-start" />
@@ -51,15 +64,18 @@ export async function VesselDetail({ vesselId, saved }: { vesselId: string; save
 
       <SavedNotice message={saved === "created" || saved === "updated" ? SAVED_MESSAGES[saved] : null} />
 
-      <dl className="grid grid-cols-2 gap-x-6 gap-y-4 rounded-xl p-4 ring-1 ring-foreground/10 md:grid-cols-4">
-        <Fact label="IMO number" value={<span className="font-mono">{vessel.imoNumber}</span>} />
-        <Fact label="Year built" value={vessel.yearBuilt ?? "—"} />
-        <Fact
-          label="Gross tonnage"
-          value={vessel.grossTonnage === null ? "—" : `${formatNumber(vessel.grossTonnage)} GT`}
-        />
-        <Fact label="Last updated" value={formatDate(vessel.updatedAt)} />
-      </dl>
+      {/* By the record's own width (rem container queries), so enlarged text gets fewer columns, not overlaps. */}
+      <div className="@container">
+        <dl className="grid grid-cols-1 gap-x-6 gap-y-4 rounded-xl p-4 ring-1 ring-foreground/10 @xs:grid-cols-2 @3xl:grid-cols-4">
+          <Fact label="IMO number" value={<span className="font-mono">{vessel.imoNumber}</span>} />
+          <Fact label="Year built" value={vessel.yearBuilt ?? "—"} />
+          <Fact
+            label="Gross tonnage"
+            value={vessel.grossTonnage === null ? "—" : `${formatNumber(vessel.grossTonnage)} GT`}
+          />
+          <Fact label="Last updated" value={formatDate(vessel.updatedAt)} />
+        </dl>
+      </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
         <WorkOrdersCard vesselId={vessel.id} workOrders={vessel.workOrders} />
@@ -73,7 +89,7 @@ function Fact({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-0.5">
       <dt className="text-xs font-medium text-muted-foreground">{label}</dt>
-      <dd className="tabular-nums">{value}</dd>
+      <dd className="min-w-0 tabular-nums wrap-break-word">{value}</dd>
     </div>
   );
 }

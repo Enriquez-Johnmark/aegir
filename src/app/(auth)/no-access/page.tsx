@@ -33,7 +33,9 @@ async function NoAccessCard() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-xl">No organization access</CardTitle>
+        <CardTitle className="text-xl">
+          <h1>No organization access</h1>
+        </CardTitle>
         <CardDescription>
           {session.email || "Your account"} is not a member of any organization yet. Ask your
           organization administrator to add you.

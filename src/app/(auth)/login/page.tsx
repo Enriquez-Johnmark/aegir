@@ -14,7 +14,9 @@ export default function LoginPage({ searchParams }: PageProps<"/login">) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-xl">Sign in to Aegir</CardTitle>
+        <CardTitle className="text-xl">
+          <h1>Sign in to Aegir</h1>
+        </CardTitle>
         <CardDescription>Maritime safety and fleet operations.</CardDescription>
       </CardHeader>
       <CardContent>

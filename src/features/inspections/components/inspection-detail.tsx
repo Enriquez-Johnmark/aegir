@@ -9,6 +9,7 @@ import { FindingSignals, InspectionStatusBadge } from "@/features/inspections/co
 import { InspectionActions } from "@/features/inspections/components/inspection-actions";
 import { canConduct, isClosed, type ChecklistSummary } from "@/features/inspections/domain";
 import { getInspectionDetail } from "@/features/inspections/server/queries";
+import { can } from "@/lib/auth/roles";
 import { requireUser } from "@/lib/auth/session";
 import { formatDate } from "@/lib/format";
 
@@ -90,7 +91,13 @@ export async function InspectionDetail({ inspectionId, saved }: { inspectionId: 
         <CardContent>
           <ol className="flex flex-col divide-y">
             {inspection.items.map((item) => (
-              <ChecklistItem key={item.id} inspectionId={inspection.id} item={item} editable={editable} />
+              <ChecklistItem
+                key={item.id}
+                inspectionId={inspection.id}
+                item={item}
+                editable={editable}
+                canRaiseWorkOrder={can(user.role, "work-orders:create")}
+              />
             ))}
           </ol>
         </CardContent>

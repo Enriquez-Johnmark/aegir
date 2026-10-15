@@ -2,8 +2,10 @@
 
 import { cn } from "cn";
 import { CheckIcon, CircleCheckIcon, CircleMinusIcon, CircleXIcon, FlagIcon, WrenchIcon } from "lucide-react";
+import Link from "next/link";
 import { startTransition, useActionState, useState } from "react";
 
+import { ButtonLink } from "@/components/shared/button-link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
@@ -28,6 +30,7 @@ import {
   type CheckResult,
 } from "@/features/inspections/domain";
 import type { ChecklistItem as ChecklistItemData } from "@/features/inspections/server/queries";
+import { WORK_ORDER_STATUS_LABELS } from "@/features/work-orders/domain";
 
 const RESULT_OPTIONS = [
   { value: "pass", icon: CircleCheckIcon, pressed: "aria-pressed:bg-success/10 aria-pressed:text-success" },
@@ -35,21 +38,16 @@ const RESULT_OPTIONS = [
   { value: "not_applicable", icon: CircleMinusIcon, pressed: "aria-pressed:bg-muted aria-pressed:text-foreground" },
 ] as const;
 
-const WORK_ORDER_STATUS_LABELS = {
-  open: "open",
-  in_progress: "in progress",
-  blocked: "blocked",
-  completed: "completed",
-} as const;
-
 export function ChecklistItem({
   inspectionId,
   item,
   editable,
+  canRaiseWorkOrder,
 }: {
   inspectionId: string;
   item: ChecklistItemData;
   editable: boolean;
+  canRaiseWorkOrder: boolean;
 }) {
   const [state, formAction, isPending] = useActionState<RecordResultState, FormData>(
     recordResultAction.bind(null, inspectionId, item.id),
@@ -171,7 +169,9 @@ export function ChecklistItem({
         <p className="ml-8 max-w-prose text-sm text-muted-foreground">{item.finding}</p>
       ) : null}
 
-      {item.result === "fail" ? <FollowUp workOrders={item.workOrders} /> : null}
+      {item.result === "fail" ? (
+        <FollowUp itemId={item.id} workOrders={item.workOrders} canRaise={canRaiseWorkOrder} />
+      ) : null}
     </li>
   );
 }
@@ -230,7 +230,15 @@ function SeverityField({
 }
 
 /** The follow-up flag: a failed check stays flagged until a work order is raised for it. */
-function FollowUp({ workOrders }: { workOrders: ChecklistItemData["workOrders"] }) {
+function FollowUp({
+  itemId,
+  workOrders,
+  canRaise,
+}: {
+  itemId: string;
+  workOrders: ChecklistItemData["workOrders"];
+  canRaise: boolean;
+}) {
   if (workOrders.length === 0) {
     return (
       <div className="ml-8 flex flex-wrap items-center gap-2 text-sm">
@@ -238,7 +246,14 @@ function FollowUp({ workOrders }: { workOrders: ChecklistItemData["workOrders"] 
           <FlagIcon data-icon="inline-start" />
           Needs follow-up
         </Badge>
-        <span className="text-muted-foreground">No work order raised yet.</span>
+        {canRaise ? (
+          <ButtonLink variant="outline" size="sm" href={`/work-orders/new?item=${itemId}`}>
+            <WrenchIcon data-icon="inline-start" />
+            Raise work order
+          </ButtonLink>
+        ) : (
+          <span className="text-muted-foreground">No work order raised yet.</span>
+        )}
       </div>
     );
   }
@@ -248,7 +263,10 @@ function FollowUp({ workOrders }: { workOrders: ChecklistItemData["workOrders"] 
         <li key={wo.id} className="flex items-center gap-2">
           <WrenchIcon className="size-3.5 text-muted-foreground" aria-hidden />
           <span>
-            Work order: {wo.title}{" "}
+            Work order:{" "}
+            <Link href={`/work-orders/${wo.id}`} className="font-medium text-primary underline-offset-4 hover:underline">
+              {wo.title}
+            </Link>{" "}
             <span className="text-muted-foreground">({WORK_ORDER_STATUS_LABELS[wo.status]})</span>
           </span>
         </li>

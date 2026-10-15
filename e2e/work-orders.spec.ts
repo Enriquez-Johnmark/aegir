@@ -64,7 +64,8 @@ test.describe("work orders", () => {
     const history = tech.getByRole("main").getByRole("listitem").filter(visible);
     await expect(history.filter({ hasText: "Raised" }).first()).toContainText(USERS.manager.name);
     await expect(history.filter({ hasText: "Blocked" }).first()).toContainText(USERS.technician.name);
-    await expect(history.filter({ hasText: /In progress\s*→\s*Completed/ })).toHaveCount(1);
+    // The arrow is hidden from screen readers, who hear "to".
+    await expect(history.filter({ hasText: /In progress\s*→\s*to\s*Completed/ })).toHaveCount(1);
     await tech.context().close();
   });
 

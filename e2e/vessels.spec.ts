@@ -110,7 +110,8 @@ test.describe("vessels", () => {
     await page.getByRole("button", { name: "Save changes" }).click();
 
     await expect(page.getByRole("heading", { name: new RegExp(`${name} II`), level: 1 })).toBeVisible();
-    await expect(page.getByText("Laid up", { exact: true }).filter(visible)).toBeVisible();
+    // The status badge (the History card also says "Active → Laid up").
+    await expect(page.locator("main [data-slot=badge]", { hasText: "Laid up" }).filter(visible)).toBeVisible();
     await expect(page.getByRole("status").filter({ hasText: "Changes saved" })).toBeVisible();
 
     // A duplicate IMO in the same fleet is rejected with a field error.

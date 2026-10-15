@@ -24,6 +24,8 @@ const SIGNED_IN = [
   "/handovers",
   "/handovers/new",
   "/handovers/a5000000-0000-4000-8000-000000000003",
+  "/audit",
+  "/audit?actor=system&type=checks",
 ];
 
 async function violations(page: Page) {

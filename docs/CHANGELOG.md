@@ -11,7 +11,7 @@ Meaningful functional and technical changes, newest first. Format loosely follow
 - Unit tests (3) and `e2e/security-headers.spec.ts` (headers present; zero CSP violations through the main screens).
 
 **Reason:** the live site sent only HSTS. **Affected areas:** next.config, all responses. **Breaking changes:** none (inline scripts stay allowed; no third-party origins are used). **Migrations:** none.
-**Verification:** unit 83/83 ✅ · typecheck/lint ✅ · E2E 48/48 ✅ twice in a row · production check after deploy: pending.
+**Verification:** unit 83/83 ✅ · typecheck/lint ✅ · E2E 48/48 ✅ twice in a row · production (`1944fd8`): all headers present on `/` and `/login`, including `upgrade-insecure-requests`; smoke test 31/31 with no console errors ✅.
 
 ### 2026-10-15: Deployed (M5)
 

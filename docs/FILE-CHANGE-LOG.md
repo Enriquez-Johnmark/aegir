@@ -303,3 +303,4 @@ Not tracked (machine-local, outside the repo or git-ignored): `~/.impeccable/bin
 | UPDATE | `next.config.ts` | Apply the headers to every route; drop the template comment | D-039 | ✅ build, E2E |
 | CREATE | `e2e/security-headers.spec.ts` | Headers present; no CSP violations through the main screens | D-039 | ✅ 48/48 ×2 |
 | UPDATE | `docs/{SECURITY,DECISIONS,ARCHITECTURE,ROADMAP,TESTING,CHANGELOG,FILE-CHANGE-LOG}.md` | D-039, CSP trade-off in known risks | D-039 | ✅ reconciled with `git status` |
+| UPDATE | `docs/{DEPLOYMENT,TESTING,CHANGELOG}.md` | Header deploy verified in production | D-039 | ✅ |

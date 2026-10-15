@@ -226,3 +226,15 @@ Format: context → decision → alternatives → consequences. Status: **Accept
 **Status:** Accepted · 2026-10-15
 
 **Decision:** `src/components/shared/url-filters.tsx` (`useUrlFilters`, `FilterSelect`) replaces the vessels-only copy, so every list keeps its filters in the URL the same way. Inspection mutations call `revalidatePath("/", "layout")` rather than a single path, because inspection state also feeds the vessel watch list, vessel detail and (next) the dashboard. All data is per-request (no `"use cache"`), so this only refreshes the client router cache; there is no server cache to over-invalidate.
+
+## D-034 — How work orders are worked {#d-034}
+**Status:** Accepted · 2026-10-15
+
+**Decision:**
+- **The list is a queue.** Open, "Assigned to me" and blocked views sort by urgency (`compareByUrgency`): overdue first, then priority, then the earliest due date (undated last). Completed work reads as a log (most recent first).
+- **Only legal moves are offered.** Buttons come from `NEXT_STATUSES`, which mirrors the transition trigger: Start / Resume (primary), Mark blocked, Back to open, Mark completed (primary when in progress).
+- **Blocking says why**, in an inline form (no modal); the reason shows as a callout on the record and in the history. **Completion is confirmed** with an `AlertDialog`, because completed is terminal (no edits, no reopening).
+- **Follow-ups start from the finding.** "Raise work order" on a failed check opens the form with the vessel fixed, the check as the title ("Fix: …"), the finding as the description and the finding's severity as the priority. If work was already raised for that check, the form says so (duplicates are allowed, since a second visit can be legitimate).
+- **History comes from the audit log** (`audit_events`, written by the database), turned into plain entries by `describeAuditEvent`. Actor names are looked up separately because `actor_id` deliberately has no foreign key; seed rows have no actor and show as "System (seed data)".
+- **Details are manager-only.** Assignees (inspector/technician) see status buttons but no "Edit details"; the trigger rejects detail edits from them anyway (42501), and the action explains it.
+- `listVesselNames` moved to `features/vessels/server/queries.ts`, since both lists' vessel filters use it.

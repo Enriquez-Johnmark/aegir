@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 
-import { Skeleton } from "@/components/ui/skeleton";
-import { WelcomeCard } from "@/features/dashboard/components/welcome-card";
+import { PageHeader } from "@/components/layout/page-header";
+import { DashboardSkeleton, DashboardView } from "@/features/dashboard/components/dashboard-view";
 
 export const metadata: Metadata = {
   title: "Dashboard",
@@ -11,12 +11,9 @@ export const metadata: Metadata = {
 export default function DashboardPage() {
   return (
     <>
-      <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
-        <p className="text-muted-foreground">Your organization at a glance.</p>
-      </div>
-      <Suspense fallback={<Skeleton className="h-36" />}>
-        <WelcomeCard />
+      <PageHeader title="Dashboard" description="What needs attention across your fleet today." />
+      <Suspense fallback={<DashboardSkeleton />}>
+        <DashboardView />
       </Suspense>
     </>
   );

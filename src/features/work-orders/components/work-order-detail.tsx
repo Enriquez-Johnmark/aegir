@@ -73,8 +73,8 @@ export async function WorkOrderDetail({ workOrderId, saved }: { workOrderId: str
       <SavedNotice message={saved === "created" || saved === "updated" ? SAVED_MESSAGES[saved] : null} />
 
       {workOrder.status === "blocked" && workOrder.blockedReason ? (
-        <Alert>
-          <CirclePauseIcon className="text-warning" />
+        <Alert className="*:[svg]:text-warning">
+          <CirclePauseIcon />
           <AlertTitle>Blocked</AlertTitle>
           <AlertDescription className="whitespace-pre-line">{workOrder.blockedReason}</AlertDescription>
         </Alert>
@@ -148,7 +148,9 @@ function FindingCard({ finding }: { finding: NonNullable<Detail["finding"]> }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Raised from a failed check</CardTitle>
+        <CardTitle>
+          <h2>Raised from a failed check</h2>
+        </CardTitle>
         <CardDescription>
           {finding.inspection ? (
             <Link
@@ -178,7 +180,9 @@ function HistoryCard({ workOrder }: { workOrder: Detail }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>History</CardTitle>
+        <CardTitle>
+          <h2>History</h2>
+        </CardTitle>
         <CardDescription>Every change is recorded by the database and can&apos;t be edited.</CardDescription>
       </CardHeader>
       <CardContent>

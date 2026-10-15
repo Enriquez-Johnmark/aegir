@@ -88,7 +88,9 @@ function WorkOrdersCard({ vesselId, workOrders }: { vesselId: string; workOrders
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Open work orders</CardTitle>
+        <CardTitle>
+          <h2>Open work orders</h2>
+        </CardTitle>
         <CardDescription className="tabular-nums">
           {workOrders.length === 0 ? "Nothing outstanding." : summary || "Nothing overdue or critical."}
         </CardDescription>
@@ -149,7 +151,9 @@ function InspectionsCard({ vesselId, inspections }: { vesselId: string; inspecti
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Inspections</CardTitle>
+        <CardTitle>
+          <h2>Inspections</h2>
+        </CardTitle>
         <CardDescription className="tabular-nums">
           {inspections.length === 0
             ? "None scheduled or recorded."

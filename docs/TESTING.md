@@ -90,13 +90,29 @@ rollback;
 | 2026-10-15 | `npm run lint` / `typecheck` / `build` / `impeccable detect` (work-orders UI) | ✅ / ✅ / ✅ (work-order routes partially prerendered) / `[]` |
 | 2026-10-15 | `npm run test:e2e` (after M3 work orders) | ✅ 36/36 (auth 5 + inspections 4 + vessels 5 + work orders 4, × desktop + mobile), two consecutive green runs |
 | 2026-10-15 | Design inspection round (desktop + Pixel 7: queue, blocked detail, block form, follow-up form, inspection with linked work) | ✅ no console errors, no defects found |
+| 2026-10-15 | `npm test` (after M3 dashboard) | ✅ 75/75 (+16 dashboard: date window, fleet/work/inspection counts, failed-check retention and order, vessel attention, handovers, shared `tallyAttention`) |
+| 2026-10-15 | `npm run lint` / `typecheck` / `build` / `impeccable detect` (dashboard UI) | ✅ / ✅ / ✅ (`/dashboard` partially prerendered) / `[]` |
+| 2026-10-15 | `npm run test:e2e` (after M3 dashboard) | ✅ 42/42 (auth 5 + dashboard 3 + inspections 4 + vessels 5 + work orders 4, × desktop + mobile), two consecutive green runs (fresh seed, then on the first run's data) |
+| 2026-10-15 | `npm run db:test` / `db:lint` / `supabase db advisors --local` | ✅ 78/78 / no errors / no issues (no migration in this slice) |
+| 2026-10-15 | Design inspection round (desktop 1360×900 + Pixel 7, manager and inspector) | ✅ no console errors, no overflow; 4 fixes after the first round (card bottom band, vessel reason text, link labels, copy length) |
+| 2026-10-15 | Impeccable `critique` (inspections + work orders, dual-agent, one combined run) | 29/40 Good; 0 P0, 2 P1 (inspection completion unconfirmed and silent; recorded failures stay as open forms), 3 P2; detector `[]` and overlay only `overused-font` (false positive). **Not fixed yet**, awaiting the owner's priorities. Snapshots `.impeccable/critique/2026-10-15T04-09-20Z__src-app-app-{inspections,work-orders}.md` |
+| 2026-10-15 | `npm run test:e2e` (after the critique fixes) | ⚠️ 40/42 first run: both projects failed on a strict-mode locator (the completion hint is intentionally shown twice); test corrected → inspections 8/8 → full suite ✅ 42/42 twice in a row |
+| 2026-10-15 | Confirmation round for the critique fixes (desktop + Pixel 7) | ✅ blocked icon amber (computed colour), `h2` card titles, select items 44px coarse / 28px fine, severity cards 86px, no overflow, no console errors |
+| 2026-10-15 | Impeccable re-critique (inspections + work orders, fresh dual-agent run after the D-036 fixes) | 27/40 Acceptable (29 → 27: different independent reviewer; all five earlier issues verified resolved). New **P1, pre-existing since the inspections slice**: tapping Pass/N/A on a recorded failure saves at once and erases its finding and severity, even with a linked work order (verified in code: `recordResultSchema` nulls them). 3 P2 + 1 P3. Detector `[]`; overlay only `overused-font` (false positive). **Not fixed yet**, awaiting the owner. Snapshots `.impeccable/critique/2026-10-15T04-55-22Z__src-app-app-{inspections,work-orders}.md` |
+| 2026-10-15 | `npm run db:test` (after `protect_linked_failed_checks`) | ✅ 85/85 (8 files; new `08_linked_failed_checks` 7/7, red first: 5/7 failed against the old schema). A later run failed 03 #9 and 08 #4 because manual/agent clicking had changed the seeded fixtures; `db:reset` → 85/85 again |
+| 2026-10-15 | `npm test` (after D-037) | ✅ 76/76 (tiered urgency: tests written first and seen failing; dashboard queue expectation updated to the new order) |
+| 2026-10-15 | `npm run test:e2e` (after D-037) | ⚠️ 41/42 once: the desktop dashboard follow-up test did not find the "Needs follow-up" row within 10 s (that run was ~4× slower; the failure snapshot shows the row present). Not reproduced in 18/18 repeats of the spec and 4 later full runs (42/42 ×2, then 42/42 ×2 after the notice fix). Root cause **not identified**; recorded as intermittent |
+| 2026-10-15 | Confirmation round for D-037 (desktop + Pixel 7) | Found a real bug: after raising work from a check, the inspection's "Work order raised" notice stayed hidden (stale `SavedNotice` state on a reused page). Reproduced in E2E (red), fixed, green; then all checks pass: Complete disabled while a form is open, focus on "Keep the failure", Pass disabled on linked failures, no other primary beside the block form, no overflow, no console errors |
+| 2026-10-15 | `db:lint` / `db advisors --local` / `impeccable detect` (all changed UI) | ✅ no errors / no issues / `[]` |
 | 2026-10-12 | Token contrast (OKLCH→sRGB WCAG script) | ✅ all pairs ≥ 4.5:1 text, ring ≥ 3:1; shadcn default destructive-on-tint was 3.99:1 (fixed, D-026) |
 
 ## Known gaps
 
 - No Vitest integration tests against the local stack yet (planned with the M3 DAL).
 - Accessibility checks (axe via Playwright) are planned for M4.
-- E2E covers authentication, vessels, inspections and work orders; the dashboard is added with its slice.
+- pgTAP uses the seed as its fixture (D-018): run `npm run db:reset` before `npm run db:test` after any manual, agent or screenshot clicking in the local app, or seeded-row tests fail on drifted data.
+- One intermittent E2E failure is unexplained (dashboard follow-up row not found within 10 s in a slow run, 2026-10-15); watch for recurrence.
+- E2E covers authentication, dashboard, vessels, inspections and work orders. Dashboard tests compare figures before and after their own actions instead of asserting global totals (D-030).
 - Tests that change state create their own records (seeded work orders and inspections are never moved), so reruns stay valid without a reset.
 - Inputs with a `list` (datalist) are exposed as `combobox`, not `textbox`; locate them by that role.
 - E2E locator policy under Cache Components: see D-030 (role locators, `visible` filter, scoped to `main`).

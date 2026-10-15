@@ -11,6 +11,7 @@
 | `20261012070238_create_handovers.sql` | `handover_status`, handovers, immutability and acknowledgement rules |
 | `20261012070240_create_audit_log.sql` | audit_events + audit triggers on every operational table |
 | `20261014174645_require_inspector_role_for_item_updates.sql` | Fix forward: the assigned-inspector branch of the `inspection_items` update policy also requires a current `inspector` role (D-031) |
+| `20261015051635_protect_linked_failed_checks.sql` | A failed check that a work order references can no longer change its result (`inspection_items_protect_linked_failure` trigger, D-037) |
 
 ## 1. Entity relationships
 
@@ -112,7 +113,7 @@ Transitions (trigger): `scheduled → in_progress | cancelled`, `in_progress →
 | severity | severity | `result = 'fail'` ⇔ not null |
 | | | `unique (id, organization_id)` |
 
-Items are **frozen once the parent inspection is completed or cancelled** (trigger). Changing a result away from `fail` clears `severity` automatically.
+Items are **frozen once the parent inspection is completed or cancelled** (trigger). Changing a result away from `fail` clears `severity` automatically. **A failed item that a work order references keeps `result = 'fail'`** (P0001, D-037); its finding and severity can still be refined while the inspection is open.
 Indexes: `(inspection_id, organization_id)` (composite FK), `(organization_id, result)`; `(inspection_id, position)` unique.
 
 ### work_orders

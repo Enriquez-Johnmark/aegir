@@ -115,6 +115,7 @@ Membership management is seed-only in the MVP (no UI).
 | 2026-10-12 | Manual API probe (curl) | ✅ | Technician sees only Northwind vessels; vessel insert → 42501 RLS; Meridian manager reading a Northwind vessel → `[]`; anon → 42501; signup → `signup_disabled` |
 | 2026-10-12 | `npx playwright test` (auth) | ✅ 10/10 | Desktop + mobile: redirect to login, generic error, server validation, open-redirect guard, sign-out |
 | 2026-10-15 | `npx supabase test db` (7 files) | ✅ 78/78 | + `07_inspection_results` (5): assigned inspector may record, others may not, manager may, a demoted inspector may not (D-031). The new test was run once against the old policy in a rolled-back transaction: test 4 failed as expected |
+| 2026-10-15 | `npx supabase test db` (8 files) | ✅ 85/85 | + `08_linked_failed_checks` (7): a failed check with a work order can't become pass or N/A, for the inspector or a manager; its finding can be refined; an unlinked failure can still be corrected (D-037). Red against the old schema first (5/7 failed) |
 
 Covered by pgTAP (highlights): RLS enabled on every public table; anon has zero privileges; no private function executable by anon; every security-definer function pins `search_path`; cross-organization reads return nothing; cross-organization inserts/moves rejected; forged `created_by`/`from_user_id` rejected; role limits per table; invalid transitions rejected; closed inspections and acknowledged handovers frozen; audit rows unwritable by clients and stamped with the real actor.
 

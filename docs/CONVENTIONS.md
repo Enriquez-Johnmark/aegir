@@ -133,6 +133,8 @@ Project config: `base-nova` style, **Base UI** primitives (`base`), lucide icons
 - **Links that look like buttons use `ButtonLink`** (`src/components/shared/button-link.tsx`: a real `<Link>` styled with `buttonVariants`). Never render a link through `Button` (`render={<Link />}` + `nativeButton={false}`): Base UI then adds `role="button"`, so screen readers announce a button that navigates (D-027; this replaced earlier guidance in this file).
 - Base UI state attributes are `data-vertical`, `data-horizontal`, `data-active`, … (Tailwind `data-vertical:h-4`), **not** Radix's `data-[orientation=vertical]`. Radix-style selectors copied from examples silently do nothing.
 - Every new interactive control honours the 44px coarse-pointer minimum (`pointer-coarse:min-h-11`; DESIGN.md: The Deck Hand Rule).
+- `Alert` forces its icon to `text-current` (`*:[svg]:text-current`), so a tint on the icon itself is silently ignored. Tint an alert's icon from the `Alert`: `className="*:[svg]:text-warning"` (`cn` merges it over the default).
+- Card titles that name a section of a record are headings: `<CardTitle><h2>…</h2></CardTitle>` (`CardTitle` renders a `div`).
 - Empty, forbidden and error states use `EMPTY_PANEL` (`src/components/shared/panel.ts`); record pages use `PageHeader` with `breadcrumbs` and a `badge` outside the `h1`.
 - Forms move focus to the first invalid field after a failed submit, keep field hints visible alongside errors, and redirect with `?saved=…` so the record page shows a `SavedNotice`.
 - Visual rules live in [DESIGN.md](../DESIGN.md) ("The Bridge Console"). Status uses `Badge` variants `destructive | warning | success | info | outline` with the mapping in DESIGN.md; numbers in tables and metrics use `tabular-nums`.

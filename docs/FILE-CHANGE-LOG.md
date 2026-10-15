@@ -212,3 +212,56 @@ Not tracked (machine-local, outside the repo or git-ignored): `~/.impeccable/bin
 | UPDATE | `DESIGN.md` | Work-order badges and status-action pattern | | ✅ |
 | UPDATE | `docs/{DECISIONS,TESTING,ARCHITECTURE,ROADMAP,CHANGELOG,FILE-CHANGE-LOG}.md`, `README.md` | D-034, evidence | | ✅ reconciled with `git status` |
 
+
+## 2026-10-15 · M3 slice 4: Live dashboard
+
+| Action | Path | Purpose | Related | Verification |
+|---|---|---|---|---|
+| CREATE | `src/features/dashboard/domain.ts`, `dashboard.test.ts` | `buildDashboard()`: figures and queues from plain rows (due-soon window, failed-check retention, ordering, limits) | D-035 | ✅ unit 16 |
+| CREATE | `src/features/dashboard/server/queries.ts` | `getDashboard()`: five parallel RLS-scoped reads → `buildDashboard()` | D-035 | ✅ E2E 42/42 ×2 |
+| CREATE | `src/features/dashboard/components/{dashboard-summary,dashboard-panels,dashboard-view}.tsx` | Figures row, queue panels, skeleton | D-035 | ✅ `impeccable detect` `[]`, screenshots desktop + Pixel 7 |
+| DELETE | `src/features/dashboard/components/welcome-card.tsx` | Replaced by the live dashboard | | ✅ no references left |
+| UPDATE | `src/app/(app)/dashboard/page.tsx` | `PageHeader` + streamed dashboard behind a shaped skeleton | | ✅ build (partial prerender) |
+| UPDATE | `src/features/vessels/domain.ts`, `src/features/vessels/server/queries.ts` | `tallyAttention()` / `emptyAttention()` shared by the watch list and the dashboard | D-035 | ✅ unit, typecheck |
+| UPDATE | `src/features/vessels/actions.ts` | Vessel saves revalidate the app-shell layout (status feeds the dashboard) | D-033, D-035 | ✅ typecheck |
+| CREATE | `e2e/dashboard.spec.ts` | Org queues + isolation; failed check → follow-up → work raised, with figures and a viewer; per-user callouts | D-030 | ✅ 42/42 suite, two consecutive runs |
+| UPDATE | `e2e/auth.spec.ts` | Dashboard assertions follow the welcome card's removal | | ✅ |
+| UPDATE | `DESIGN.md` | Dashboard pattern (figures row, queue panels) | D-035 | ✅ |
+| UPDATE | `docs/{DECISIONS,ARCHITECTURE,ROADMAP,TESTING,CHANGELOG,FILE-CHANGE-LOG}.md`, `README.md` | D-035, evidence, critique result | | ✅ reconciled with `git status` |
+| CREATE | `.impeccable/critique/2026-10-15T04-09-20Z__src-app-app-{inspections,work-orders}.md` | Impeccable critique snapshot (one combined run, stored per route) for a later `polish` | D-024 | ✅ written by `critique-storage` |
+
+## 2026-10-15 · Critique fixes: inspections and work orders (P1 + P2)
+
+| Action | Path | Purpose | Related | Verification |
+|---|---|---|---|---|
+| CREATE | `src/features/inspections/components/complete-inspection.tsx` | Confirmed completion: result summary, freeze warning, unaddressed failures with "Raise work order" | D-036 | ✅ E2E (dialog, notice) |
+| UPDATE | `src/features/inspections/components/{inspection-actions,inspection-detail}.tsx` | Use the confirmed completion; repeat it at the end of the checklist; completion notice with follow-up count; `h2` checklist title; drop "Completed: Not yet" | D-036 | ✅ E2E, screenshots |
+| UPDATE | `src/features/inspections/actions.ts` | Completion redirects to `?saved=completed` | D-036 | ✅ E2E |
+| UPDATE | `src/features/inspections/components/checklist-item.tsx` | Recorded failures collapse to a read-only finding + "Edit finding"; severity as radio choice cards with full guidance | D-036 | ✅ E2E, screenshots (86px cards) |
+| UPDATE | `src/features/inspections/components/inspection-badges.tsx` | Overdue beside the lifecycle badge, not instead of it | D-036 | ✅ screenshots |
+| CREATE | `src/components/ui/radio-group.tsx` | shadcn `radio-group` (`npx shadcn@4.21.4 add radio-group`, reviewed; no new dependency) | D-014 | ✅ typecheck |
+| UPDATE | `src/components/ui/{select,dropdown-menu}.tsx` | `pointer-coarse:min-h-11` on SelectItem and DropdownMenuItem (Deck Hand Rule) | D-029 | ✅ measured 44px on Pixel 7, 28px desktop |
+| UPDATE | `src/features/work-orders/components/work-order-detail.tsx`, `src/components/shared/saved-notice.tsx` | Alert icon tints set on the Alert (they were overridden to ink); `h2` card titles | D-036 | ✅ computed colour checked |
+| UPDATE | `src/features/vessels/components/vessel-detail.tsx` | `h2` card titles (same convention) | | ✅ typecheck |
+| UPDATE | `e2e/{inspections,dashboard}.spec.ts` | Severity radios; confirmed completion, collapsed finding, completion notice; both Complete buttons and hints | | ✅ 42/42 ×2 |
+| UPDATE | `DESIGN.md`, `docs/{CONVENTIONS,DECISIONS,TESTING,CHANGELOG,ROADMAP,FILE-CHANGE-LOG}.md` | Patterns, Alert icon and card-title conventions, D-036, evidence, re-critique result | D-036 | ✅ reconciled with `git status` |
+| CREATE | `.impeccable/critique/2026-10-15T04-55-22Z__src-app-app-{inspections,work-orders}.md` | Re-critique snapshot (27/40) | D-024 | ✅ written by `critique-storage` |
+
+## 2026-10-15 · Re-critique fixes: protect recorded failures, follow-up flow, urgency (D-037)
+
+| Action | Path | Purpose | Related | Verification |
+|---|---|---|---|---|
+| CREATE | `supabase/migrations/20261015051635_protect_linked_failed_checks.sql` | Trigger: a failed check with a work order keeps `result = 'fail'` | D-037 | ✅ `db:reset`, `db:lint`, advisors |
+| CREATE | `supabase/tests/08_linked_failed_checks.test.sql` | 7 pgTAP tests (inspector, manager, refine finding, unlinked correction) | D-037 | ✅ red first, then 85/85 |
+| UPDATE | `src/features/inspections/server/mutations.ts` | Plain-language message for the new trigger error | D-037 | ✅ typecheck |
+| UPDATE | `src/features/inspections/components/checklist-item.tsx` | Confirm before replacing a failure; lock Pass/N/A on linked failures; report open edits | D-037 | ✅ E2E, screenshots |
+| CREATE | `src/features/inspections/components/checklist-editing.tsx` | Context: Complete waits for open edits; shared Complete hint | D-037 | ✅ E2E |
+| UPDATE | `src/features/inspections/components/{complete-inspection,inspection-actions,inspection-detail}.tsx`, `src/app/(app)/inspections/[inspectionId]/page.tsx` | Editing provider and hints; "Work order raised" notice with link (validated `workOrder` param) | D-037 | ✅ E2E |
+| UPDATE | `src/features/work-orders/{actions.ts,server/mutations.ts}` | Follow-ups redirect back to their inspection | D-037 | ✅ E2E |
+| UPDATE | `src/features/work-orders/components/work-order-form.tsx`, `src/app/(app)/work-orders/new/page.tsx` | Severity badge in the follow-up context | D-037 | ✅ screenshot |
+| UPDATE | `src/features/work-orders/components/work-order-status-actions.tsx` | Other moves step aside while the block form is open | D-037 | ✅ measured |
+| UPDATE | `src/features/work-orders/{domain.ts,work-orders.test.ts}`, `src/features/dashboard/dashboard.test.ts` | Tiered urgency (`urgencyTier`, `compareByUrgency`) | D-037 | ✅ unit 76/76 (red first) |
+| UPDATE | `src/app/(app)/work-orders/page.tsx`, `src/features/dashboard/components/dashboard-panels.tsx` | Queue description follows the new order | D-037 | ✅ |
+| UPDATE | `src/components/shared/saved-notice.tsx` | Optional link + description; resets when its message changes (reused pages) | D-037 | ✅ E2E red → green |
+| UPDATE | `e2e/{inspections,dashboard}.spec.ts` | Replace confirm, Complete waits, return to inspection + link, linked lock, dismissed-notice repro | D-037 | ✅ 42/42 ×4 |
+| UPDATE | `DESIGN.md`, `docs/{DATA_MODEL,SECURITY,DECISIONS,TESTING,CHANGELOG,ROADMAP,FILE-CHANGE-LOG}.md` | D-037, rules, evidence | D-037 | ✅ reconciled with `git status` |

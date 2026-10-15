@@ -169,7 +169,7 @@ Charts (`--chart-1…5`) are a single navy lightness ramp so data series read as
 **The Fixed Scale Rule.** No fluid (`clamp`) type on Operate screens; steps stay at 12/14/16/24px.
 
 ### Touch
-**The Deck Hand Rule.** On coarse pointers (phones, tablets) every interactive control is at least 44px tall (`pointer-coarse:` variant in Button, Input, InputGroup, SelectTrigger and sidebar items); fine pointers keep the compact 32px density. New interactive components must follow it.
+**The Deck Hand Rule.** On coarse pointers (phones, tablets) every interactive control is at least 44px tall (`pointer-coarse:` variant in Button, Input, InputGroup, SelectTrigger, SelectItem, DropdownMenuItem and sidebar items); fine pointers keep the compact 32px density. New interactive components must follow it.
 
 ## Layout
 
@@ -205,19 +205,30 @@ Gently rounded and consistent: base radius 10px (`--radius: 0.625rem`), controls
   - in progress, scheduled → `info`
   - open, pending, not applicable → `outline`
 - **Copy:** the product's own words ("Overdue", "Blocked", "Needs follow-up"), never colour alone.
-- **Inspections:** an overdue inspection shows `Overdue` (destructive + clock icon) instead of its lifecycle badge; otherwise scheduled / in progress → `info`, completed → `success`, cancelled → `outline`. Check results: pass → `success`, fail → `destructive`, N/A and not checked → `outline`, each with an icon. Finding severity: critical → `destructive`, high → `warning`, medium and low → `secondary`, always with an icon and the word "severity". A failed check without a work order carries `Needs follow-up` (`warning` + flag icon).
+- **Inspections:** the lifecycle badge is always shown (scheduled / in progress → `info`, completed → `success`, cancelled → `outline`), with `Overdue` (destructive + clock icon) beside it when late, as on work orders. Check results: pass → `success`, fail → `destructive`, N/A and not checked → `outline`, each with an icon. Finding severity: critical → `destructive`, high → `warning`, medium and low → `secondary`, always with an icon and the word "severity". A failed check without a work order carries `Needs follow-up` (`warning` + flag icon).
 
 - **Work orders:** status open → `outline`, in progress → `info`, blocked → `warning`, completed → `success`, plus a separate `Overdue` badge (destructive + clock). Priority: critical → `destructive` (octagon), high → `warning` (triangle), medium → `secondary` (equals), low → `secondary` (down arrow); the word "priority" is read by screen readers. A work order raised from a check carries a small clipboard icon with an accessible label.
 
 ### Working a work order
-- One primary action for the current state (Start work, Mark completed, Resume work); Mark blocked is outline and opens an inline reason form; Back to open is ghost. Completion confirms in an `AlertDialog` because it is final.
+- One primary action for the current state (Start work, Mark completed, Resume work); Mark blocked is outline and opens an inline reason form, and while that form is open the other moves step aside (one primary per task); Back to open is ghost. Completion confirms in an `AlertDialog` because it is final.
 - A blocked work order shows its reason in a neutral `Alert` with a warning-tinted pause icon, above the actions.
+- The queue reads most urgent first: overdue critical and high work, then critical, then anything else overdue, then the rest (D-037).
+- A work order raised from a failed check returns to the inspection, whose notice links to the new work order.
 - History is a plain chronological list (what changed, who, when in UTC), never editable.
 
 ### Recording results (inspection checklist)
 - Each check is a numbered row: category (label size, muted), the check itself, and a three-way `ToggleGroup` (Pass / Fail / N/A, outline, joined). The pressed option takes its signal tint (success, destructive, neutral), so the row reads at a glance.
-- Pass and N/A save on tap with an inline "Saving / Saved" status; Fail opens an inline panel (Deck Grey wash, no card) with the finding and severity, saved by "Record failure". No modal.
-- Lifecycle actions sit above the record: one primary (Start or Complete), Cancel as outline behind an `AlertDialog`. A disabled Complete always says why ("Record 2 more checks…").
+- Pass and N/A save on tap with an inline "Saving / Saved" status; Fail opens an inline panel (Deck Grey wash, no card) with the finding and severity, saved by "Record failure". No modal. Severity is four choice cards (radio group) that show each level's full guidance, never a truncated dropdown.
+- A recorded failure collapses to a read-only finding with its severity badge and a ghost "Edit finding"; only one finding form is open at a time, so the region keeps a single navy action.
+- A recorded failure is never replaced by one tap: tapping Pass or N/A asks inline first ("Replace this failure with Pass?", destructive confirm, focus on "Keep the failure"). Once a work order follows it up, Pass and N/A are disabled with the reason shown (the database enforces it too).
+- Complete waits, disabled with its reason, while any finding form or replace question is open.
+- Lifecycle actions sit above the record: one primary (Start or Complete), Cancel as outline behind an `AlertDialog`. Complete is repeated at the end of the checklist, where the last result is recorded. A disabled Complete always says why ("Record 2 more checks…").
+- **Completion is confirmed** (`AlertDialog`), because it freezes the checklist: the dialog states the result summary and lists failed checks without a work order, with "Raise work order" links; completing anyway is allowed (they stay flagged on the dashboard). The record then shows a `SavedNotice` that repeats any follow-up still owed.
+
+### Dashboard
+- **Figures row, then queues.** One hairline-ringed row of five figures (label 12px muted, value 24px semibold `tabular-nums`, one line of signals), joined by 1px gaps rather than separate cards; two columns on phones, five from `lg`. Each figure is a link to the list that explains it. The queues below are the structure; the figures only summarise.
+- **Figures stay in ink.** A signal (overdue, blocked, failed checks without work, "for you") is a badge with an icon beside the figure; a calm state is a muted sentence ("None overdue or blocked"), never a green badge.
+- **Queue panels** are cards with an `h2` title, a one-line rule for what is listed and in what order, an optional ghost "All open" / "Watch list" link, and rows that reuse each feature's badges and stretched-link row pattern. Empty panels say what is clear in one muted sentence. Two columns from `lg`; handovers span both.
 
 ### Cards / Containers
 - **Corner:** 14px. **Background:** Chart White. **Border:** hairline ring. **Shadow:** none. **Padding:** 16px (12px `sm`).

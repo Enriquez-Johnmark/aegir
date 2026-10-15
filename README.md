@@ -18,7 +18,7 @@
 | Work orders: urgency queue, raise from a failed check, start / block (with reason) / resume / complete, manager edits, audit-log history | ✅ |
 | Task handovers UI with acknowledgement | ⬜ |
 | Audit history UI | ⬜ |
-| Live operational dashboard | 🟡 (shell + welcome) |
+| Live operational dashboard: fleet figures, work queue, inspections due, failed checks needing follow-up, vessels needing attention, pending handovers | ✅ |
 
 ## Tech stack
 

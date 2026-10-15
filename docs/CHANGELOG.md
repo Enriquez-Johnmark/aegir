@@ -4,6 +4,59 @@ Meaningful functional and technical changes, newest first. Format loosely follow
 
 ## [Unreleased]
 
+### 2026-10-15: Protect recorded failures; follow-up flow and urgency (from the re-critique)
+
+**Added**
+- Migration `20261015051635_protect_linked_failed_checks`: a failed check that a work order follows up can no longer change its result (P0001); pgTAP `08_linked_failed_checks` (7).
+
+**Changed**
+- Tapping Pass or N/A on a recorded failure asks first ("Replace this failure with Pass?"); on a failure with work raised, Pass and N/A are disabled with the reason shown.
+- Raising a work order from a failed check returns to the inspection; its notice links to the new work order. The raise form's context shows the finding's severity.
+- One live primary per sub-task: the block form hides the other status moves; Complete waits while a finding form or replace question is open.
+- Work queues use tiered urgency (overdue critical/high → critical → other overdue → rest), on `/work-orders` and the dashboard (D-037, supersedes D-034's order).
+
+**Fixed**
+- **Safety (pre-existing since the inspections slice):** one tap on Pass or N/A erased a recorded finding and severity, even with a work order attached.
+- Saved notices stayed hidden when a redirect returned to a page kept mounted by Cache Components (found in the visual round).
+
+**Reason:** Impeccable re-critique (27/40); owner chose "confirm + lock if linked", tiered urgency, P1 then P2s. **Affected areas:** inspection_items trigger, inspections UI, work-order create flow and status actions, shared SavedNotice, urgency order, tests, docs. **Breaking changes:** none for users; queue order changes by design. **Migrations:** `20261015051635_protect_linked_failed_checks` (local only; not pushed anywhere).
+**Verification:** pgTAP 85/85 ✅ (new file red first) · `db lint` ✅ · advisors no issues ✅ · types unchanged · unit 76/76 ✅ · lint/typecheck/build ✅ · `impeccable detect` `[]` ✅ · E2E 42/42 ✅ on four full runs (one earlier intermittent failure, unexplained, see TESTING.md) · desktop + Pixel 7 confirmation round ✅ after one fix.
+
+### 2026-10-15: Inspection and work-order fixes from the Impeccable critique
+
+**Changed**
+- **Completing an inspection is confirmed** (D-036): the dialog states the result summary, warns that the checklist freezes and lists failed checks without a work order (with "Raise work order"). Completing anyway is allowed; the record then says "Inspection completed · N failed checks need a work order". Complete is repeated at the end of the checklist.
+- A recorded failure collapses to its finding and severity badge with "Edit finding", instead of staying an open form with its own primary button.
+- Severity is chosen from four cards that show each level's full guidance (shadcn `radio-group`), replacing a dropdown that truncated it.
+- Inspections show Overdue beside their lifecycle status ("In progress · Overdue"), as work orders do.
+- Select and menu items are 44px tall on touch screens (Deck Hand Rule).
+- Record-section card titles (Checklist, History, Raised from a failed check, vessel cards) are `h2` headings.
+
+**Fixed**
+- Status icons inside alerts (blocked pause icon, saved-notice check) rendered in ink because the Alert forces `text-current`; they now carry their signal colour.
+
+**Reason:** Impeccable critique of inspections + work orders (29/40), owner chose P1 + P2. **Affected areas:** inspections UI, work-order detail, shared saved notice, shadcn select / dropdown-menu / radio-group, E2E. **Breaking changes:** none. **Migrations:** none.
+**Verification:** lint ✅ · typecheck ✅ · unit 75/75 ✅ · `impeccable detect` `[]` ✅ · E2E 42/42 ✅ twice in a row (the first full run failed 2/42 on a test locator: the "Record N more checks" hint now appears twice by design; the test was corrected) · desktop + Pixel 7 confirmation round: icon colour, h2s, 44px select items, 86px severity cards, no overflow, no console errors ✅.
+
+### 2026-10-15: Live dashboard (M3 slice 4)
+
+**Added**
+- Dashboard with live figures: active vessels (of those in service), inspections due (overdue + next 7 days), open work orders (overdue, blocked), failed checks needing follow-up, pending handovers (and those for you). Each figure links to the list behind it.
+- Queue panels: work queue (urgency order, "assigned to you" link), inspections due, failed checks (every unaddressed check, never truncated, with "Raise work order" for roles that may create work; recent addressed ones link to their work order), vessels needing attention (with the exact reason), pending handovers (yours first).
+- `buildDashboard()` (pure, 16 unit tests) and `getDashboard()` (five parallel RLS-scoped reads). Playwright dashboard flows: organization queues and isolation, the failed-check → follow-up → work-raised loop with live figures and a viewer, per-user callouts.
+
+**Changed**
+- The welcome card is gone; the page uses `PageHeader` and a skeleton shaped like the dashboard.
+- Vessel attention counting moved to `tallyAttention()` and is shared by the watch list and the dashboard.
+
+**Fixed**
+- Saving a vessel only refreshed `/vessels`; it now revalidates the app shell, so the dashboard and other lists show the new status (D-033).
+
+**Reason:** P0 dashboard slice (PRODUCT.md workflow 7, principle 3). **Affected areas:** dashboard feature, vessels domain/DAL/actions, E2E, docs.
+**Breaking changes:** none. **Migrations:** none (existing indexes cover every dashboard filter, D-035).
+**Verification:** lint ✅ · typecheck ✅ · unit 75/75 ✅ · build ✅ · E2E 42/42 ✅ (two consecutive runs) · pgTAP 78/78 ✅ · `db lint` ✅ · `db advisors` no issues ✅ · `impeccable detect` (dashboard) `[]` ✅ · desktop + Pixel 7 screenshots, no console errors, no overflow ✅.
+**Review:** Impeccable critique of inspections + work orders (the review the previous two slices left open): 29/40 Good, 2 P1 + 3 P2 findings recorded in TESTING.md; no fixes applied yet.
+
 ### 2026-10-15: Work orders (M3 slice 3)
 
 **Added**

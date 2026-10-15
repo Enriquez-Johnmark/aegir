@@ -231,10 +231,45 @@ Format: context → decision → alternatives → consequences. Status: **Accept
 **Status:** Accepted · 2026-10-15
 
 **Decision:**
-- **The list is a queue.** Open, "Assigned to me" and blocked views sort by urgency (`compareByUrgency`): overdue first, then priority, then the earliest due date (undated last). Completed work reads as a log (most recent first).
+- **The list is a queue.** Open, "Assigned to me" and blocked views sort by urgency (`compareByUrgency`): overdue first, then priority, then the earliest due date (undated last). *Order superseded by D-037 (tiered urgency).* Completed work reads as a log (most recent first).
 - **Only legal moves are offered.** Buttons come from `NEXT_STATUSES`, which mirrors the transition trigger: Start / Resume (primary), Mark blocked, Back to open, Mark completed (primary when in progress).
 - **Blocking says why**, in an inline form (no modal); the reason shows as a callout on the record and in the history. **Completion is confirmed** with an `AlertDialog`, because completed is terminal (no edits, no reopening).
 - **Follow-ups start from the finding.** "Raise work order" on a failed check opens the form with the vessel fixed, the check as the title ("Fix: …"), the finding as the description and the finding's severity as the priority. If work was already raised for that check, the form says so (duplicates are allowed, since a second visit can be legitimate).
 - **History comes from the audit log** (`audit_events`, written by the database), turned into plain entries by `describeAuditEvent`. Actor names are looked up separately because `actor_id` deliberately has no foreign key; seed rows have no actor and show as "System (seed data)".
 - **Details are manager-only.** Assignees (inspector/technician) see status buttons but no "Edit details"; the trigger rejects detail edits from them anyway (42501), and the action explains it.
 - `listVesselNames` moved to `features/vessels/server/queries.ts`, since both lists' vessel filters use it.
+
+## D-035 — The dashboard is a set of queues, assembled in one pure function {#d-035}
+**Status:** Accepted · 2026-10-15
+
+**Context:** PRODUCT.md asks for active vessels, inspections due or overdue, open and overdue work orders, recent failed checks and pending handovers, all from live queries. DESIGN.md rules out hero-metric tiles as a dashboard's structure.
+**Decision:**
+- **Structure:** one compact row of five headline figures (each a link to the list behind it), then queue panels: work queue, inspections due, failed checks, vessels needing attention, pending handovers. Figures stay in ink; signals ride on badges with an icon and words.
+- **Each panel is the head of an existing list, in that list's order:** the work queue uses `compareByUrgency` (the `/work-orders` default view), inspections due are overdue plus due within **7 days**, earliest first (the head of `/inspections`), and vessels use `compareByAttention` (the watch list), limited to vessels that `needsAttention`. Panels show 5 rows and link to the full list.
+- **A failed check without a work order is never truncated** (PRODUCT.md principle 1). The panel lists every unaddressed check, then failures with work raised in the last **30 days**, ordered follow-up first → severity → most recent, and offers "Raise work order" to roles that may create work.
+- **Handovers have no screen yet** (slice 5), so their rows are plain text (no dead links): the ones addressed to the viewer first, then the longest-waiting, capped at 8 with a "more not shown" note.
+- **Assembly is pure:** `getDashboard()` runs five RLS-scoped reads in parallel (vessels, unfinished work orders, open inspections, failed checks with their work orders, pending handovers) and hands plain rows to `buildDashboard()` in `features/dashboard/domain.ts`, which is unit-tested. The per-vessel tally moved to `tallyAttention()` in `features/vessels/domain.ts` and is shared with the watch list.
+- **Freshness:** all reads are per request (no `"use cache"`, D-007). Vessel saves now revalidate the app-shell layout like inspection and work-order writes (D-033), because vessel status feeds the dashboard.
+**Consequences:** aggregation happens in memory, which is fine at fleet scale (as D-028). The failed-check read has no row limit so the follow-up count stays exact. PostgREST's `max_rows` (1000 by default) would cap it at very large volumes; at that point move the counts into a `security_invoker` view or RPC. No migration was needed: every filter is covered by an existing index (`work_orders_org_status_due_idx`, `inspections_org_status_scheduled_idx`, `inspection_items_org_result_idx`, `handovers_org_status_created_idx`).
+
+## D-036 — Completing an inspection is confirmed; unaddressed failures warn but don't block {#d-036}
+**Status:** Accepted · 2026-10-15 (owner's choice after the Impeccable critique of inspections and work orders)
+
+**Context:** The critique (29/40) found completion was one unconfirmed, silent click although it freezes the checklist, while cancelling and completing a work order both confirm. It also asked whether completion should require every failed check to have a work order.
+**Decision:**
+- **Complete is confirmed** with an `AlertDialog` that states the result summary ("3 passed · 1 failed · 1 N/A"), says the checklist will be frozen, and lists failed checks without a work order, each with "Raise work order" for roles that may create work.
+- **Unaddressed failures warn but do not block** completion (owner's choice). They stay visible: the record's `SavedNotice` repeats them ("Inspection completed · 1 failed check needs a work order") and the dashboard never truncates them (D-035). No schema change; a mandatory disposition ("work order or no work needed") would need a migration and pgTAP, and remains an option.
+- The action redirects to `?saved=completed`; Complete is repeated at the end of the checklist.
+- Same pass, from the critique: a recorded failure collapses to a read-only finding with "Edit finding"; severity is a radio group of choice cards with the full guidance; an inspection shows Overdue beside its lifecycle badge; select and menu items get 44px coarse-pointer targets; record-section card titles are `h2`; alert icons take their tint from the `Alert` (CONVENTIONS.md §6).
+
+## D-037 — Protect linked failures; follow-ups return to the inspection; tiered urgency {#d-037}
+**Status:** Accepted · 2026-10-15 (owner's choices after the Impeccable re-critique, 27/40)
+
+**Context:** The re-critique found a pre-existing defect: one tap on Pass or N/A saved immediately and cleared a recorded failure's finding and severity, even when a work order followed it up (PRODUCT.md principle 1). It also found that raising work from a check left the inspection behind, that sub-tasks left competing primary actions live, and that "overdue first" ranked a late low-priority job above critical blocked work.
+**Decision:**
+- **Linked failures are locked in the database.** Migration `20261015051635_protect_linked_failed_checks` adds a `BEFORE UPDATE OF result` trigger on `inspection_items`: a failed check that a work order references can no longer change its result (P0001). Its finding and severity can still be refined while the inspection is open; `audit_events` keeps every version. Security invoker (writers can already read their organization's work orders). pgTAP `08_linked_failed_checks` (7) was red against the old schema first.
+- **In the UI**, Pass/N/A are disabled on a linked failure with the reason shown; replacing an unlinked recorded failure asks inline first ("Replace this failure with Pass? The finding and its severity will be removed."). The DAL maps the trigger's error to plain language.
+- **Follow-ups return to the inspection.** A work order raised from a check redirects to `/inspections/{id}?saved=raised&workOrder={id}`; the notice links to the new work order. The raise form's context shows the finding's severity badge. Due dates are **not** suggested from severity: that would invent a maintenance policy the product doesn't have.
+- **One live primary per sub-task.** The block form hides the other status moves; Complete waits (disabled, with the reason) while any finding form or replace question is open, so completion can't drop an unsaved finding.
+- **Notices survive reused pages.** Cache Components keeps a page mounted after client navigation, so a redirect back reused `SavedNotice` with stale visibility and hid "Work order raised" (found in the visual round, reproduced in E2E, then fixed): the notice now resets when its message changes.
+- **Tiered urgency** replaces D-034's "overdue first": 0 overdue critical/high · 1 critical (including blocked) · 2 other overdue · 3 the rest; then priority, due date, title. `/work-orders` queues and the dashboard work queue share it (`compareByUrgency`). "Blocked for N days" is not shown yet (it needs the status-change time from the audit log).

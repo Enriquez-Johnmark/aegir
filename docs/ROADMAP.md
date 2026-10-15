@@ -40,7 +40,9 @@ Each slice: schema already in place → DAL → actions → UI (loading, empty, 
 5. [ ] Handovers UI ✂️ (P1; schema, rules and tests already done in M2)
 6. [ ] Audit history UI ✂️ (P1; audit triggers already live since M2)
 
-## M4: Verification ⬜
+## M4: Verification 🟡
+- [x] Dashboard slice closed out: Impeccable doctor (product pointer, D-025), critique 28/40 and audit 15/20 → accessibility and touch fixes (D-038); "For you" band and quieter signals deferred
+- [ ] Dark theme (light-only MVP, D-038)
 - [ ] Playwright feature flows (auth already covered) + axe accessibility smoke
 - [ ] Responsive check (mobile/desktop)
 - [ ] `db advisors` clean; migration history reconciled

@@ -265,3 +265,27 @@ Not tracked (machine-local, outside the repo or git-ignored): `~/.impeccable/bin
 | UPDATE | `src/components/shared/saved-notice.tsx` | Optional link + description; resets when its message changes (reused pages) | D-037 | ✅ E2E red → green |
 | UPDATE | `e2e/{inspections,dashboard}.spec.ts` | Replace confirm, Complete waits, return to inspection + link, linked lock, dismissed-notice repro | D-037 | ✅ 42/42 ×4 |
 | UPDATE | `DESIGN.md`, `docs/{DATA_MODEL,SECURITY,DECISIONS,TESTING,CHANGELOG,ROADMAP,FILE-CHANGE-LOG}.md` | D-037, rules, evidence | D-037 | ✅ reconciled with `git status` |
+
+## 2026-10-15 · Close out the dashboard slice (Impeccable doctor, critique, audit)
+
+| Action | Path | Purpose | Related | Verification |
+|---|---|---|---|---|
+| CREATE | `PRODUCT.md` | Pointer to `docs/PRODUCT.md` so Impeccable resolves product context (never a copy) | D-025 | ✅ `impeccable context` → `productPath: PRODUCT.md`, `platform: web` |
+| UPDATE | `docs/DECISIONS.md` | D-025: fallback applied | D-025 | ✅ |
+| CREATE | `.impeccable/critique/*__src-app-app-dashboard.md` | Dashboard critique snapshot (28/40) | D-024 | ✅ written by `critique-storage` |
+| UPDATE | `docs/TESTING.md` | Doctor, critique and audit results | | ✅ |
+| UPDATE | `src/features/dashboard/{domain.ts,dashboard.test.ts}` | `failedChecksTotal` (test first) | D-038 | ✅ unit 77/77 |
+| UPDATE | `src/features/dashboard/components/{dashboard-summary,dashboard-panels,dashboard-view}.tsx` | Figures jump to panels with sentence names; container-query grid; wrapping rows; 44px work-order and "assigned to you" links; truncation note; "Fleet summary" region; announced, matching skeleton | D-038 | ✅ measured at normal and 200% text |
+| UPDATE | `src/app/(app)/layout.tsx`, `src/components/layout/app-sidebar.tsx` | Skip link to `#content`; `nav` landmark with `aria-current` | D-038 | ✅ E2E |
+| UPDATE | `src/components/ui/skeleton.tsx` | No pulse under reduced motion | D-038 | ✅ |
+| UPDATE | `e2e/{dashboard,auth}.spec.ts` | Figure jump + focus, skip link, nav landmark; organisation name no longer a heading | D-038 | ✅ 18/18, suite 44/44 |
+| UPDATE | `DESIGN.md`, `docs/{DECISIONS,TESTING,CHANGELOG,ROADMAP,FILE-CHANGE-LOG}.md` | D-038, light-only note, evidence | D-038 | ✅ reconciled with `git status` |
+
+## 2026-10-15 · M5 preparation: demo seed and token scope
+
+| Action | Path | Purpose | Related | Verification |
+|---|---|---|---|---|
+| CREATE | `scripts/demo-seed.mjs` | Hosted demo seed generated from `supabase/seed.sql`; run-time passwords; guards | D-011 | ✅ local end-to-end, pgTAP 85/85 on its data |
+| CREATE | `scripts/demo-seed.test.mjs` | Admin never published; single replacement; refuses unknown seed | D-011 | ✅ 3/3 |
+| UPDATE | `vitest.config.mts` | Also run `scripts/**/*.test.mjs` | | ✅ 80/80 |
+| UPDATE | `docs/{DEPLOYMENT,DECISIONS,ARCHITECTURE,TESTING,CHANGELOG,FILE-CHANGE-LOG}.md` | Token scope, demo-seed procedure, evidence | D-011 | ✅ reconciled with `git status` |

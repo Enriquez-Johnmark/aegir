@@ -81,6 +81,7 @@ Format: context → decision → alternatives → consequences. Status: **Accept
 (a) Seeded demo accounts per role in a single demo organization, with credentials published in the README; no hard deletes are possible, and a documented reset script restores the seed.
 (b) A "Try the demo" button that signs into a shared **non-admin** account.
 **Decision:** (a). Locally, `supabase/seed.sql` creates one user per role in "Northwind Shipping" plus a second organization ("Meridian Tankers") that exists to prove isolation. For the hosted demo (M5), publish manager, inspector, technician and viewer logins with a demo-only password, and never publish the admin login. **Constraint:** never publish a privileged account, never bypass RLS for the demo. Sign-out is session-local (D-020), so visitors sharing a demo login don't sign each other out.
+**Implemented (2026-10-15):** `scripts/demo-seed.mjs` generates the hosted seed from `supabase/seed.sql` (one data source), with published logins on a run-time demo password and every other account, including the admin, on a random unpublished one (DEPLOYMENT.md step 6).
 
 ## D-012 — shadcn/ui with Base UI primitives (`base-nova`) {#d-012}
 **Status:** Accepted · 2026-10-12
@@ -168,6 +169,7 @@ Format: context → decision → alternatives → consequences. Status: **Accept
 
 **Context:** Impeccable's `init` writes `PRODUCT.md` at the repo root unless its context resolver finds an existing file. Ours is `docs/PRODUCT.md`, and two product documents would drift.
 **Decision (proposed):** `docs/PRODUCT.md` stays the single product authority. When Impeccable needs product context, it reads that file. If the engine insists on a root `PRODUCT.md`, the root file is a short pointer to `docs/PRODUCT.md`, never a second copy. The visual design system is captured once with `impeccable document` as `DESIGN.md` (root, Impeccable's convention; linked from the README and ARCHITECTURE) at the start of M3, generated from the existing shadcn tokens rather than invented.
+**Applied (2026-10-15):** `impeccable context` stopped resolving `docs/PRODUCT.md` (`productPath: null`) and `doctor` has no setting for it, so the fallback above was applied: a short root `PRODUCT.md` pointer (plus `## Platform: web`). Context now resolves `productPath: PRODUCT.md`; the pointer also keeps `init` from writing a competing copy. Product content stays in `docs/PRODUCT.md` only.
 
 ## D-026 — "The Bridge Console" design system {#d-026}
 **Status:** Accepted · 2026-10-12
@@ -273,3 +275,15 @@ Format: context → decision → alternatives → consequences. Status: **Accept
 - **One live primary per sub-task.** The block form hides the other status moves; Complete waits (disabled, with the reason) while any finding form or replace question is open, so completion can't drop an unsaved finding.
 - **Notices survive reused pages.** Cache Components keeps a page mounted after client navigation, so a redirect back reused `SavedNotice` with stale visibility and hid "Work order raised" (found in the visual round, reproduced in E2E, then fixed): the notice now resets when its message changes.
 - **Tiered urgency** replaces D-034's "overdue first": 0 overdue critical/high · 1 critical (including blocked) · 2 other overdue · 3 the rest; then priority, due date, title. `/work-orders` queues and the dashboard work queue share it (`compareByUrgency`). "Blocked for N days" is not shown yet (it needs the status-change time from the audit log).
+
+## D-038 — Dashboard accessibility pass; figures jump to their panels; light-only MVP {#d-038}
+**Status:** Accepted · 2026-10-15 (owner's choices after the dashboard critique, 28/40, and audit, 15/20)
+
+**Decision:**
+- **Figures jump to their own panel** (`#work-queue`, `#inspections-due`, …) instead of mixing in-page jumps with list links whose counts differed ("Inspections due 3" opened "4 open inspections"). Panels are focusable (`tabIndex={-1}`), so focus follows the jump; panel headers keep the "All … open" / "Watch list" links to the full lists. Supersedes D-035's "each figure links to the list behind it".
+- **Large text (WCAG 1.4.4):** row headers wrap (title `flex-[1_1_12rem]`, badges no longer `shrink-0`); the figure grid uses container queries in rem (`@xs` two columns, `@5xl` five), so larger text gets fewer, wider columns instead of clipped signals.
+- **Touch (WCAG 2.5.8, Deck Hand Rule):** the failed check's link to its work order is a `ButtonLink` ("View work order", named with its status); "N assigned to you" moved from an inline sentence link to a header `ButtonLink`. Both are 44px on coarse pointers.
+- **Never silent:** the Failed checks panel says how many rows it leaves out (`failedChecksTotal`).
+- **Shell (every page):** "Skip to content" link to a focusable `#content`; the sidebar menu is a `nav` landmark ("Main") with `aria-current="page"`; the skeleton pulse stops under reduced motion. Figure links carry sentence-like names ("Inspections due: 3, 2 overdue, 1 in the next 7 days"); the summary region is "Fleet summary"; the loading skeleton is announced and matches the real layout.
+- **Light-only MVP.** The dark tokens in `globals.css` stay (they pass contrast when forced), but nothing applies `.dark`; following the OS or adding a toggle is on the roadmap and needs a dark visual pass of every screen first.
+- **Deferred (owner's choice):** the role-aware "For you" band (the critique's other P1), "You" on inspection rows, quieter overdue signals, and folding the Vessels panel; also the shell `<header>` inside `<main>` (a shadcn `SidebarInset` structure).

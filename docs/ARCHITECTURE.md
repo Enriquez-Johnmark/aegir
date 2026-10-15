@@ -45,6 +45,7 @@ aegir/
 ├── docs/                        # All project documentation (this folder)
 ├── e2e/                         # ✅ Playwright specs (auth flow; more per feature)
 ├── public/                      # Static assets served as-is
+├── scripts/                     # ✅ demo-seed.mjs (+ test): hosted demo seed from supabase/seed.sql (D-011)
 ├── supabase/
 │   ├── config.toml              # Local Supabase stack configuration (committed)
 │   ├── migrations/              # ✅ Timestamped, append-only SQL migrations (source of truth)

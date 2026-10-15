@@ -226,9 +226,9 @@ Gently rounded and consistent: base radius 10px (`--radius: 0.625rem`), controls
 - **Completion is confirmed** (`AlertDialog`), because it freezes the checklist: the dialog states the result summary and lists failed checks without a work order, with "Raise work order" links; completing anyway is allowed (they stay flagged on the dashboard). The record then shows a `SavedNotice` that repeats any follow-up still owed.
 
 ### Dashboard
-- **Figures row, then queues.** One hairline-ringed row of five figures (label 12px muted, value 24px semibold `tabular-nums`, one line of signals), joined by 1px gaps rather than separate cards; two columns on phones, five from `lg`. Each figure is a link to the list that explains it. The queues below are the structure; the figures only summarise.
+- **Figures row, then queues.** One hairline-ringed row of five figures (label 12px muted, value 24px semibold `tabular-nums`, one line of signals), joined by 1px gaps rather than separate cards. The column count follows the row's own width (container queries in rem: one column when narrow, two from `@xs`, five from `@5xl`), so larger text gets fewer, wider columns. Each figure jumps to the panel that lists what it counts, and focus follows (D-038). The queues below are the structure; the figures only summarise.
 - **Figures stay in ink.** A signal (overdue, blocked, failed checks without work, "for you") is a badge with an icon beside the figure; a calm state is a muted sentence ("None overdue or blocked"), never a green badge.
-- **Queue panels** are cards with an `h2` title, a one-line rule for what is listed and in what order, an optional ghost "All open" / "Watch list" link, and rows that reuse each feature's badges and stretched-link row pattern. Empty panels say what is clear in one muted sentence. Two columns from `lg`; handovers span both.
+- **Queue panels** are cards with an `h2` title, a one-line rule for what is listed and in what order, an optional ghost "All open" / "Watch list" link, and rows that reuse each feature's badges and stretched-link row pattern. Empty panels say what is clear in one muted sentence; a panel that leaves rows out says how many. Row headers wrap (title first, badges below) rather than squeezing the title. Two columns from `lg`; handovers span both.
 
 ### Cards / Containers
 - **Corner:** 14px. **Background:** Chart White. **Border:** hairline ring. **Shadow:** none. **Padding:** 16px (12px `sm`).
@@ -259,7 +259,7 @@ Gently rounded and consistent: base radius 10px (`--radius: 0.625rem`), controls
 - **Do** use `tabular-nums` for counts, dates and tonnage in tables and metrics (The Ledger Rule).
 - **Do** keep one primary (navy) action per view region.
 - **Do** show skeletons shaped like the content while data streams in.
-- **Do** compose light and dark themes deliberately; signals are re-tuned for dark, not inverted.
+- **Do** compose light and dark themes deliberately; signals are re-tuned for dark, not inverted. (The MVP ships light-only, D-038: the dark tokens exist but nothing applies them yet.)
 
 ### Don't:
 - **Don't** use colour as decoration: no navy hero blocks on Operate screens, no gradient text, no tinted card backgrounds (The Signal Rule).

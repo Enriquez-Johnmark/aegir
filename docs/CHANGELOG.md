@@ -4,6 +4,33 @@ Meaningful functional and technical changes, newest first. Format loosely follow
 
 ## [Unreleased]
 
+### 2026-10-15: Hosted demo seed and deployment prerequisites
+
+**Added**
+- `scripts/demo-seed.mjs`: generates the hosted demo seed from `supabase/seed.sql`, with passwords supplied at run time (published demo logins vs a random private password for the admin and everyone else) and guards against weak passwords, missing variables and non-empty databases. Unit tests (`scripts/demo-seed.test.mjs`; Vitest now also runs `scripts/**/*.test.mjs`).
+- DEPLOYMENT.md: scoped access-token permissions (read-only; writes need the database password) and the exact demo-seed procedure.
+
+**Reason:** M5 preparation (D-011). **Affected areas:** scripts, Vitest config, docs. **Breaking changes:** none. **Migrations:** none. Nothing has been run against the hosted project.
+**Verification:** unit 80/80 ✅ · lint ✅ · local end-to-end run of the demo seed ✅ (see TESTING.md).
+
+### 2026-10-15: Dashboard accessibility pass (critique 28/40, audit 15/20)
+
+**Changed**
+- Summary figures jump to their own panel and focus follows; panel headers keep the links to full lists (D-038, supersedes D-035's figure links).
+- "N assigned to you" is a header button; a failed check's work order opens from a "View work order" button. Both are 44px on touch.
+- The Failed checks panel says how many rows it leaves out.
+- Figure links read as sentences; the summary region is "Fleet summary"; the loading skeleton is announced and matches the layout.
+
+**Fixed**
+- At 200% text, row titles collapsed under their badges and figure signals were clipped (WCAG 1.4.4).
+- App shell: "Skip to content" link, a `Main` navigation landmark with `aria-current="page"`, and no skeleton pulse under reduced motion.
+
+**Added**
+- Root `PRODUCT.md` pointer so Impeccable finds the product context (D-025).
+
+**Reason:** Impeccable doctor, critique and audit of the dashboard; owner chose accessibility + touch first, light-only MVP, figures jump to panels. **Affected areas:** dashboard, app shell, skeleton, E2E. **Breaking changes:** none. **Migrations:** none.
+**Verification:** unit 77/77 ✅ · lint/typecheck/build ✅ · `impeccable detect` `[]` ✅ · E2E 43/44 then 44/44 (one unexplained intermittent, see TESTING.md) · confirmation round at normal and 200% text ✅.
+
 ### 2026-10-15: Protect recorded failures; follow-up flow and urgency (from the re-critique)
 
 **Added**

@@ -41,7 +41,8 @@ async function saveVessel(vesselId: string | null, formData: FormData): Promise<
     return { values, formError: result.formError, fieldErrors: result.fieldErrors };
   }
 
-  revalidatePath("/vessels");
+  // Vessel status also feeds the dashboard and the other lists (D-033).
+  revalidatePath("/", "layout");
   redirect(`/vessels/${result.vesselId}?saved=${vesselId ? "updated" : "created"}`);
 }
 

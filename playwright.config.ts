@@ -3,12 +3,13 @@ import { defineConfig, devices } from "@playwright/test";
 const PORT = 3100;
 
 /**
- * E2E tests run against a production build and the LOCAL Supabase stack with
- * seed data (`npm run db:start && npm run db:reset`). They never touch a
- * remote project.
+ * E2E tests run against a production build and the LOCAL Supabase stack
+ * (`npm run db:start`). Global setup rebuilds the local database from the seed
+ * before each run (`supabase db reset --local`); they never touch a remote project.
  */
 export default defineConfig({
   testDir: "./e2e",
+  globalSetup: "./e2e/global-setup.ts",
   fullyParallel: true,
   // Serial locally: the full Supabase stack + browsers saturate a typical laptop.
   workers: process.env.CI ? 2 : 1,

@@ -21,7 +21,7 @@ test.describe("vessels", () => {
     await expect(firstRow.first()).toContainText("1 critical");
     await expect(page.getByRole("link", { name: "Northwind Aurora" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Northwind Fjord" })).toBeVisible();
-    await expect(page.getByText("Meridian Star").filter(visible)).toHaveCount(0);
+    await expect(page.getByText("Meridian Star")).toHaveCount(0); // unfiltered: a hidden leak is still a leak
 
     await page.getByRole("searchbox", { name: /search vessels/i }).fill("Fjord");
     await expect(page).toHaveURL(/q=Fjord/);
@@ -56,7 +56,7 @@ test.describe("vessels", () => {
     await signIn(page, USERS.viewer);
     await page.goto(`/vessels/${MERIDIAN_VESSEL_ID}`);
     await expect(page.getByText("Vessel not found").filter(visible)).toBeVisible();
-    await expect(page.getByText("Meridian Star").filter(visible)).toHaveCount(0);
+    await expect(page.getByText("Meridian Star")).toHaveCount(0); // unfiltered: a hidden leak is still a leak
   });
 
   test("blocks technicians from adding vessels", async ({ page }) => {

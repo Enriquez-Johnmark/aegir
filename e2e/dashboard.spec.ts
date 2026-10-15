@@ -2,6 +2,9 @@ import { expect, test, type Page } from "@playwright/test";
 
 import { signIn, USERS } from "./helpers";
 
+// Hidden, still-mounted or briefly duplicated streamed content can match too (D-030).
+const visible = { visible: true } as const;
+
 const TERN_VESSEL_ID = "a2000000-0000-4000-8000-000000000005";
 
 /** A headline figure: the number inside the summary link that starts with `label`. */
@@ -18,7 +21,7 @@ function panel(page: Page, name: string) {
 test.describe("dashboard", () => {
   test("shows the organization's live queues and nothing from another organization", async ({ page }) => {
     await signIn(page, USERS.manager);
-    await expect(page.getByRole("main").getByText("Northwind Shipping", { exact: true })).toBeVisible();
+    await expect(page.getByRole("main").getByText("Northwind Shipping", { exact: true }).filter(visible)).toBeVisible();
 
     // Seeded overdue work and inspections lead their queues (overdue first).
     await expect(
@@ -30,7 +33,8 @@ test.describe("dashboard", () => {
     await expect(panel(page, "Vessels needing attention").getByRole("link", { name: "Northwind Fjord" })).toBeVisible();
     await expect(panel(page, "Pending handovers")).toContainText("Petrel LSA inspection is overdue");
 
-    // Meridian Marine's overdue inspection and open work never appear.
+    // Meridian Marine's overdue inspection and open work never appear, not even hidden in the markup
+    // (deliberately unfiltered: a hidden leak is still a leak).
     const main = page.getByRole("main");
     await expect(main.getByText("Cargo tank inspection")).toHaveCount(0);
     await expect(main.getByText("Recalibrate tank 3P level gauge")).toHaveCount(0);
@@ -70,14 +74,14 @@ test.describe("dashboard", () => {
     await page.goto("/dashboard");
     expect(await figure(page, "Needs follow-up")).toBe(followUpsBefore + 1);
     const row = panel(page, "Failed checks").getByRole("listitem").filter({ hasText: title });
-    await expect(row.getByText("Needs follow-up", { exact: true })).toBeVisible();
+    await expect(row.getByText("Needs follow-up", { exact: true }).filter(visible)).toBeVisible();
 
     // A viewer sees the same open finding but is not offered to raise work.
     const viewerContext = await browser.newContext();
     const viewer = await viewerContext.newPage();
     await signIn(viewer, USERS.viewer);
     const viewerRow = panel(viewer, "Failed checks").getByRole("listitem").filter({ hasText: title });
-    await expect(viewerRow.getByText("Needs follow-up", { exact: true })).toBeVisible();
+    await expect(viewerRow.getByText("Needs follow-up", { exact: true }).filter(visible)).toBeVisible();
     await expect(viewerRow.getByRole("link", { name: "Raise work order" })).toHaveCount(0);
     await viewerContext.close();
 
@@ -88,7 +92,7 @@ test.describe("dashboard", () => {
 
     // Back on the inspection, a failure with work raised is locked as failed (D-037).
     await expect(firstCheck.getByRole("button", { name: "Pass" })).toBeDisabled();
-    await expect(page.getByText("Work has been raised for this failure, so its result stays Fail.")).toBeVisible();
+    await expect(page.getByText("Work has been raised for this failure, so its result stays Fail.").filter(visible)).toBeVisible();
 
     // Back on the dashboard the flag is gone and the work is counted.
     await page.goto("/dashboard");

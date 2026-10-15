@@ -2,6 +2,9 @@ import { expect, test } from "@playwright/test";
 
 import { PASSWORD, USERS } from "./helpers";
 
+// Hidden, still-mounted or briefly duplicated streamed content can match too (D-030).
+const visible = { visible: true } as const;
+
 const TECHNICIAN = USERS.technician;
 
 test.describe("authentication", () => {
@@ -16,7 +19,7 @@ test.describe("authentication", () => {
     await expect(page).toHaveURL(/\/dashboard$/);
     await expect(page.getByRole("heading", { name: "Dashboard", level: 1 })).toBeVisible();
     // The dashboard is the technician's own organization, with their own work called out.
-    await expect(page.getByRole("main").getByText("Northwind Shipping", { exact: true })).toBeVisible();
+    await expect(page.getByRole("main").getByText("Northwind Shipping", { exact: true }).filter(visible)).toBeVisible();
     await expect(page.getByRole("link", { name: /assigned to you$/ })).toBeVisible();
   });
 
@@ -38,8 +41,8 @@ test.describe("authentication", () => {
     await page.getByLabel("Email").fill("not-an-email");
     await page.getByRole("button", { name: "Sign in" }).click();
 
-    await expect(page.getByText("Enter a valid email address.")).toBeVisible();
-    await expect(page.getByText("Enter your password.")).toBeVisible();
+    await expect(page.getByText("Enter a valid email address.").filter(visible)).toBeVisible();
+    await expect(page.getByText("Enter your password.").filter(visible)).toBeVisible();
   });
 
   test("ignores off-site redirect targets", async ({ page }) => {

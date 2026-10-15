@@ -38,7 +38,7 @@ test.describe("inspections", () => {
     await expect(page).toHaveURL(/\/inspections\/[0-9a-f-]{36}$/);
     await expect(page.getByRole("status").filter({ hasText: "Inspection scheduled" })).toBeVisible();
     await expect(page.getByRole("heading", { name: title, level: 1 })).toBeVisible();
-    await expect(page.getByText("5 checks, none recorded yet.")).toBeVisible();
+    await expect(page.getByText("5 checks, none recorded yet.").filter(visible)).toBeVisible();
 
     // Results can only be recorded once the inspection is started.
     await expect(check(page, 1)).toHaveCount(0);
@@ -50,31 +50,31 @@ test.describe("inspections", () => {
       await expect(button).toBeDisabled();
     }
     // Each Complete button explains why it is disabled.
-    await expect(page.getByText("Record 5 more checks to complete the inspection.")).toHaveCount(2);
+    await expect(page.getByText("Record 5 more checks to complete the inspection.").filter(visible)).toHaveCount(2);
 
     // Pass and N/A save on tap.
     await check(page, 1).getByRole("button", { name: "Pass" }).click();
-    await expect(page.getByText(/1 of 5 checked/)).toBeVisible();
+    await expect(page.getByText(/1 of 5 checked/).filter(visible)).toBeVisible();
     for (const position of [2, 3]) {
       await check(page, position).getByRole("button", { name: "Pass" }).click();
-      await expect(page.getByText(new RegExp(`${position} of 5 checked`))).toBeVisible();
+      await expect(page.getByText(new RegExp(`${position} of 5 checked`)).filter(visible)).toBeVisible();
     }
     await check(page, 5).getByRole("button", { name: "N/A" }).click();
-    await expect(page.getByText(/4 of 5 checked/)).toBeVisible();
+    await expect(page.getByText(/4 of 5 checked/).filter(visible)).toBeVisible();
 
     // A failure needs a finding and a severity before it saves.
     await check(page, 4).getByRole("button", { name: "Fail" }).click();
     const finding = page.getByRole("textbox", { name: "What did you find?" });
     await expect(finding).toBeFocused();
     await page.getByRole("button", { name: "Record failure" }).click();
-    await expect(page.getByText("Describe what you found.")).toBeVisible();
-    await expect(page.getByText("Choose how severe it is.")).toBeVisible();
+    await expect(page.getByText("Describe what you found.").filter(visible)).toBeVisible();
+    await expect(page.getByText("Choose how severe it is.").filter(visible)).toBeVisible();
     await finding.fill("Port lifebuoy light missing; bracket empty.");
     // Severity is a set of choice cards carrying the full guidance.
     await page.getByRole("radio", { name: /^High/ }).check();
     await page.getByRole("button", { name: "Record failure" }).click();
     await expect(page.getByText("Needs follow-up", { exact: true }).filter(visible)).toBeVisible();
-    await expect(page.getByText(/5 of 5 checked/)).toBeVisible();
+    await expect(page.getByText(/5 of 5 checked/).filter(visible)).toBeVisible();
 
     // A recorded failure reads as a record until someone chooses to edit it.
     await expect(page.getByRole("button", { name: "Edit finding" })).toBeVisible();
@@ -82,9 +82,9 @@ test.describe("inspections", () => {
 
     // One tap never replaces a recorded failure: it asks first, and keeping it changes nothing.
     await check(page, 4).getByRole("button", { name: "Pass" }).click();
-    await expect(page.getByText(/Replace this failure with Pass\?/)).toBeVisible();
+    await expect(page.getByText(/Replace this failure with Pass\?/).filter(visible)).toBeVisible();
     await page.getByRole("button", { name: "Keep the failure" }).click();
-    await expect(page.getByText(/Replace this failure/)).toHaveCount(0);
+    await expect(page.getByText(/Replace this failure/).filter(visible)).toHaveCount(0);
     await expect(page.getByText("Port lifebuoy light missing; bracket empty.").filter(visible)).toBeVisible();
 
     // Completion waits while a finding is open for editing, so it can't drop the edit.
@@ -117,14 +117,14 @@ test.describe("inspections", () => {
 
     // The follow-up: raise a work order straight from the failed check.
     await page.getByRole("link", { name: "Raise work order" }).click();
-    await expect(page.getByText("Following up a failed check on Northwind Tern")).toBeVisible();
+    await expect(page.getByText("Following up a failed check on Northwind Tern").filter(visible)).toBeVisible();
     await expect(page.getByRole("textbox", { name: "Title" })).toHaveValue(/^Fix: /);
     await expect(page.getByRole("combobox", { name: "Priority" })).toContainText("High");
     await page.getByRole("button", { name: "Raise work order" }).click();
     // Raising it returns to the inspection, where the check now links to its work order.
     await expect(page.getByRole("status").filter({ hasText: "Work order raised" })).toBeVisible();
     await expect(page.getByRole("heading", { name: title, level: 1 })).toBeVisible();
-    await expect(page.getByText("Needs follow-up", { exact: true })).toHaveCount(0);
+    await expect(page.getByText("Needs follow-up", { exact: true }).filter(visible)).toHaveCount(0);
     await expect(page.getByText(/^Work order:/).filter(visible)).toBeVisible();
     await page.getByRole("link", { name: "View work order" }).click();
     await expect(page.getByRole("heading", { name: /^Fix: /, level: 1 })).toBeVisible();
@@ -137,9 +137,9 @@ test.describe("inspections", () => {
     await page.getByRole("textbox", { name: "Title" }).fill("Ad hoc");
     await page.getByRole("button", { name: "Schedule inspection" }).click();
 
-    await expect(page.getByText("Choose a vessel.")).toBeVisible();
-    await expect(page.getByText("Enter a category.")).toBeVisible();
-    await expect(page.getByText("Describe what to check.")).toBeVisible();
+    await expect(page.getByText("Choose a vessel.").filter(visible)).toBeVisible();
+    await expect(page.getByText("Enter a category.").filter(visible)).toBeVisible();
+    await expect(page.getByText("Describe what to check.").filter(visible)).toBeVisible();
     // Focus lands on the first problem.
     await expect(page.getByRole("combobox", { name: "Vessel" })).toBeFocused();
   });
@@ -153,7 +153,8 @@ test.describe("inspections", () => {
 
     await page.goto(`/inspections/${FJORD_SURVEY_ID}`);
     await expect(page.getByRole("heading", { name: "Pre-maintenance survey", level: 1 })).toBeVisible();
-    await expect(page.getByText("Work order: Repair main engine fuel pump seal")).toBeVisible();
+    // A hidden, still-mounted copy of the route can match too (D-030): only the visible one counts.
+    await expect(page.getByText("Work order: Repair main engine fuel pump seal").filter(visible)).toBeVisible();
     await expect(page.getByRole("button", { name: "Pass" })).toHaveCount(0);
 
     await page.goto("/inspections/new");
@@ -164,6 +165,6 @@ test.describe("inspections", () => {
     await signIn(page, USERS.manager);
     await page.goto(`/inspections/${MERIDIAN_INSPECTION_ID}`);
     await expect(page.getByText("Inspection not found").filter(visible)).toBeVisible();
-    await expect(page.getByText("Cargo tank inspection")).toHaveCount(0);
+    await expect(page.getByText("Cargo tank inspection").filter(visible)).toHaveCount(0);
   });
 });

@@ -46,7 +46,7 @@ test.describe("work orders", () => {
     const reason = tech.getByRole("textbox", { name: "What is blocking the work?" });
     await expect(reason).toBeFocused();
     await tech.getByRole("button", { name: "Mark blocked" }).click();
-    await expect(tech.getByText("Say what is blocking the work, so someone can unblock it.")).toBeVisible();
+    await expect(tech.getByText("Say what is blocking the work, so someone can unblock it.").filter(visible)).toBeVisible();
     await reason.fill("Waiting for a new line from the chandler.");
     await tech.getByRole("button", { name: "Mark blocked" }).click();
     await expect(tech.getByRole("button", { name: "Resume work" })).toBeVisible();
@@ -72,8 +72,8 @@ test.describe("work orders", () => {
     await signIn(page, USERS.manager);
     await page.goto("/work-orders/new");
     await page.getByRole("button", { name: "Raise work order" }).click();
-    await expect(page.getByText("Choose a vessel.")).toBeVisible();
-    await expect(page.getByText("Give the work order a title of at least 3 characters.")).toBeVisible();
+    await expect(page.getByText("Choose a vessel.").filter(visible)).toBeVisible();
+    await expect(page.getByText("Give the work order a title of at least 3 characters.").filter(visible)).toBeVisible();
     await expect(page.getByRole("combobox", { name: "Vessel" })).toBeFocused();
   });
 
@@ -97,6 +97,6 @@ test.describe("work orders", () => {
     await signIn(page, USERS.manager);
     await page.goto(`/work-orders/${MERIDIAN_WORK_ORDER_ID}`);
     await expect(page.getByText("Work order not found").filter(visible)).toBeVisible();
-    await expect(page.getByText("Recalibrate tank 3P level gauge")).toHaveCount(0);
+    await expect(page.getByText("Recalibrate tank 3P level gauge").filter(visible)).toHaveCount(0);
   });
 });

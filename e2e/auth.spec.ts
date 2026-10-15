@@ -16,7 +16,7 @@ test.describe("authentication", () => {
     await expect(page).toHaveURL(/\/dashboard$/);
     await expect(page.getByRole("heading", { name: "Dashboard", level: 1 })).toBeVisible();
     // The dashboard is the technician's own organization, with their own work called out.
-    await expect(page.getByRole("heading", { name: "Northwind Shipping", level: 2 })).toBeVisible();
+    await expect(page.getByRole("main").getByText("Northwind Shipping", { exact: true })).toBeVisible();
     await expect(page.getByRole("link", { name: /assigned to you$/ })).toBeVisible();
   });
 

@@ -18,7 +18,7 @@ function panel(page: Page, name: string) {
 test.describe("dashboard", () => {
   test("shows the organization's live queues and nothing from another organization", async ({ page }) => {
     await signIn(page, USERS.manager);
-    await expect(page.getByRole("heading", { name: "Northwind Shipping", level: 2 })).toBeVisible();
+    await expect(page.getByRole("main").getByText("Northwind Shipping", { exact: true })).toBeVisible();
 
     // Seeded overdue work and inspections lead their queues (overdue first).
     await expect(
@@ -35,8 +35,12 @@ test.describe("dashboard", () => {
     await expect(main.getByText("Cargo tank inspection")).toHaveCount(0);
     await expect(main.getByText("Recalibrate tank 3P level gauge")).toHaveCount(0);
 
-    // Each figure opens the list behind it.
-    await main.getByRole("link", { name: /^Open work orders/ }).click();
+    // A figure jumps to the panel that lists what it counts, and focus follows (D-038).
+    await main.getByRole("link", { name: /^Open work orders: \d+/ }).click();
+    await expect(page).toHaveURL(/#work-queue$/);
+    await expect(panel(page, "Work queue")).toBeFocused();
+    // The panel's header link opens the full list.
+    await panel(page, "Work queue").getByRole("link", { name: /^All \d+ open$/ }).click();
     await expect(page.getByRole("heading", { name: "Work orders", level: 1 })).toBeVisible();
   });
 
@@ -93,6 +97,23 @@ test.describe("dashboard", () => {
     await expect(
       panel(page, "Failed checks").getByRole("listitem").filter({ hasText: title }).getByText("Needs follow-up"),
     ).toHaveCount(0);
+  });
+
+  test("keyboard users can skip the sidebar, and the navigation marks the current page", async ({ page, isMobile }) => {
+    await signIn(page, USERS.viewer);
+    // A fresh load, so focus starts at the top of the document.
+    await page.goto("/dashboard");
+    await page.keyboard.press("Tab");
+    const skip = page.getByRole("link", { name: "Skip to content" });
+    await expect(skip).toBeFocused();
+    await skip.press("Enter");
+    await expect(page.locator("#content")).toBeFocused();
+    // On phones the sidebar is a closed sheet, so the landmark is checked on desktop.
+    if (!isMobile) {
+      await expect(
+        page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Dashboard" }),
+      ).toHaveAttribute("aria-current", "page");
+    }
   });
 
   test("speaks to the signed-in user", async ({ browser }) => {

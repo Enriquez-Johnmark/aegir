@@ -4,6 +4,7 @@ import { AlertCircleIcon, ClipboardCheckIcon } from "lucide-react";
 import { useActionState, useEffect, useRef } from "react";
 
 import { ButtonLink } from "@/components/shared/button-link";
+import { SeverityBadge } from "@/features/inspections/components/inspection-badges";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
@@ -19,7 +20,7 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import type { WorkOrderFormState } from "@/features/work-orders/actions";
-import { PRIORITIES, PRIORITY_LABELS } from "@/features/work-orders/domain";
+import { PRIORITIES, PRIORITY_LABELS, type Priority } from "@/features/work-orders/domain";
 import { UNASSIGNED, type WorkOrderFormFields } from "@/features/work-orders/schemas";
 
 type Action = (state: WorkOrderFormState, formData: FormData) => Promise<WorkOrderFormState>;
@@ -31,6 +32,7 @@ export type FollowUpContext = {
   inspectionTitle: string;
   check: string;
   finding: string | null;
+  severity: Priority | null;
   existingWorkOrders: number;
 };
 
@@ -94,6 +96,11 @@ export function WorkOrderForm({
             <span className="text-muted-foreground">{followUp.inspectionTitle}</span>
             <span>{followUp.check}</span>
             {followUp.finding ? <span className="text-muted-foreground">“{followUp.finding}”</span> : null}
+            {followUp.severity ? (
+              <span>
+                <SeverityBadge severity={followUp.severity} />
+              </span>
+            ) : null}
             {followUp.existingWorkOrders > 0 ? (
               <span className="font-medium text-warning">
                 {followUp.existingWorkOrders === 1

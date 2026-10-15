@@ -15,7 +15,7 @@ type DbError = { code?: string; message?: string };
 export type WorkOrderFieldErrors = { vesselId?: string[]; assigneeId?: string[] };
 
 export type SaveResult =
-  | { ok: true; workOrderId: string }
+  | { ok: true; workOrderId: string; /** Set when the work follows up a failed check. */ inspectionId?: string | null }
   | { ok: false; formError?: string; fieldErrors?: WorkOrderFieldErrors };
 
 export type StatusResult = { ok: true } | { ok: false; error: string };
@@ -77,7 +77,7 @@ export async function createWorkOrder(values: CreateWorkOrderValues): Promise<Sa
       vessel_id: values.vesselId,
       inspection_item_id: values.inspectionItemId,
     })
-    .select("id")
+    .select("id, item:inspection_items!work_orders_inspection_item_id_organization_id_fkey (inspection_id)")
     .single();
 
   if (error) {
@@ -87,7 +87,7 @@ export async function createWorkOrder(values: CreateWorkOrderValues): Promise<Sa
     }
     return { ok: false, ...explain(error, "The work order could not be saved. Check the details and try again.") };
   }
-  return { ok: true, workOrderId: data.id };
+  return { ok: true, workOrderId: data.id, inspectionId: data.item?.inspection_id ?? null };
 }
 
 export async function updateWorkOrderDetails(

@@ -53,6 +53,10 @@ export async function createWorkOrderAction(
   }
   // Work orders feed the vessel watch list, inspection follow-ups and the dashboard (D-033).
   revalidatePath("/", "layout");
+  if (result.inspectionId) {
+    // Raised from a failed check: back to the inspection, which links the new work (D-037).
+    redirect(`/inspections/${result.inspectionId}?saved=raised&workOrder=${result.workOrderId}`);
+  }
   redirect(`/work-orders/${result.workOrderId}?saved=created`);
 }
 

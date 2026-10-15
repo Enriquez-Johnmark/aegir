@@ -68,6 +68,7 @@ async function NewWorkOrder({ searchParams }: Pick<PageProps<"/work-orders/new">
         inspectionTitle: failedCheck.inspection.title,
         check: failedCheck.description,
         finding: failedCheck.finding,
+        severity: failedCheck.severity,
         existingWorkOrders: failedCheck.existingWorkOrders,
       }
     : undefined;

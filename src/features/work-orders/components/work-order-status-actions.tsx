@@ -49,7 +49,8 @@ export function WorkOrderStatusActions({
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex flex-wrap items-center gap-2">
+      {/* While the reason is being written, the other moves step aside: one primary per task. */}
+      <div className={blocking ? "hidden" : "flex flex-wrap items-center gap-2"}>
         {next.includes("in_progress") ? (
           <form action={formAction}>
             <input type="hidden" name="status" value="in_progress" />

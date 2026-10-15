@@ -20,10 +20,11 @@ export async function DashboardView() {
   return (
     <>
       <section aria-labelledby="summary-title" className="flex flex-col gap-3">
+        <h2 id="summary-title" className="sr-only">
+          Fleet summary
+        </h2>
         <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-          <h2 id="summary-title" className="font-medium">
-            {user.organization.name}
-          </h2>
+          <p className="font-medium">{user.organization.name}</p>
           <p className="text-sm text-muted-foreground tabular-nums">
             Live figures for {formatDate(dashboard.today)} (UTC)
           </p>
@@ -38,7 +39,11 @@ export async function DashboardView() {
           assignedToMe={summary.workOrders.assignedToMe}
         />
         <InspectionsDuePanel items={dashboard.inspectionsDue} total={dashboard.inspectionsDueTotal} />
-        <FailedChecksPanel items={dashboard.failedChecks} canRaise={can(user.role, "work-orders:create")} />
+        <FailedChecksPanel
+          items={dashboard.failedChecks}
+          total={dashboard.failedChecksTotal}
+          canRaise={can(user.role, "work-orders:create")}
+        />
         <VesselsPanel items={dashboard.vesselsNeedingAttention} total={dashboard.vesselsNeedingAttentionTotal} />
         <HandoversPanel
           items={dashboard.handovers}
@@ -50,20 +55,30 @@ export async function DashboardView() {
   );
 }
 
-/** Shaped like the dashboard: the figure row, then two columns of queue panels. */
+/** Shaped like the dashboard: the figure cells, then the five queue panels. Announced to screen readers. */
 export function DashboardSkeleton() {
   return (
-    <>
+    <div aria-busy="true" className="flex flex-col gap-6">
+      <p role="status" className="sr-only">
+        Loading the dashboard…
+      </p>
       <div className="flex flex-col gap-3">
         <Skeleton className="h-5 w-48" />
-        <Skeleton className="h-36 rounded-xl lg:h-28" />
+        <div className="@container">
+          <div className="grid grid-cols-1 gap-px overflow-hidden rounded-xl @xs:grid-cols-2 @5xl:grid-cols-5">
+            {Array.from({ length: 5 }, (_, index) => (
+              <Skeleton key={index} className="h-24 rounded-none last:@xs:@max-5xl:col-span-2" />
+            ))}
+          </div>
+        </div>
       </div>
       <div className="grid gap-6 lg:grid-cols-2">
         <Skeleton className="h-80 rounded-xl" />
         <Skeleton className="h-80 rounded-xl" />
         <Skeleton className="h-64 rounded-xl" />
         <Skeleton className="h-64 rounded-xl" />
+        <Skeleton className="h-40 rounded-xl lg:col-span-2" />
       </div>
-    </>
+    </div>
   );
 }

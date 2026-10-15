@@ -124,6 +124,8 @@ export type Dashboard = {
    * visible until it is addressed), then recent failures with work raised.
    */
   failedChecks: DashboardFailedCheck[];
+  /** Everything the Failed checks panel would list, so it can say what it leaves out. */
+  failedChecksTotal: number;
   vesselsNeedingAttention: DashboardVessel[];
   vesselsNeedingAttentionTotal: number;
   handovers: DashboardHandover[];
@@ -227,6 +229,7 @@ export function buildDashboard(
     inspectionsDue: due.slice(0, PANEL_LIMIT),
     inspectionsDueTotal: due.length,
     failedChecks: failedChecks.slice(0, Math.max(PANEL_LIMIT, followUps)),
+    failedChecksTotal: failedChecks.length,
     vesselsNeedingAttention: watch.slice(0, PANEL_LIMIT),
     vesselsNeedingAttentionTotal: watch.length,
     handovers: handovers.slice(0, HANDOVER_LIMIT),

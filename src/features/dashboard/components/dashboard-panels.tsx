@@ -21,6 +21,7 @@ import {
   PriorityBadge,
   WorkOrderStatusBadge,
 } from "@/features/work-orders/components/work-order-badges";
+import { WORK_ORDER_STATUS_LABELS } from "@/features/work-orders/domain";
 import { formatDate } from "@/lib/format";
 
 // ---------------------------------------------------------------------------
@@ -43,13 +44,19 @@ function Panel({
   children: React.ReactNode;
 }) {
   return (
-    <Card id={id} role="region" aria-labelledby={`${id}-title`} className={cn("scroll-mt-4 pb-0", className)}>
+    <Card
+      id={id}
+      role="region"
+      aria-labelledby={`${id}-title`}
+      tabIndex={-1}
+      className={cn("scroll-mt-4 pb-0 outline-none", className)}
+    >
       <CardHeader>
         <CardTitle>
           <h2 id={`${id}-title`}>{title}</h2>
         </CardTitle>
         <CardDescription>{description}</CardDescription>
-        {action ? <CardAction>{action}</CardAction> : null}
+        {action ? <CardAction className="flex flex-wrap justify-end gap-1">{action}</CardAction> : null}
       </CardHeader>
       <CardContent className="px-0">{children}</CardContent>
     </Card>
@@ -76,19 +83,19 @@ function Row({
 }) {
   return (
     <li className="relative flex flex-col gap-1.5 px-4 py-3 has-[a[data-row-link]:hover]:bg-muted/50">
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-1.5">
         {href ? (
           <Link
             data-row-link
             href={href}
-            className="min-w-0 font-medium outline-none after:absolute after:inset-0 hover:underline focus-visible:underline focus-visible:after:ring-2 focus-visible:after:ring-ring focus-visible:after:ring-inset"
+            className="min-w-0 flex-[1_1_12rem] font-medium outline-none after:absolute after:inset-0 hover:underline focus-visible:underline focus-visible:after:ring-2 focus-visible:after:ring-ring focus-visible:after:ring-inset"
           >
             {title}
           </Link>
         ) : (
-          <span className="min-w-0 font-medium">{title}</span>
+          <span className="min-w-0 flex-[1_1_12rem] font-medium">{title}</span>
         )}
-        {aside ? <span className="shrink-0">{aside}</span> : null}
+        {aside ? <span className="max-w-full">{aside}</span> : null}
       </div>
       <p className="text-sm text-muted-foreground tabular-nums">{meta}</p>
       {children ? <div className="flex flex-wrap items-center gap-1.5">{children}</div> : null}
@@ -125,23 +132,17 @@ export function WorkQueuePanel({
     <Panel
       id="work-queue"
       title="Work queue"
-      description={
-        <>
-          Most urgent first: overdue critical and high work, then critical, then anything else overdue.
-          {assignedToMe > 0 ? (
-            <>
-              {" "}
-              <Link
-                href="/work-orders?view=mine"
-                className="font-medium text-foreground underline-offset-4 hover:underline"
-              >
-                {assignedToMe} assigned to you
-              </Link>
-            </>
-          ) : null}
-        </>
+      description="Most urgent first: overdue critical and high work, then critical, then anything else overdue."
+      action={
+        total > 0 ? (
+          <>
+            {assignedToMe > 0 ? (
+              <ViewAll href="/work-orders?view=mine">{assignedToMe} assigned to you</ViewAll>
+            ) : null}
+            <ViewAll href="/work-orders">All {total} open</ViewAll>
+          </>
+        ) : null
       }
-      action={total > 0 ? <ViewAll href="/work-orders">All {total} open</ViewAll> : null}
     >
       {items.length === 0 ? (
         <Quiet>No open work orders.</Quiet>
@@ -211,7 +212,15 @@ export function InspectionsDuePanel({ items, total }: { items: DashboardInspecti
   );
 }
 
-export function FailedChecksPanel({ items, canRaise }: { items: DashboardFailedCheck[]; canRaise: boolean }) {
+export function FailedChecksPanel({
+  items,
+  total,
+  canRaise,
+}: {
+  items: DashboardFailedCheck[];
+  total: number;
+  canRaise: boolean;
+}) {
   return (
     <Panel
       id="failed-checks"
@@ -254,19 +263,26 @@ export function FailedChecksPanel({ items, canRaise }: { items: DashboardFailedC
                   ) : null}
                 </>
               ) : check.workOrder ? (
-                <Link
-                  href={`/work-orders/${check.workOrder.id}`}
-                  className="relative flex items-center gap-1.5 rounded-md text-sm outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring"
-                >
-                  <WrenchIcon className="size-3.5 text-muted-foreground" aria-hidden />
-                  Work order
+                <>
+                  {/* A real button-sized target (44px on touch), lifted above the row's inspection link. */}
+                  <ButtonLink
+                    variant="ghost"
+                    size="sm"
+                    href={`/work-orders/${check.workOrder.id}`}
+                    aria-label={`View work order (${WORK_ORDER_STATUS_LABELS[check.workOrder.status]})`}
+                    className="relative"
+                  >
+                    <WrenchIcon data-icon="inline-start" />
+                    View work order
+                  </ButtonLink>
                   <WorkOrderStatusBadge status={check.workOrder.status} />
-                </Link>
+                </>
               ) : null}
             </Row>
           ))}
         </Rows>
       )}
+      {items.length > 0 ? <MoreNotShown shown={items.length} total={total} /> : null}
     </Panel>
   );
 }

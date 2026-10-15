@@ -211,6 +211,15 @@ describe("buildDashboard: failed checks", () => {
     expect(dashboard.summary.failedChecks).toEqual({ needsFollowUp: 1, recent: 1 });
   });
 
+  it("reports how many failed checks it does not show", () => {
+    const addressed = Array.from({ length: PANEL_LIMIT + 2 }, (_, index) =>
+      failedCheck({ id: `addressed-${index}`, workOrders: [{ id: `w-${index}`, status: "open" }] }),
+    );
+    const dashboard = build({ failedChecks: [failedCheck({ id: "open-finding" }), ...addressed] });
+    expect(dashboard.failedChecks).toHaveLength(PANEL_LIMIT);
+    expect(dashboard.failedChecksTotal).toBe(PANEL_LIMIT + 3);
+  });
+
   it("includes a failure recorded exactly 30 days ago", () => {
     const dashboard = build({
       failedChecks: [failedCheck({ id: "edge", recordedAt: "2026-09-15T23:00:00+00:00", workOrders: [{ id: "w", status: "open" }] })],

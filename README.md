@@ -15,7 +15,7 @@
 | Database: vessels, inspections, work orders, handovers, audit log, with rules enforced in Postgres | ✅ |
 | Vessels: watch list (attention first), search and filters, detail, create, edit | ✅ |
 | Inspections: schedule with checklist templates, start, record pass/fail/N/A with findings, complete or cancel, follow-up flags | ✅ |
-| Work orders UI with enforced status transitions | ⬜ |
+| Work orders: urgency queue, raise from a failed check, start / block (with reason) / resume / complete, manager edits, audit-log history | ✅ |
 | Task handovers UI with acknowledgement | ⬜ |
 | Audit history UI | ⬜ |
 | Live operational dashboard | 🟡 (shell + welcome) |

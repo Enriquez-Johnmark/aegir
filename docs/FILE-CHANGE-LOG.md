@@ -195,3 +195,20 @@ Not tracked (machine-local, outside the repo or git-ignored): `~/.impeccable/bin
 | UPDATE | `DESIGN.md` | Inspection badge mapping, checklist recording pattern | | ✅ |
 | UPDATE | `docs/{DECISIONS,CONVENTIONS,SECURITY,DATA_MODEL,TESTING,ARCHITECTURE,ROADMAP,CHANGELOG,FILE-CHANGE-LOG}.md`, `README.md` | D-031 – D-033, evidence | | ✅ reconciled with `git status` |
 
+## 2026-10-15 · M3 slice 3: Work orders
+
+| Action | Path | Purpose | Related | Verification |
+|---|---|---|---|---|
+| CREATE | `src/features/work-orders/{domain,schemas}.ts`, `work-orders.test.ts` | Transitions, status rights, urgency order, audit-event descriptions; Zod schemas | D-034 | ✅ unit 10 |
+| CREATE | `src/features/work-orders/server/{queries,mutations}.ts`, `actions.ts` | Queue, detail + history, form options, failed-check lookup; create / edit / status writes | D-034 | ✅ E2E |
+| CREATE | `src/features/work-orders/components/{work-order-badges,work-order-filters,work-orders-list,work-order-detail,work-order-status-actions,work-order-form}.tsx` | Work-order UI | D-034 | ✅ detector, screenshots |
+| CREATE | `src/app/(app)/work-orders/page.tsx`, `new/page.tsx`, `[workOrderId]/page.tsx`, `[workOrderId]/edit/page.tsx`, `[workOrderId]/not-found.tsx` | Work-order routes | | ✅ build |
+| UPDATE | `src/features/vessels/server/queries.ts`, `src/features/inspections/server/queries.ts`, `src/app/(app)/inspections/page.tsx` | `listVesselNames` moved to vessels | D-034 | ✅ typecheck |
+| UPDATE | `src/features/vessels/components/vessel-detail.tsx` | Shared work-order badges, linked titles, "View all" | | ✅ |
+| UPDATE | `src/features/inspections/components/{checklist-item,inspection-detail}.tsx` | "Raise work order" on failed checks; work-order links | D-034 | ✅ E2E |
+| UPDATE | `src/components/layout/app-sidebar.tsx` | Work orders nav item | | ✅ |
+| CREATE | `e2e/work-orders.spec.ts` | Raise → start → block → resume → complete across two roles; validation; viewer; cross-org | D-030 | ✅ 36/36 suite |
+| UPDATE | `e2e/inspections.spec.ts` | Raise the follow-up from the failed check | | ✅ |
+| UPDATE | `DESIGN.md` | Work-order badges and status-action pattern | | ✅ |
+| UPDATE | `docs/{DECISIONS,TESTING,ARCHITECTURE,ROADMAP,CHANGELOG,FILE-CHANGE-LOG}.md`, `README.md` | D-034, evidence | | ✅ reconciled with `git status` |
+

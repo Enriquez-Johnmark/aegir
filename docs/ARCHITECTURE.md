@@ -64,10 +64,10 @@ aegir/
 │   │       ├── vessels/{page.tsx, new/, [vesselId]/, [vesselId]/edit/}  # ✅ M3 slice 1
 │   │       ├── error.tsx        # ✅ Recoverable error boundary for the app shell
 │   │       ├── inspections/{page.tsx, new/, [inspectionId]/}  # ✅ M3 slice 2
-│   │       ├── work-orders/{page.tsx, new/page.tsx, [workOrderId]/page.tsx}
+│   │       ├── work-orders/{page.tsx, new/, [workOrderId]/, [workOrderId]/edit/}  # ✅ M3 slice 3
 │   │       ├── handovers/{page.tsx, new/page.tsx}
 │   │       └── audit/page.tsx
-│   ├── features/                # 🟡 One folder per business capability (auth ✅, vessels ✅, inspections ✅, dashboard 🟡)
+│   ├── features/                # 🟡 One folder per business capability (auth ✅, vessels ✅, inspections ✅, work-orders ✅, dashboard 🟡)
 │   │   └── <feature>/           #    e.g. vessels, inspections, work-orders, handovers, audit, dashboard
 │   │       ├── components/      #    Feature UI (Server Components by default; "use client" only when needed)
 │   │       ├── server/

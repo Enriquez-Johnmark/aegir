@@ -4,6 +4,24 @@ Meaningful functional and technical changes, newest first. Format loosely follow
 
 ## [Unreleased]
 
+### 2026-10-15: Work orders (M3 slice 3)
+
+**Added**
+- Work orders queue: open, assigned to me, blocked, completed and all views; priority and vessel filters; overdue → priority → due-date order; overdue and blocked counts; table on desktop, stacked rows on mobile.
+- Raise a work order (vessel, title, description, priority, due date, assignee), including **from a failed inspection check**: vessel fixed, title/description/priority prefilled from the finding, warning when work was already raised.
+- Work order detail: status actions limited to legal moves (start, block with a required reason, resume, back to open, confirmed completion), blocked-reason callout, the failed check it follows up, and a **history timeline from the audit log** with real actor names.
+- Manager-only edit page; assignees see status actions only.
+- Inspections: "Raise work order" on failed checks; linked work orders open their detail. Vessel page: work-order titles link, "View all".
+- Work orders in the sidebar. Unit tests (10) and Playwright work-order flows; the inspection E2E now raises the follow-up too.
+
+**Changed**
+- Vessel detail uses the shared work-order priority/status badges (priority icons for every level).
+- `listVesselNames` moved from inspections to the vessels data layer.
+
+**Reason:** P0 work-orders slice. **Affected areas:** work-orders feature, inspections checklist, vessel detail, sidebar, tests, docs.
+**Breaking changes:** none. **Migrations:** none (schema, triggers and pgTAP from M2).
+**Verification:** lint ✅ · typecheck ✅ · unit 59/59 ✅ · build ✅ · E2E 36/36 ✅ (two consecutive runs) · `impeccable detect` `[]` ✅ · desktop + mobile inspection round ✅. Impeccable critique for inspections and work orders: not run yet.
+
 ### 2026-10-15: Inspections (M3 slice 2)
 
 **Added**

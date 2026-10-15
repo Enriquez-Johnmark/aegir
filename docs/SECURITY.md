@@ -24,7 +24,7 @@ A user's roles live in `public.memberships (organization_id, user_id, role)`. **
 | Read all organization data (vessels, inspections, work orders, handovers, audit) | ✓ | ✓ | ✓ | ✓ | ✓ |
 | Create and edit vessels | ✓ | ✓ | | | |
 | Create inspections | ✓ | ✓ | ✓ | | |
-| Record results / complete an inspection | ✓ | ✓ | assigned inspector | | |
+| Record results / complete an inspection | ✓ | ✓ | assigned inspector (role re-checked, D-031) | | |
 | Create work orders (incl. from failed checks) | ✓ | ✓ | ✓ | | |
 | Edit any work-order field / reassign | ✓ | ✓ | | | |
 | Change status of a work order assigned to me | ✓ | ✓ | ✓ | ✓ | |
@@ -114,6 +114,7 @@ Membership management is seed-only in the MVP (no UI).
 | 2026-10-12 | `npx supabase db lint` | ✅ no errors | plpgsql_check |
 | 2026-10-12 | Manual API probe (curl) | ✅ | Technician sees only Northwind vessels; vessel insert → 42501 RLS; Meridian manager reading a Northwind vessel → `[]`; anon → 42501; signup → `signup_disabled` |
 | 2026-10-12 | `npx playwright test` (auth) | ✅ 10/10 | Desktop + mobile: redirect to login, generic error, server validation, open-redirect guard, sign-out |
+| 2026-10-15 | `npx supabase test db` (7 files) | ✅ 78/78 | + `07_inspection_results` (5): assigned inspector may record, others may not, manager may, a demoted inspector may not (D-031). The new test was run once against the old policy in a rolled-back transaction: test 4 failed as expected |
 
 Covered by pgTAP (highlights): RLS enabled on every public table; anon has zero privileges; no private function executable by anon; every security-definer function pins `search_path`; cross-organization reads return nothing; cross-organization inserts/moves rejected; forged `created_by`/`from_user_id` rejected; role limits per table; invalid transitions rejected; closed inspections and acknowledged handovers frozen; audit rows unwritable by clients and stamped with the real actor.
 

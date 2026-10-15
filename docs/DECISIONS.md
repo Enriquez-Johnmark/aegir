@@ -204,3 +204,25 @@ Format: context → decision → alternatives → consequences. Status: **Accept
 
 **Context:** With Cache Components, Next 16 keeps previously visited routes mounted but hidden after client navigation, and streaming can briefly duplicate a resolved boundary. `getByLabel`/`getByText` also match hidden nodes, which caused strict-mode violations (for example, the hidden `/vessels` search box on `/vessels/new`).
 **Decision:** E2E uses role locators for controls (which exclude hidden elements) and `.filter({ visible: true })` for text, scoped to `main` where the sidebar could match. Tests that create data use random valid IMO numbers and never assert global totals. Local data from E2E runs is reset with `npm run db:reset` (local only).
+
+## D-031 — Re-check the inspector's role on checklist writes (fix forward) {#d-031}
+**Status:** Accepted · 2026-10-15
+
+**Context:** While building the inspections UI, a review of `20261012070235_create_inspections.sql` found that the `inspection_items` update policy let the *assigned* inspector write results without re-checking their role. The assignment is validated when it is made, but a member whose role later changes (for example inspector → viewer) kept write access to that checklist. The `inspections` policy already re-checks the role.
+**Decision:** New migration `20261014174645_require_inspector_role_for_item_updates.sql` replaces the policy so the assigned-inspector branch also requires a current `inspector` membership. The applied migration is not edited (fix forward). `supabase/tests/07_inspection_results.test.sql` covers it; run against the old policy (in a rolled-back transaction), its "former inspector" test fails, and it passes with the new one.
+
+## D-032 — How an inspection is conducted {#d-032}
+**Status:** Accepted · 2026-10-15
+
+**Decision:**
+- **Explicit start.** Results can be recorded only while an inspection is `in_progress`. "Start inspection" is a deliberate, audited step (the transition trigger allows recording on `scheduled` too; the UI does not offer it).
+- **One tap for Pass and N/A** (they save immediately). **Fail opens a short form** (finding and severity, both required) and saves only on "Record failure", matching the database's check constraints.
+- **Complete** is enabled only when no check is pending; the button explains how many are left. **Cancel** asks for confirmation (`AlertDialog`) because it freezes the checklist.
+- **Inspector defaults to the person scheduling** when that person is an inspector (an inspector who left it unassigned could not conduct their own inspection; found by E2E). Managers default to "Assign later".
+- **Templates add, never replace.** "Add from template" appends its checks (dropping blank rows) and fills an empty title; typed checks are never discarded.
+- **Follow-up is derived, not stored:** a failed check "needs follow-up" until a work order references it (`work_orders.inspection_item_id`). Raising that work order arrives with the work-orders slice.
+
+## D-033 — Shared URL filters; inspection writes revalidate the whole app shell {#d-033}
+**Status:** Accepted · 2026-10-15
+
+**Decision:** `src/components/shared/url-filters.tsx` (`useUrlFilters`, `FilterSelect`) replaces the vessels-only copy, so every list keeps its filters in the URL the same way. Inspection mutations call `revalidatePath("/", "layout")` rather than a single path, because inspection state also feeds the vessel watch list, vessel detail and (next) the dashboard. All data is per-request (no `"use cache"`), so this only refreshes the client router cache; there is no server cache to over-invalidate.

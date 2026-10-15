@@ -10,6 +10,7 @@
 | `20261012070237_create_work_orders.sql` | `work_order_status`, work_orders, transition and assignee rules |
 | `20261012070238_create_handovers.sql` | `handover_status`, handovers, immutability and acknowledgement rules |
 | `20261012070240_create_audit_log.sql` | audit_events + audit triggers on every operational table |
+| `20261014174645_require_inspector_role_for_item_updates.sql` | Fix forward: the assigned-inspector branch of the `inspection_items` update policy also requires a current `inspector` role (D-031) |
 
 ## 1. Entity relationships
 

@@ -50,7 +50,7 @@ Server Actions are **public POST endpoints**: a page-level auth check does not p
 3. Treat `organization_id`, `role`, `created_by` and similar fields from the client as **untrusted**. Derive them server-side or let the database enforce them.
 4. Delegate to `server/mutations.ts`. Keep the action thin.
 5. Return a small result (`{ ok: true }` or `{ ok: false, fieldErrors }`), never raw rows.
-6. Call `revalidatePath()` or `updateTag()` for affected views.
+6. Call `revalidatePath()` or `updateTag()` for affected views. When a record feeds other screens (inspections feed the vessel watch list and the dashboard), revalidate the app-shell layout (`revalidatePath("/", "layout")`, D-033).
 7. Never run mutations as side effects of rendering (GET); always use an action (POST).
 
 ### Environment variables
@@ -69,6 +69,7 @@ Server Actions are **public POST endpoints**: a page-level auth check does not p
 - **Authorization data never comes from `user_metadata`**, which users can edit. Roles live in the `memberships` table and are read via RLS helper functions.
 - **Data API exposure is explicit.** New tables are no longer auto-exposed: opt-in now, enforced on all projects from 2026-10-30. Every migration that creates a table includes explicit `GRANT`s to `authenticated` (never `anon` for organization data) **and** enables RLS in the same migration.
 - Multi-row writes that must be atomic (for example an inspection plus its checklist items) go through a **Postgres function called with `.rpc()`**, because supabase-js has no client-side transactions.
+- List filters live in the URL through `useUrlFilters()` / `FilterSelect` (`src/components/shared/url-filters.tsx`); don't hand-roll router updates per list.
 - Filters read from the URL are untrusted: validate them with Zod (`.catch(undefined)` for unknown values) and sanitise free text before it is interpolated into a PostgREST filter expression such as `.or()` (letters, digits, spaces, `'` and `-` only).
 - Check `{ error }` on every Supabase call. Map Postgres error codes (`23505` unique, `23514` check, `42501` RLS/permission, `P0001` raised by our triggers) to user-friendly messages in the DAL.
 - Re-generate types after every migration: `npm run db:types`.

@@ -1,19 +1,10 @@
 "use client";
 
 import { ArrowDownUpIcon, SearchIcon } from "lucide-react";
-import { cn } from "cn";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState } from "react";
 
+import { ALL, FilterSelect, useUrlFilters } from "@/components/shared/url-filters";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import {
   VESSEL_STATUS_LABELS,
@@ -21,8 +12,6 @@ import {
   VESSEL_TYPE_LABELS,
   VESSEL_TYPES,
 } from "@/features/vessels/domain";
-
-const ALL = "all";
 
 const STATUS_ITEMS = { [ALL]: "All statuses", ...VESSEL_STATUS_LABELS };
 const TYPE_ITEMS = { [ALL]: "All types", ...VESSEL_TYPE_LABELS };
@@ -34,12 +23,8 @@ const SORT_ITEMS = {
 };
 const DEFAULT_SORT = "attention";
 
-/** Filters live in the URL so results are shareable and the server does the filtering. */
 export function VesselFilters() {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const [isPending, startTransition] = useTransition();
+  const { searchParams, setParam: update, isPending } = useUrlFilters();
   const urlQuery = searchParams.get("q") ?? "";
   const [query, setQuery] = useState(urlQuery);
   // The last q this component pushed. When the URL's q differs from it, the change
@@ -53,17 +38,6 @@ export function VesselFilters() {
   const debounce = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   useEffect(() => () => clearTimeout(debounce.current), []);
-
-  function update(key: string, value: string) {
-    const params = new URLSearchParams(searchParams);
-    if (value && value !== ALL) {
-      params.set(key, value);
-    } else {
-      params.delete(key);
-    }
-    const search = params.toString();
-    startTransition(() => router.replace(search ? `${pathname}?${search}` : pathname, { scroll: false }));
-  }
 
   function onQueryChange(value: string) {
     setQuery(value);
@@ -114,41 +88,5 @@ export function VesselFilters() {
         />
       </div>
     </div>
-  );
-}
-
-function FilterSelect({
-  label,
-  icon,
-  items,
-  value,
-  options,
-  onChange,
-  className,
-}: {
-  label: string;
-  icon?: React.ReactNode;
-  items: Record<string, string>;
-  value: string;
-  options: readonly string[];
-  onChange: (value: string) => void;
-  className?: string;
-}) {
-  return (
-    <Select items={items} value={value} onValueChange={(next) => onChange(String(next ?? ALL))}>
-      <SelectTrigger aria-label={label} className={cn("w-full md:w-44", className)}>
-        {icon}
-        <SelectValue />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectGroup>
-          {options.map((option) => (
-            <SelectItem key={option} value={option}>
-              {items[option]}
-            </SelectItem>
-          ))}
-        </SelectGroup>
-      </SelectContent>
-    </Select>
   );
 }

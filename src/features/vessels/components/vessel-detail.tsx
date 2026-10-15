@@ -1,35 +1,20 @@
-import { CalendarPlusIcon, ClipboardCheckIcon, ClockAlertIcon, OctagonAlertIcon, PencilIcon, TriangleAlertIcon, WrenchIcon } from "lucide-react";
+import { CalendarPlusIcon, ClipboardCheckIcon, ClockAlertIcon, PencilIcon, WrenchIcon } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { PageHeader } from "@/components/layout/page-header";
 import { ButtonLink } from "@/components/shared/button-link";
 import { SavedNotice } from "@/components/shared/saved-notice";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 import { InspectionStatusBadge } from "@/features/inspections/components/inspection-badges";
+import { PriorityBadge, WorkOrderStatusBadge } from "@/features/work-orders/components/work-order-badges";
 import { VesselStatusBadge } from "@/features/vessels/components/vessel-status-badge";
 import { VESSEL_TYPE_LABELS } from "@/features/vessels/domain";
 import { getVesselDetail, type VesselDetail as VesselDetailData } from "@/features/vessels/server/queries";
 import { can } from "@/lib/auth/roles";
 import { requireUser } from "@/lib/auth/session";
 import { formatDate, formatNumber } from "@/lib/format";
-
-// Severity carries an icon as well as colour and words (DESIGN.md: The Two-Channel Rule).
-const PRIORITY = {
-  critical: { label: "Critical", variant: "destructive", icon: OctagonAlertIcon },
-  high: { label: "High", variant: "warning", icon: TriangleAlertIcon },
-  medium: { label: "Medium priority", variant: "secondary", icon: null },
-  low: { label: "Low priority", variant: "secondary", icon: null },
-} as const;
-
-const WORK_STATUS = {
-  open: { label: "Open", variant: "outline" },
-  in_progress: { label: "In progress", variant: "info" },
-  blocked: { label: "Blocked", variant: "warning" },
-  completed: { label: "Completed", variant: "success" },
-} as const;
 
 const SAVED_MESSAGES = { created: "Vessel added", updated: "Changes saved" } as const;
 
@@ -77,7 +62,7 @@ export async function VesselDetail({ vesselId, saved }: { vesselId: string; save
       </dl>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <WorkOrdersCard workOrders={vessel.workOrders} />
+        <WorkOrdersCard vesselId={vessel.id} workOrders={vessel.workOrders} />
         <InspectionsCard vesselId={vessel.id} inspections={vessel.inspections} />
       </div>
     </>
@@ -93,7 +78,7 @@ function Fact({ label, value }: { label: string; value: React.ReactNode }) {
   );
 }
 
-function WorkOrdersCard({ workOrders }: { workOrders: VesselDetailData["workOrders"] }) {
+function WorkOrdersCard({ vesselId, workOrders }: { vesselId: string; workOrders: VesselDetailData["workOrders"] }) {
   const overdue = workOrders.filter((wo) => wo.isOverdue).length;
   const critical = workOrders.filter((wo) => wo.priority === "critical").length;
   const summary = [critical > 0 ? `${critical} critical` : null, overdue > 0 ? `${overdue} overdue` : null]
@@ -107,44 +92,51 @@ function WorkOrdersCard({ workOrders }: { workOrders: VesselDetailData["workOrde
         <CardDescription className="tabular-nums">
           {workOrders.length === 0 ? "Nothing outstanding." : summary || "Nothing overdue or critical."}
         </CardDescription>
+        <CardAction>
+          <Link
+            href={`/work-orders?vessel=${vesselId}&view=all`}
+            className="text-sm font-medium text-primary underline-offset-4 hover:underline"
+          >
+            View all
+          </Link>
+        </CardAction>
       </CardHeader>
       <CardContent>
         {workOrders.length === 0 ? (
           <QuietEmpty icon={<WrenchIcon />} title="No open work" description="Completed work stays in the vessel's history." />
         ) : (
           <ul className="flex flex-col divide-y">
-            {workOrders.map((wo) => {
-              const priority = PRIORITY[wo.priority];
-              return (
-                <li key={wo.id} className="flex flex-col gap-1 py-3 first:pt-0 last:pb-0">
-                  <span className="flex flex-wrap items-center justify-between gap-2">
-                    <span className="font-medium">{wo.title}</span>
-                    <span className="flex gap-1.5">
-                      <Badge variant={priority.variant}>
-                        {priority.icon ? <priority.icon data-icon="inline-start" /> : null}
-                        {priority.label}
-                      </Badge>
-                      <Badge variant={WORK_STATUS[wo.status].variant}>{WORK_STATUS[wo.status].label}</Badge>
-                    </span>
+            {workOrders.map((wo) => (
+              <li key={wo.id} className="flex flex-col gap-1 py-3 first:pt-0 last:pb-0">
+                <span className="flex flex-wrap items-center justify-between gap-2">
+                  <Link
+                    href={`/work-orders/${wo.id}`}
+                    className="font-medium underline-offset-4 hover:underline focus-visible:underline"
+                  >
+                    {wo.title}
+                  </Link>
+                  <span className="flex gap-1.5">
+                    <PriorityBadge priority={wo.priority} />
+                    <WorkOrderStatusBadge status={wo.status} />
                   </span>
-                  <span className="text-sm text-muted-foreground tabular-nums">
-                    {wo.assigneeName ?? "Unassigned"} ·{" "}
-                    {wo.dueDate ? (
-                      wo.isOverdue ? (
-                        <span className="inline-flex items-center gap-1 font-medium text-destructive">
-                          <ClockAlertIcon className="size-3.5" aria-hidden />
-                          Overdue since {formatDate(wo.dueDate)}
-                        </span>
-                      ) : (
-                        `Due ${formatDate(wo.dueDate)}`
-                      )
+                </span>
+                <span className="text-sm text-muted-foreground tabular-nums">
+                  {wo.assigneeName ?? "Unassigned"} ·{" "}
+                  {wo.dueDate ? (
+                    wo.isOverdue ? (
+                      <span className="inline-flex items-center gap-1 font-medium text-destructive">
+                        <ClockAlertIcon className="size-3.5" aria-hidden />
+                        Overdue since {formatDate(wo.dueDate)}
+                      </span>
                     ) : (
-                      "No due date"
-                    )}
-                  </span>
-                </li>
-              );
-            })}
+                      `Due ${formatDate(wo.dueDate)}`
+                    )
+                  ) : (
+                    "No due date"
+                  )}
+                </span>
+              </li>
+            ))}
           </ul>
         )}
       </CardContent>

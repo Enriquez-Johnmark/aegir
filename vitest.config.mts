@@ -7,7 +7,7 @@ export default defineConfig({
     alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) },
   },
   test: {
-    include: ["src/**/*.test.ts", "src/**/*.test.tsx"],
+    include: ["src/**/*.test.ts", "src/**/*.test.tsx", "scripts/**/*.test.mjs"],
     environment: "node",
     // Placeholder values so modules that validate env at import time can load.
     // Unit tests must never reach a real Supabase instance.

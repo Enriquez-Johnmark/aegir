@@ -56,21 +56,31 @@ describe("compareByUrgency", () => {
     isOverdue,
   });
 
-  it("orders overdue first, then priority, then due date (undated last), then title", () => {
+  it("tiers the queue: overdue critical/high, then critical, then other overdue, then the rest (D-037)", () => {
     const queue = [
       wo("Undated high", "high", null),
       wo("Low overdue", "low", "2026-10-01", true),
       wo("Critical later", "critical", "2026-11-01"),
       wo("High soon", "high", "2026-10-20"),
       wo("Critical sooner", "critical", "2026-10-18"),
+      wo("High overdue", "high", "2026-10-10", true),
+      wo("Medium overdue", "medium", "2026-10-05", true),
     ];
     expect(queue.toSorted(compareByUrgency).map((item) => item.title)).toEqual([
-      "Low overdue",
+      "High overdue",
       "Critical sooner",
       "Critical later",
+      "Medium overdue",
+      "Low overdue",
       "High soon",
       "Undated high",
     ]);
+  });
+
+  it("ranks critical work above overdue low-priority work, even when it is not overdue", () => {
+    const critical = wo("Critical blocked", "critical", "2026-10-18");
+    const lateLow = wo("Railing", "low", "2026-10-05", true);
+    expect([lateLow, critical].toSorted(compareByUrgency)[0]).toBe(critical);
   });
 });
 

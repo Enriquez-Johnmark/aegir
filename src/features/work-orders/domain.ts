@@ -83,16 +83,28 @@ export function isWorkOrderOverdue(
 
 const PRIORITY_RANK: Record<Priority, number> = { critical: 0, high: 1, medium: 2, low: 3 };
 
+type Urgent = { priority: Priority; dueDate: string | null; isOverdue: boolean; title: string };
+
 /**
- * Queue order for open work: overdue first, then by priority, then the earliest
+ * Urgency tier (D-037, supersedes D-034's "overdue first"): a late low-priority
+ * job must not outrank critical work that is merely not due yet.
+ * 0 overdue critical/high · 1 critical · 2 other overdue · 3 the rest.
+ */
+export function urgencyTier(workOrder: Pick<Urgent, "priority" | "isOverdue">): number {
+  const severe = workOrder.priority === "critical" || workOrder.priority === "high";
+  if (workOrder.isOverdue && severe) return 0;
+  if (workOrder.priority === "critical") return 1;
+  if (workOrder.isOverdue) return 2;
+  return 3;
+}
+
+/**
+ * Queue order for open work: by urgency tier, then priority, then the earliest
  * due date (undated last), then title.
  */
-export function compareByUrgency(
-  a: { priority: Priority; dueDate: string | null; isOverdue: boolean; title: string },
-  b: { priority: Priority; dueDate: string | null; isOverdue: boolean; title: string },
-): number {
+export function compareByUrgency(a: Urgent, b: Urgent): number {
   return (
-    Number(b.isOverdue) - Number(a.isOverdue) ||
+    urgencyTier(a) - urgencyTier(b) ||
     PRIORITY_RANK[a.priority] - PRIORITY_RANK[b.priority] ||
     (a.dueDate ?? "9999-12-31").localeCompare(b.dueDate ?? "9999-12-31") ||
     a.title.localeCompare(b.title)

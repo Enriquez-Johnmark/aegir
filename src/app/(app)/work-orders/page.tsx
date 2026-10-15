@@ -21,7 +21,7 @@ export default function WorkOrdersPage({ searchParams }: PageProps<"/work-orders
     <>
       <PageHeader
         title="Work orders"
-        description="Open work, overdue and most urgent first."
+        description="Open work, most urgent first: overdue critical and high, then critical, then anything else overdue."
         actions={
           <Suspense fallback={null}>
             <RaiseButton searchParams={searchParams} />

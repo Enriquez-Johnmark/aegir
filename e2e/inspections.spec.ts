@@ -44,8 +44,13 @@ test.describe("inspections", () => {
     await expect(check(page, 1)).toHaveCount(0);
     await page.getByRole("button", { name: "Start inspection" }).click();
     await expect(check(page, 1)).toBeVisible();
-    await expect(page.getByRole("button", { name: "Complete inspection" })).toBeDisabled();
-    await expect(page.getByText("Record 5 more checks to complete the inspection.")).toBeVisible();
+    // Completion is offered at the top and at the end of the checklist; both wait for every check.
+    await expect(page.getByRole("button", { name: "Complete inspection" })).toHaveCount(2);
+    for (const button of await page.getByRole("button", { name: "Complete inspection" }).all()) {
+      await expect(button).toBeDisabled();
+    }
+    // Each Complete button explains why it is disabled.
+    await expect(page.getByText("Record 5 more checks to complete the inspection.")).toHaveCount(2);
 
     // Pass and N/A save on tap.
     await check(page, 1).getByRole("button", { name: "Pass" }).click();
@@ -65,33 +70,65 @@ test.describe("inspections", () => {
     await expect(page.getByText("Describe what you found.")).toBeVisible();
     await expect(page.getByText("Choose how severe it is.")).toBeVisible();
     await finding.fill("Port lifebuoy light missing; bracket empty.");
-    await page.getByRole("combobox", { name: "Severity" }).click();
-    await page.getByRole("option", { name: /^High/ }).click();
+    // Severity is a set of choice cards carrying the full guidance.
+    await page.getByRole("radio", { name: /^High/ }).check();
     await page.getByRole("button", { name: "Record failure" }).click();
     await expect(page.getByText("Needs follow-up", { exact: true }).filter(visible)).toBeVisible();
     await expect(page.getByText(/5 of 5 checked/)).toBeVisible();
 
-    await page.getByRole("button", { name: "Complete inspection" }).click();
+    // A recorded failure reads as a record until someone chooses to edit it.
+    await expect(page.getByRole("button", { name: "Edit finding" })).toBeVisible();
+    await expect(page.getByRole("textbox", { name: "What did you find?" })).toHaveCount(0);
+
+    // One tap never replaces a recorded failure: it asks first, and keeping it changes nothing.
+    await check(page, 4).getByRole("button", { name: "Pass" }).click();
+    await expect(page.getByText(/Replace this failure with Pass\?/)).toBeVisible();
+    await page.getByRole("button", { name: "Keep the failure" }).click();
+    await expect(page.getByText(/Replace this failure/)).toHaveCount(0);
+    await expect(page.getByText("Port lifebuoy light missing; bracket empty.").filter(visible)).toBeVisible();
+
+    // Completion waits while a finding is open for editing, so it can't drop the edit.
+    await page.getByRole("button", { name: "Edit finding" }).click();
+    for (const button of await page.getByRole("button", { name: "Complete inspection" }).all()) {
+      await expect(button).toBeDisabled();
+    }
+    await expect(page.getByText("Save or cancel the open finding to complete the inspection.").first()).toBeVisible();
+    await page.getByRole("button", { name: "Cancel", exact: true }).click();
+    await expect(page.getByRole("button", { name: "Complete inspection" }).last()).toBeEnabled();
+
+    // Completion is final, so it is confirmed, and the dialog names the failure still without work.
+    await page.getByRole("button", { name: "Complete inspection" }).last().click();
+    const dialog = page.getByRole("alertdialog");
+    await expect(dialog).toContainText("3 passed · 1 failed · 1 N/A");
+    await expect(dialog).toContainText("1 failed check has no work order yet");
+    await dialog.getByRole("button", { name: "Complete inspection" }).click();
+    await expect(
+      page.getByRole("status").filter({ hasText: "Inspection completed · 1 failed check needs a work order" }),
+    ).toBeVisible();
     await expect(page.locator("main [data-slot=badge]", { hasText: "Completed" }).first()).toBeVisible();
     // Closed inspections are read-only: no result controls or lifecycle buttons.
     await expect(check(page, 1)).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Cancel inspection" })).toHaveCount(0);
     await expect(page.getByText("1 needs follow-up", { exact: true }).filter(visible)).toBeVisible();
 
+    // Dismiss the completion notice: the next notice on this (still mounted) page must show anyway.
+    await page.getByRole("button", { name: "Dismiss" }).click();
+    await expect(page.getByRole("status").filter({ hasText: "Inspection completed" })).toHaveCount(0);
+
     // The follow-up: raise a work order straight from the failed check.
-    const inspectionUrl = page.url();
     await page.getByRole("link", { name: "Raise work order" }).click();
     await expect(page.getByText("Following up a failed check on Northwind Tern")).toBeVisible();
     await expect(page.getByRole("textbox", { name: "Title" })).toHaveValue(/^Fix: /);
     await expect(page.getByRole("combobox", { name: "Priority" })).toContainText("High");
     await page.getByRole("button", { name: "Raise work order" }).click();
+    // Raising it returns to the inspection, where the check now links to its work order.
     await expect(page.getByRole("status").filter({ hasText: "Work order raised" })).toBeVisible();
-    await expect(page.getByText("Port lifebuoy light missing; bracket empty.").filter(visible).first()).toBeVisible();
-
-    // Back on the inspection, the check now links to its work order instead of asking for follow-up.
-    await page.goto(inspectionUrl);
+    await expect(page.getByRole("heading", { name: title, level: 1 })).toBeVisible();
     await expect(page.getByText("Needs follow-up", { exact: true })).toHaveCount(0);
     await expect(page.getByText(/^Work order:/).filter(visible)).toBeVisible();
+    await page.getByRole("link", { name: "View work order" }).click();
+    await expect(page.getByRole("heading", { name: /^Fix: /, level: 1 })).toBeVisible();
+    await expect(page.getByText("Port lifebuoy light missing; bracket empty.").filter(visible).first()).toBeVisible();
   });
 
   test("the schedule form explains what is missing", async ({ page }) => {

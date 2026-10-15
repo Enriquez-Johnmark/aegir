@@ -15,9 +15,9 @@ test.describe("authentication", () => {
 
     await expect(page).toHaveURL(/\/dashboard$/);
     await expect(page.getByRole("heading", { name: "Dashboard", level: 1 })).toBeVisible();
-    await expect(page.getByText(`Welcome, ${TECHNICIAN.name}`)).toBeVisible();
-    await expect(page.getByText("Technician", { exact: true })).toBeVisible();
-    await expect(page.getByText(/signed in to Northwind Shipping/)).toBeVisible();
+    // The dashboard is the technician's own organization, with their own work called out.
+    await expect(page.getByRole("heading", { name: "Northwind Shipping", level: 2 })).toBeVisible();
+    await expect(page.getByRole("link", { name: /assigned to you$/ })).toBeVisible();
   });
 
   test("rejects a wrong password without revealing which field was wrong", async ({ page }) => {

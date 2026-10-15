@@ -6,7 +6,7 @@
 
 **Live demo: [aegir-eight.vercel.app](https://aegir-eight.vercel.app)** · sign in with a [demo account](#demo-access).
 
-**Status:** MVP deployed (Vercel + Supabase Cloud). Dashboard, vessels, inspections and work orders are live; handovers and audit-history screens are next. See the [roadmap](docs/ROADMAP.md).
+**Status:** MVP deployed (Vercel + Supabase Cloud). Dashboard, vessels, inspections, work orders and handovers are live; the audit-history screen is next. See the [roadmap](docs/ROADMAP.md).
 
 ## Features (MVP scope)
 
@@ -18,7 +18,7 @@
 | Vessels: watch list (attention first), search and filters, detail, create, edit | ✅ |
 | Inspections: schedule with checklist templates, start, record pass/fail/N/A with findings, complete or cancel, follow-up flags | ✅ |
 | Work orders: urgency queue, raise from a failed check, start / block (with reason) / resume / complete, manager edits, audit-log history | ✅ |
-| Task handovers UI with acknowledgement | ⬜ |
+| Handovers: send unfinished work to a colleague from a work order or vessel; the recipient acknowledges; immutable after sending | ✅ |
 | Audit history UI | ⬜ |
 | Live operational dashboard: fleet figures, work queue, inspections due, failed checks needing follow-up, vessels needing attention, pending handovers | ✅ |
 
@@ -113,7 +113,8 @@ Everyone shares these accounts and safety records can't be deleted (by design), 
 
 ## Known limitations
 
-- Handovers and audit-history screens are not built yet (see the table above); their rules already live in the database, and the dashboard lists pending handovers.
+- The audit-history screen is not built yet; audit events are recorded by the database and shown per work order.
 - Light theme only for now (D-038).
+- At very large text sizes on tablet-width windows the sidebar stays open and pages scroll sideways; phone layouts and normal sizes are unaffected.
 - Shared demo accounts: data entered by visitors stays (no deletes by design).
 - `npm audit` flags a dev-only lint dependency (`braces` via `eslint-config-next`); see [SECURITY.md §9](docs/SECURITY.md#9-known-risks-and-limitations).

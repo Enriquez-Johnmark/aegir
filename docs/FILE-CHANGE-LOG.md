@@ -318,3 +318,22 @@ Not tracked (machine-local, outside the repo or git-ignored): `~/.impeccable/bin
 | UPDATE | `e2e/{auth,dashboard,inspections,work-orders,vessels}.spec.ts` | `visible` filter on user-facing text assertions; isolation checks unfiltered | D-040 | ✅ 54/54 ×3 |
 | UPDATE | `DESIGN.md`, `docs/{CONVENTIONS,DECISIONS,SECURITY,TESTING,ROADMAP,ARCHITECTURE,CHANGELOG,FILE-CHANGE-LOG}.md` | D-040, layout rule, audit note, evidence | D-040 | ✅ reconciled with `git status` |
 | UPDATE | `docs/DEPLOYMENT.md` | M4 deploy verified in production | D-040 | ✅ |
+
+## 2026-10-15 · M3 slice 5: Handovers (D-041)
+
+| Action | Path | Purpose | Related | Verification |
+|---|---|---|---|---|
+| CREATE | `src/features/handovers/{domain,schemas}.ts`, `handovers.test.ts` | Acknowledge rights, inbox order, form and list schemas | D-041 | ✅ unit 9 |
+| CREATE | `src/features/handovers/server/{queries,mutations}.ts`, `actions.ts` | Inbox, detail, form options (roles); create (typed without the trigger-owned sender) and acknowledge | D-041, D-017 | ✅ E2E |
+| CREATE | `src/features/handovers/components/{handover-badges,handovers-list,handover-filters,handover-detail,acknowledge-handover,handover-form}.tsx` | Handovers UI | D-041 | ✅ detector, axe, measured |
+| CREATE | `src/app/(app)/handovers/page.tsx`, `new/page.tsx`, `[handoverId]/page.tsx`, `[handoverId]/not-found.tsx` | Routes | | ✅ build |
+| CREATE | `supabase/tests/09_handover_access.test.sql` | Viewer, cross-organization and sender limits | D-041 | ✅ 90/90 |
+| CREATE | `e2e/handovers.spec.ts`, `e2e/filters.spec.ts`; UPDATE `e2e/accessibility.spec.ts` | Flows, the "All" view regression (proven red), axe on new routes | D-041 | ✅ |
+| CREATE | `src/components/shared/wrapping-select.ts`, `src/lib/format.test.ts`; UPDATE `src/lib/format.ts` | Shared wrapping select classes; `formatDateTime` | D-041 | ✅ |
+| UPDATE | `src/components/shared/url-filters.tsx` | Reserved `ALL` token; show only known values | D-041 | ✅ filters spec |
+| UPDATE | `src/components/layout/app-sidebar.tsx` | Handovers nav item | | ✅ |
+| UPDATE | `src/features/dashboard/{domain.ts,dashboard.test.ts,server/queries.ts,components/dashboard-panels.tsx}` | Handover rows link through, cap 5, "you" as sender, date + hour, shared badge | D-041 | ✅ unit, E2E |
+| UPDATE | `src/features/{vessels,inspections,work-orders}/components/*-detail.tsx` | "Hand over" actions; container-query fact grids; wrapping values | D-041 | ✅ measured |
+| UPDATE | `src/app/(app)/{vessels,inspections,work-orders}/[*]/not-found.tsx` | Titles are `h1` | D-041 | ✅ |
+| CREATE | `.impeccable/critique/2026-10-15T10-29-24Z__src-app-app-handovers.md` | Critique snapshot (29/40) | D-024 | ✅ |
+| UPDATE | `DESIGN.md`, `README.md`, `docs/{DECISIONS,CONVENTIONS,ARCHITECTURE,ROADMAP,SECURITY,TESTING,CHANGELOG,FILE-CHANGE-LOG}.md` | D-041, patterns, evidence | D-041 | ✅ reconciled with `git status` |

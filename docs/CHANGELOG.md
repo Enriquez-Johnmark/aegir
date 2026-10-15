@@ -4,6 +4,23 @@ Meaningful functional and technical changes, newest first. Format loosely follow
 
 ## [Unreleased]
 
+### 2026-10-15: Handovers (M3 slice 5)
+
+**Added**
+- Handovers inbox (`/handovers`): pending ones addressed to you first, views (pending, waiting for you, sent by you, acknowledged, all) and a vessel filter; table or stacked rows by width.
+- Handover record: outstanding tasks first, then **Acknowledge** for the recipient only (receipt, not reassignment; the time is recorded), facts with date and hour in UTC.
+- New handover form, started from a work order (subject fixed) or a vessel (preselected); work-order choices follow the vessel; recipients with their role; viewers get a clear "can't hand work over".
+- Sidebar entry; "Hand over" on work-order and vessel pages; the dashboard's handover rows link through ("All N pending").
+- Tests: unit (9 + `formatDateTime`), pgTAP `09_handover_access` (5), E2E `handovers.spec.ts` (5 flows) and `filters.spec.ts`; axe covers the new routes.
+
+**Fixed**
+- **"All work orders" and "All inspections" views could not be chosen** (they fell back to the default since those slices): the filters' "no filter" value collided with the view value `all`. Now a reserved token; filters also never display raw URL values.
+- Record fact grids on vessel, inspection and work-order pages overlapped at 200% text; they now follow their container and wrap.
+- The four not-found pages had no `h1`.
+
+**Reason:** P1 handovers slice; Impeccable critique 29/40 and audit 16/20 fixes (D-041). **Affected areas:** handovers, dashboard, shared filters, record pages, sidebar, E2E. **Breaking changes:** none. **Migrations:** none.
+**Verification:** unit 92/92 ✅ · pgTAP 90/90 ✅ · lint/typecheck ✅ · `impeccable detect` `[]` ✅ · E2E 68/68 ✅ twice in a row (fresh seed).
+
 ### 2026-10-15: M4 verification
 
 **Added**

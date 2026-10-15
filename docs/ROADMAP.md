@@ -37,7 +37,7 @@ Each slice: schema already in place → DAL → actions → UI (loading, empty, 
 3. [x] Work orders: urgency queue (overdue → priority → due), create (incl. from a failed check, prefilled), transitions with blocked reason and confirmed completion, manager edit, history from the audit log (D-034)
 4. [x] Dashboard: live figures (fleet, inspections due/overdue, open/overdue/blocked work, failed checks needing follow-up, pending handovers) and queues; a failed check without work is never truncated (D-035)
 4a. [x] Impeccable critique of inspections + work orders (29/40) → P1/P2 fixes (D-036) → re-critique 27/40 with one new, pre-existing P1 (a recorded failure can be erased by one tap) → P1 + P2 fixed (D-037: DB lock + inline confirm, follow-ups return to the inspection, one primary per sub-task, tiered urgency). Open from the re-critique: P3 tall Fail panel on phones, "Pass remaining", inspections "Assigned to me", blocked-for-N-days, closing note on completion
-5. [ ] Handovers UI ✂️ (P1; schema, rules and tests already done in M2)
+5. [x] Handovers: inbox list (yours first), detail with recipient-only acknowledgement, send from a work order or vessel, dashboard rows link through (D-041)
 6. [ ] Audit history UI ✂️ (P1; audit triggers already live since M2)
 
 ## M4: Verification 🟡

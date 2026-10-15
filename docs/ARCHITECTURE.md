@@ -66,9 +66,9 @@ aegir/
 │   │       ├── error.tsx        # ✅ Recoverable error boundary for the app shell
 │   │       ├── inspections/{page.tsx, new/, [inspectionId]/}  # ✅ M3 slice 2
 │   │       ├── work-orders/{page.tsx, new/, [workOrderId]/, [workOrderId]/edit/}  # ✅ M3 slice 3
-│   │       ├── handovers/{page.tsx, new/page.tsx}
+│   │       ├── handovers/{page.tsx, new/, [handoverId]/}  # ✅ M3 slice 5
 │   │       └── audit/page.tsx
-│   ├── features/                # 🟡 One folder per business capability (auth ✅, vessels ✅, inspections ✅, work-orders ✅, dashboard ✅)
+│   ├── features/                # 🟡 One folder per business capability (auth ✅, vessels ✅, inspections ✅, work-orders ✅, dashboard ✅, handovers ✅)
 │   │   └── <feature>/           #    e.g. vessels, inspections, work-orders, handovers, audit, dashboard
 │   │       ├── components/      #    Feature UI (Server Components by default; "use client" only when needed)
 │   │       ├── server/

@@ -15,6 +15,7 @@
 | 2026-10-15 | Supabase Auth URL configuration (Site URL + redirect `https://aegir-eight.vercel.app/**`) | ⬜ owner to confirm (password sign-in works without it; needed for any email links) |
 | 2026-10-15 | Smoke test (Playwright against production; read-only and permission checks, no data created) | ✅ 31/31: `/` and `/login` 200; `/dashboard` signed out → 307 to `/login`; all four demo roles sign in (2.2–3.1 s to dashboard content); figures match the seed (4 of 6 vessels active, 3 inspections due / 2 overdue, 5 open work orders / 2 overdue / 1 blocked, 0 follow-ups, 2 pending handovers); no Meridian data; another organization's inspection, vessel and work order are not found; viewer sees no write controls and `/vessels/new`, `/inspections/new` refuse; admin and Meridian logins refused with the demo password; no console errors (desktop + Pixel 7) |
 | 2026-10-15 | Security headers deploy (`1944fd8`, D-039) | ✅ CSP (with `upgrade-insecure-requests`, no `unsafe-eval`), `X-Frame-Options`, `nosniff`, `Referrer-Policy`, `Permissions-Policy`, COOP and Vercel's HSTS on `/` and `/login`; smoke test rerun 31/31, no console errors (so no CSP violations) |
+| 2026-10-15 | M4 deploy (`dcbf0f4`, D-040) | ✅ smoke test 31/31, no console errors; `/login` serves its `h1` |
 
 ## Environments
 

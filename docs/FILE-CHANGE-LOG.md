@@ -317,3 +317,4 @@ Not tracked (machine-local, outside the repo or git-ignored): `~/.impeccable/bin
 | UPDATE | `src/features/{vessels,inspections,work-orders}/components/*-filters.tsx`, `src/components/shared/url-filters.tsx` | Container-query filter bars; values wrap; 32/44px kept | D-040 | ✅ measured |
 | UPDATE | `e2e/{auth,dashboard,inspections,work-orders,vessels}.spec.ts` | `visible` filter on user-facing text assertions; isolation checks unfiltered | D-040 | ✅ 54/54 ×3 |
 | UPDATE | `DESIGN.md`, `docs/{CONVENTIONS,DECISIONS,SECURITY,TESTING,ROADMAP,ARCHITECTURE,CHANGELOG,FILE-CHANGE-LOG}.md` | D-040, layout rule, audit note, evidence | D-040 | ✅ reconciled with `git status` |
+| UPDATE | `docs/DEPLOYMENT.md` | M4 deploy verified in production | D-040 | ✅ |

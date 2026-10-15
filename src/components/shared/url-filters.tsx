@@ -60,7 +60,12 @@ export function FilterSelect({
 }) {
   return (
     <Select items={items} value={value} onValueChange={(next) => onChange(String(next ?? ALL))}>
-      <SelectTrigger aria-label={label} className={cn("w-full md:w-44", className)}>
+      <SelectTrigger aria-label={label} className={cn(
+        // A long value wraps instead of being clipped when text is enlarged (WCAG 1.4.4).
+        // Plain min-h-8 (not a data-attribute variant) so the trigger's pointer-coarse:min-h-11 still wins on touch.
+        "min-h-8 w-full py-1 text-left whitespace-normal data-[size=default]:h-auto *:data-[slot=select-value]:line-clamp-none @3xl:w-44",
+        className,
+      )}>
         {icon}
         <SelectValue />
       </SelectTrigger>

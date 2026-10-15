@@ -109,15 +109,15 @@ export async function WorkOrdersList({
   const blocked = workOrders.filter((wo) => wo.status === "blocked").length;
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="@container flex flex-col gap-2">
       <p className="text-sm text-muted-foreground tabular-nums" aria-live="polite">
         {workOrders.length} {workOrders.length === 1 ? singular : plural}
         {overdue > 0 ? ` · ${overdue} overdue` : null}
         {blocked > 0 && params.view !== "blocked" ? ` · ${blocked} blocked` : null}
       </p>
 
-      {/* Desktop: table. The title link stretches over its row, so the whole row is clickable. */}
-      <div className="hidden overflow-hidden rounded-xl ring-1 ring-foreground/10 md:block">
+      {/* Wide (by the list's own width, so large text gets stacked rows): table. The title link stretches over its row, so the whole row is clickable. */}
+      <div className="hidden overflow-hidden rounded-xl ring-1 ring-foreground/10 @4xl:block">
         <Table>
           <TableHeader>
             <TableRow>
@@ -132,11 +132,11 @@ export async function WorkOrdersList({
           <TableBody>
             {workOrders.map((wo) => (
               <TableRow key={wo.id} className="relative">
-                <TableCell className="max-w-80 pl-4 font-medium">
+                <TableCell className="max-w-80 pl-4 font-medium whitespace-normal">
                   <span className="flex items-center gap-1.5">
                     <Link
                       href={`/work-orders/${wo.id}`}
-                      className="truncate outline-none after:absolute after:inset-0 hover:underline focus-visible:underline focus-visible:after:ring-2 focus-visible:after:ring-ring focus-visible:after:ring-inset"
+                      className="outline-none after:absolute after:inset-0 hover:underline focus-visible:underline focus-visible:after:ring-2 focus-visible:after:ring-ring focus-visible:after:ring-inset"
                     >
                       {wo.title}
                     </Link>
@@ -162,8 +162,8 @@ export async function WorkOrdersList({
         </Table>
       </div>
 
-      {/* Mobile: stacked rows. */}
-      <ul className="flex flex-col divide-y rounded-xl ring-1 ring-foreground/10 md:hidden">
+      {/* Narrow: stacked rows that wrap. */}
+      <ul className="flex flex-col divide-y rounded-xl ring-1 ring-foreground/10 @4xl:hidden">
         {workOrders.map((wo) => (
           <li key={wo.id}>
             <Link

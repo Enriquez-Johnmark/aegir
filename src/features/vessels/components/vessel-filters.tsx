@@ -49,43 +49,45 @@ export function VesselFilters() {
   }
 
   return (
-    <div className="flex flex-col gap-2 md:flex-row md:items-center" aria-busy={isPending}>
-      <InputGroup className="md:max-w-xs">
-        <InputGroupAddon>
-          {isPending ? <Spinner /> : <SearchIcon />}
-        </InputGroupAddon>
-        <InputGroupInput
-          type="search"
-          value={query}
-          onChange={(event) => onQueryChange(event.target.value)}
-          placeholder="Search name or IMO"
-          aria-label="Search vessels by name or IMO number"
-        />
-      </InputGroup>
-      <div className="grid grid-cols-2 gap-2 md:flex">
-        <FilterSelect
-          label="Status"
-          items={STATUS_ITEMS}
-          value={searchParams.get("status") ?? ALL}
-          options={[ALL, ...VESSEL_STATUSES]}
-          onChange={(value) => update("status", value)}
-        />
-        <FilterSelect
-          label="Type"
-          items={TYPE_ITEMS}
-          value={searchParams.get("type") ?? ALL}
-          options={[ALL, ...VESSEL_TYPES]}
-          onChange={(value) => update("type", value)}
-        />
-        <FilterSelect
-          label="Sort"
-          icon={<ArrowDownUpIcon aria-hidden />}
-          items={SORT_ITEMS}
-          value={searchParams.get("sort") ?? DEFAULT_SORT}
-          options={["attention", "name", "recent", "year"]}
-          onChange={(value) => update("sort", value === DEFAULT_SORT ? "" : value)}
-          className="col-span-2"
-        />
+    <div className="@container">
+      <div className="flex flex-col gap-2 @3xl:flex-row @3xl:items-center" aria-busy={isPending}>
+        <InputGroup className="@3xl:max-w-xs">
+          <InputGroupAddon>
+            {isPending ? <Spinner /> : <SearchIcon />}
+          </InputGroupAddon>
+          <InputGroupInput
+            type="search"
+            value={query}
+            onChange={(event) => onQueryChange(event.target.value)}
+            placeholder="Search name or IMO"
+            aria-label="Search vessels by name or IMO number"
+          />
+        </InputGroup>
+        <div className="grid grid-cols-1 gap-2 @xs:grid-cols-2 @3xl:flex">
+          <FilterSelect
+            label="Status"
+            items={STATUS_ITEMS}
+            value={searchParams.get("status") ?? ALL}
+            options={[ALL, ...VESSEL_STATUSES]}
+            onChange={(value) => update("status", value)}
+          />
+          <FilterSelect
+            label="Type"
+            items={TYPE_ITEMS}
+            value={searchParams.get("type") ?? ALL}
+            options={[ALL, ...VESSEL_TYPES]}
+            onChange={(value) => update("type", value)}
+          />
+          <FilterSelect
+            label="Sort"
+            icon={<ArrowDownUpIcon aria-hidden />}
+            items={SORT_ITEMS}
+            value={searchParams.get("sort") ?? DEFAULT_SORT}
+            options={["attention", "name", "recent", "year"]}
+            onChange={(value) => update("sort", value === DEFAULT_SORT ? "" : value)}
+            className="@xs:col-span-2"
+          />
+        </div>
       </div>
     </div>
   );

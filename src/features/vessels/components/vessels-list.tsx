@@ -69,14 +69,14 @@ export async function VesselsList({ params }: { params: VesselListParams }) {
   }
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="@container flex flex-col gap-2">
       <p className="text-sm text-muted-foreground tabular-nums" aria-live="polite">
         {vessels.length} {vessels.length === 1 ? "vessel" : "vessels"}
         {params.sort === "attention" ? " · those needing attention first" : null}
       </p>
 
-      {/* Desktop: table. The name link stretches over its row, so the whole row is clickable. */}
-      <div className="hidden overflow-hidden rounded-xl ring-1 ring-foreground/10 md:block">
+      {/* Wide (by the list's own width, so large text gets stacked rows): table. The name link stretches over its row, so the whole row is clickable. */}
+      <div className="hidden overflow-hidden rounded-xl ring-1 ring-foreground/10 @4xl:block">
         <Table>
           <TableHeader>
             <TableRow>
@@ -119,7 +119,7 @@ export async function VesselsList({ params }: { params: VesselListParams }) {
       </div>
 
       {/* Mobile: stacked rows (DESIGN.md: tables with more than ~4 columns stack on small screens). */}
-      <ul className="flex flex-col divide-y rounded-xl ring-1 ring-foreground/10 md:hidden">
+      <ul className="flex flex-col divide-y rounded-xl ring-1 ring-foreground/10 @4xl:hidden">
         {vessels.map((vessel) => (
           <li key={vessel.id}>
             <Link
@@ -127,7 +127,7 @@ export async function VesselsList({ params }: { params: VesselListParams }) {
               className="flex flex-col gap-1.5 p-4 outline-none focus-visible:bg-muted active:bg-muted"
             >
               <span className="flex items-center justify-between gap-2">
-                <span className="truncate font-medium">{vessel.name}</span>
+                <span className="font-medium">{vessel.name}</span>
                 <VesselStatusBadge status={vessel.status} />
               </span>
               <span className="text-sm text-muted-foreground">

@@ -85,14 +85,14 @@ export async function InspectionsList({
   const overdue = inspections.filter((inspection) => inspection.isOverdue).length;
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="@container flex flex-col gap-2">
       <p className="text-sm text-muted-foreground tabular-nums" aria-live="polite">
         {inspections.length} {inspections.length === 1 ? noun.replace(/s$/, "") : noun}
         {overdue > 0 ? ` · ${overdue} overdue` : null}
       </p>
 
-      {/* Desktop: table. The title link stretches over its row, so the whole row is clickable. */}
-      <div className="hidden overflow-hidden rounded-xl ring-1 ring-foreground/10 md:block">
+      {/* Wide (by the list's own width, so large text gets stacked rows): table. The title link stretches over its row, so the whole row is clickable. */}
+      <div className="hidden overflow-hidden rounded-xl ring-1 ring-foreground/10 @4xl:block">
         <Table>
           <TableHeader>
             <TableRow>
@@ -111,7 +111,7 @@ export async function InspectionsList({
                 <TableCell className="max-w-72 pl-4 font-medium">
                   <Link
                     href={`/inspections/${inspection.id}`}
-                    className="block truncate outline-none after:absolute after:inset-0 hover:underline focus-visible:underline focus-visible:after:ring-2 focus-visible:after:ring-ring focus-visible:after:ring-inset"
+                    className="block outline-none after:absolute after:inset-0 hover:underline focus-visible:underline focus-visible:after:ring-2 focus-visible:after:ring-ring focus-visible:after:ring-inset"
                   >
                     {inspection.title}
                   </Link>
@@ -136,8 +136,8 @@ export async function InspectionsList({
         </Table>
       </div>
 
-      {/* Mobile: stacked rows. */}
-      <ul className="flex flex-col divide-y rounded-xl ring-1 ring-foreground/10 md:hidden">
+      {/* Narrow: stacked rows that wrap. */}
+      <ul className="flex flex-col divide-y rounded-xl ring-1 ring-foreground/10 @4xl:hidden">
         {inspections.map((inspection) => (
           <li key={inspection.id}>
             <Link

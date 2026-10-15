@@ -35,6 +35,9 @@ function explainConductError(error: DbError): string {
     if (message.includes("can no longer be changed")) {
       return "This inspection is closed, so it can no longer be changed.";
     }
+    if (message.includes("with a work order can no longer change its result")) {
+      return "Work has been raised for this failed check, so it stays failed. You can still edit the finding.";
+    }
     if (message.includes("Invalid inspection status change")) {
       return "This inspection has already moved on. Refresh the page to see its current state.";
     }

@@ -20,17 +20,24 @@ import {
   type Severity,
 } from "@/features/inspections/domain";
 
-/** An overdue inspection reads as overdue first; its lifecycle status is secondary. */
+/**
+ * Lifecycle status, with Overdue beside it rather than instead of it, so
+ * "overdue but already started" stays visible (as on work orders).
+ */
 export function InspectionStatusBadge({ status, isOverdue }: { status: InspectionStatus; isOverdue: boolean }) {
-  if (isOverdue) {
-    return (
+  const lifecycle = <Badge variant={INSPECTION_STATUS_BADGE[status]}>{INSPECTION_STATUS_LABELS[status]}</Badge>;
+  if (!isOverdue) {
+    return lifecycle;
+  }
+  return (
+    <span className="inline-flex flex-wrap gap-1.5">
+      {lifecycle}
       <Badge variant="destructive">
         <ClockAlertIcon data-icon="inline-start" />
         Overdue
       </Badge>
-    );
-  }
-  return <Badge variant={INSPECTION_STATUS_BADGE[status]}>{INSPECTION_STATUS_LABELS[status]}</Badge>;
+    </span>
+  );
 }
 
 const RESULT = {

@@ -25,12 +25,20 @@ async function InspectionDetailForParams({
   params,
   searchParams,
 }: Pick<PageProps<"/inspections/[inspectionId]">, "params" | "searchParams">) {
-  const [{ inspectionId }, { saved }] = await Promise.all([params, searchParams]);
+  const [{ inspectionId }, { saved, workOrder }] = await Promise.all([params, searchParams]);
   // Route params are user input: anything that isn't a UUID can't be an inspection.
   if (!z.uuid().safeParse(inspectionId).success) {
     notFound();
   }
-  return <InspectionDetail inspectionId={inspectionId} saved={typeof saved === "string" ? saved : null} />;
+  // The work order raised from a check (?workOrder=…) is linked from the saved notice; ignore anything else.
+  const raisedWorkOrder = z.uuid().safeParse(workOrder);
+  return (
+    <InspectionDetail
+      inspectionId={inspectionId}
+      saved={typeof saved === "string" ? saved : null}
+      raisedWorkOrderId={raisedWorkOrder.success ? raisedWorkOrder.data : null}
+    />
+  );
 }
 
 function InspectionDetailSkeleton() {

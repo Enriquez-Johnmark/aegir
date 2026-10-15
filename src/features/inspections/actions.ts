@@ -96,6 +96,10 @@ export async function changeInspectionStatusAction(
     return { error: result.error };
   }
   revalidatePath("/", "layout");
+  if (nextStatus.data === "completed") {
+    // Completion is final: confirm it on the record, with any follow-up still owed.
+    redirect(`/inspections/${id.data}?saved=completed`);
+  }
   return {};
 }
 

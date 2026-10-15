@@ -1,26 +1,37 @@
 "use client";
 
 import { cn } from "cn";
-import { CheckIcon, CircleCheckIcon, CircleMinusIcon, CircleXIcon, FlagIcon, WrenchIcon } from "lucide-react";
+import {
+  CheckIcon,
+  CircleCheckIcon,
+  CircleMinusIcon,
+  CircleXIcon,
+  FlagIcon,
+  PencilIcon,
+  WrenchIcon,
+} from "lucide-react";
 import Link from "next/link";
-import { startTransition, useActionState, useState } from "react";
+import { startTransition, useActionState, useEffect, useState } from "react";
 
 import { ButtonLink } from "@/components/shared/button-link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Field,
+  FieldContent,
+  FieldDescription,
+  FieldError,
+  FieldLabel,
+  FieldLegend,
+  FieldSet,
+  FieldTitle,
+} from "@/components/ui/field";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { recordResultAction, type RecordResultState } from "@/features/inspections/actions";
+import { useChecklistEditing } from "@/features/inspections/components/checklist-editing";
 import { CheckResultBadge, SeverityBadge } from "@/features/inspections/components/inspection-badges";
 import {
   CHECK_RESULT_LABELS,
@@ -62,21 +73,55 @@ export function ChecklistItem({
     setChoice(item.result);
   }
 
+  // A recorded failure is never replaced by one tap: an unlinked one asks first,
+  // and one with a work order is locked (the database refuses it too, D-037).
+  const linkedFailure = item.result === "fail" && item.workOrders.length > 0;
+  const [replacing, setReplacing] = useState<"pass" | "not_applicable" | null>(null);
+
+  function save(result: "pass" | "not_applicable") {
+    setChoice(result);
+    setReplacing(null);
+    const formData = new FormData();
+    formData.set("result", result);
+    startTransition(() => formAction(formData));
+  }
+
   function choose(next: string | undefined) {
     if (!next || next === choice) {
       return;
     }
-    setChoice(next as CheckResult);
-    if (next !== "fail") {
-      // Pass and N/A need nothing else: save straight away (one tap on deck).
-      const formData = new FormData();
-      formData.set("result", next);
-      startTransition(() => formAction(formData));
+    if (next === "fail") {
+      setReplacing(null);
+      setChoice("fail");
+      return;
     }
+    const result = next as "pass" | "not_applicable";
+    if (item.result === "fail") {
+      setReplacing(result);
+      return;
+    }
+    // Pass and N/A need nothing else: save straight away (one tap on deck).
+    save(result);
+  }
+
+  // A recorded failure reads as a record; its finding opens for editing only on request.
+  const [editingFinding, setEditingFinding] = useState(false);
+  const [lastSavedAt, setLastSavedAt] = useState(state.savedAt);
+  if (state.savedAt !== lastSavedAt) {
+    setLastSavedAt(state.savedAt);
+    setEditingFinding(false);
   }
 
   const failedUnsaved = choice === "fail" && item.result !== "fail";
-  const showFindingForm = editable && choice === "fail";
+  const showFindingForm = editable && choice === "fail" && (failedUnsaved || editingFinding);
+
+  // Tell the Complete buttons while this check has unsaved work (they wait for it).
+  const { setEditing } = useChecklistEditing();
+  const midEdit = showFindingForm || replacing !== null;
+  useEffect(() => {
+    setEditing(item.id, midEdit);
+    return () => setEditing(item.id, false);
+  }, [item.id, midEdit, setEditing]);
   const descriptionId = `check-${item.id}-description`;
 
   return (
@@ -104,7 +149,12 @@ export function ChecklistItem({
               disabled={isPending}
             >
               {RESULT_OPTIONS.map((option) => (
-                <ToggleGroupItem key={option.value} value={option.value} className={cn("px-3", option.pressed)}>
+                <ToggleGroupItem
+                  key={option.value}
+                  value={option.value}
+                  disabled={linkedFailure && option.value !== "fail"}
+                  className={cn("px-3", option.pressed)}
+                >
                   <option.icon data-icon="inline-start" />
                   {CHECK_RESULT_LABELS[option.value]}
                 </ToggleGroupItem>
@@ -119,6 +169,23 @@ export function ChecklistItem({
           </div>
         )}
       </div>
+
+      {editable && replacing ? (
+        <div role="alertdialog" aria-labelledby={`replace-${item.id}`} className="ml-8 flex max-w-2xl flex-col gap-3 rounded-lg bg-muted/50 p-3">
+          <p id={`replace-${item.id}`} className="text-sm">
+            Replace this failure with <span className="font-medium">{CHECK_RESULT_LABELS[replacing]}</span>? The
+            finding and its severity will be removed from the checklist.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <Button type="button" variant="destructive" onClick={() => save(replacing)} disabled={isPending}>
+              Replace with {CHECK_RESULT_LABELS[replacing]}
+            </Button>
+            <Button type="button" variant="ghost" onClick={() => setReplacing(null)} autoFocus>
+              Keep the failure
+            </Button>
+          </div>
+        </div>
+      ) : null}
 
       {state.error ? (
         <p role="alert" className="pl-8 text-sm text-destructive">
@@ -138,7 +205,7 @@ export function ChecklistItem({
               maxLength={2000}
               defaultValue={state.values?.finding ?? item.finding ?? ""}
               aria-invalid={state.fieldErrors?.finding ? true : undefined}
-              autoFocus={failedUnsaved}
+              autoFocus={failedUnsaved || editingFinding}
             />
             <FieldDescription>Location, equipment and what is wrong, so the fix can be planned.</FieldDescription>
             <FieldError errors={state.fieldErrors?.finding?.map((message) => ({ message }))} />
@@ -151,19 +218,38 @@ export function ChecklistItem({
           <div className="flex flex-wrap items-center gap-2">
             <Button type="submit" disabled={isPending}>
               {isPending ? <Spinner data-icon="inline-start" /> : null}
-              {isPending ? "Saving…" : failedUnsaved ? "Record failure" : "Update finding"}
+              {isPending ? "Saving…" : failedUnsaved ? "Record failure" : "Save finding"}
             </Button>
-            {failedUnsaved ? (
-              <Button type="button" variant="ghost" onClick={() => setChoice(item.result)} disabled={isPending}>
-                Cancel
-              </Button>
-            ) : null}
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => (failedUnsaved ? setChoice(item.result) : setEditingFinding(false))}
+              disabled={isPending}
+            >
+              Cancel
+            </Button>
           </div>
         </form>
       ) : null}
 
-      {!editable && item.result === "fail" && item.finding ? (
-        <p className="ml-8 max-w-prose text-sm">{item.finding}</p>
+      {item.result === "fail" && !showFindingForm ? (
+        <div className="ml-8 flex max-w-prose flex-col gap-1.5">
+          {item.finding ? <p className="text-sm">{item.finding}</p> : null}
+          {editable ? (
+            <div className="flex flex-wrap items-center gap-2">
+              {item.severity ? <SeverityBadge severity={item.severity} /> : null}
+              <Button type="button" variant="ghost" size="sm" onClick={() => setEditingFinding(true)}>
+                <PencilIcon data-icon="inline-start" />
+                Edit finding
+              </Button>
+            </div>
+          ) : null}
+          {editable && linkedFailure ? (
+            <p className="text-xs text-muted-foreground">
+              Work has been raised for this failure, so its result stays Fail.
+            </p>
+          ) : null}
+        </div>
       ) : null}
       {!editable && item.result === "not_applicable" && item.finding ? (
         <p className="ml-8 max-w-prose text-sm text-muted-foreground">{item.finding}</p>
@@ -205,27 +291,23 @@ function SeverityField({
 }) {
   const invalid = errors ? true : undefined;
   return (
-    <Field data-invalid={invalid}>
-      <FieldLabel htmlFor={id}>Severity</FieldLabel>
-      <Select name="severity" items={SEVERITY_LABELS} defaultValue={defaultValue}>
-        <SelectTrigger id={id} aria-invalid={invalid} className="w-full md:w-60">
-          <SelectValue placeholder="Choose severity" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectGroup>
-            {SEVERITIES.toReversed().map((severity) => (
-              <SelectItem key={severity} value={severity}>
-                <span className="flex flex-col">
-                  <span className="font-medium">{SEVERITY_LABELS[severity]}</span>
-                  <span className="text-xs text-muted-foreground">{SEVERITY_DESCRIPTIONS[severity]}</span>
-                </span>
-              </SelectItem>
-            ))}
-          </SelectGroup>
-        </SelectContent>
-      </Select>
+    <FieldSet data-invalid={invalid}>
+      <FieldLegend variant="label">Severity</FieldLegend>
+      <RadioGroup name="severity" defaultValue={defaultValue ?? undefined} className="grid gap-2 sm:grid-cols-2">
+        {SEVERITIES.toReversed().map((severity) => (
+          <FieldLabel key={severity} htmlFor={`${id}-${severity}`}>
+            <Field orientation="horizontal" data-invalid={invalid}>
+              <RadioGroupItem value={severity} id={`${id}-${severity}`} aria-invalid={invalid} />
+              <FieldContent>
+                <FieldTitle>{SEVERITY_LABELS[severity]}</FieldTitle>
+                <FieldDescription>{SEVERITY_DESCRIPTIONS[severity]}</FieldDescription>
+              </FieldContent>
+            </Field>
+          </FieldLabel>
+        ))}
+      </RadioGroup>
       <FieldError errors={errors?.map((message) => ({ message }))} />
-    </Field>
+    </FieldSet>
   );
 }
 

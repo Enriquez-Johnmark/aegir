@@ -1,12 +1,14 @@
-import { ClipboardCheckIcon, ClockAlertIcon, OctagonAlertIcon, PencilIcon, TriangleAlertIcon, WrenchIcon } from "lucide-react";
+import { CalendarPlusIcon, ClipboardCheckIcon, ClockAlertIcon, OctagonAlertIcon, PencilIcon, TriangleAlertIcon, WrenchIcon } from "lucide-react";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { PageHeader } from "@/components/layout/page-header";
 import { ButtonLink } from "@/components/shared/button-link";
 import { SavedNotice } from "@/components/shared/saved-notice";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
+import { InspectionStatusBadge } from "@/features/inspections/components/inspection-badges";
 import { VesselStatusBadge } from "@/features/vessels/components/vessel-status-badge";
 import { VESSEL_TYPE_LABELS } from "@/features/vessels/domain";
 import { getVesselDetail, type VesselDetail as VesselDetailData } from "@/features/vessels/server/queries";
@@ -29,13 +31,6 @@ const WORK_STATUS = {
   completed: { label: "Completed", variant: "success" },
 } as const;
 
-const INSPECTION_STATUS = {
-  scheduled: { label: "Scheduled", variant: "info" },
-  in_progress: { label: "In progress", variant: "info" },
-  completed: { label: "Completed", variant: "success" },
-  cancelled: { label: "Cancelled", variant: "outline" },
-} as const;
-
 const SAVED_MESSAGES = { created: "Vessel added", updated: "Changes saved" } as const;
 
 export async function VesselDetail({ vesselId, saved }: { vesselId: string; saved: string | null }) {
@@ -52,12 +47,20 @@ export async function VesselDetail({ vesselId, saved }: { vesselId: string; save
         badge={<VesselStatusBadge status={vessel.status} />}
         description={`${VESSEL_TYPE_LABELS[vessel.vesselType]} · ${vessel.flagState} flag`}
         actions={
-          can(user.role, "vessels:write") ? (
-            <ButtonLink variant="outline" href={`/vessels/${vessel.id}/edit`}>
-              <PencilIcon data-icon="inline-start" />
-              Edit vessel
-            </ButtonLink>
-          ) : null
+          <>
+            {can(user.role, "inspections:create") ? (
+              <ButtonLink variant="outline" href={`/inspections/new?vessel=${vessel.id}`}>
+                <CalendarPlusIcon data-icon="inline-start" />
+                Schedule inspection
+              </ButtonLink>
+            ) : null}
+            {can(user.role, "vessels:write") ? (
+              <ButtonLink variant="outline" href={`/vessels/${vessel.id}/edit`}>
+                <PencilIcon data-icon="inline-start" />
+                Edit vessel
+              </ButtonLink>
+            ) : null}
+          </>
         }
       />
 
@@ -75,7 +78,7 @@ export async function VesselDetail({ vesselId, saved }: { vesselId: string; save
 
       <div className="grid gap-6 lg:grid-cols-2">
         <WorkOrdersCard workOrders={vessel.workOrders} />
-        <InspectionsCard inspections={vessel.inspections} />
+        <InspectionsCard vesselId={vessel.id} inspections={vessel.inspections} />
       </div>
     </>
   );
@@ -149,7 +152,7 @@ function WorkOrdersCard({ workOrders }: { workOrders: VesselDetailData["workOrde
   );
 }
 
-function InspectionsCard({ inspections }: { inspections: VesselDetailData["inspections"] }) {
+function InspectionsCard({ vesselId, inspections }: { vesselId: string; inspections: VesselDetailData["inspections"] }) {
   const overdue = inspections.filter((inspection) => inspection.isOverdue).length;
   return (
     <Card>
@@ -162,6 +165,16 @@ function InspectionsCard({ inspections }: { inspections: VesselDetailData["inspe
               ? `${overdue} overdue`
               : "Nothing overdue."}
         </CardDescription>
+        {inspections.length > 0 ? (
+          <CardAction>
+            <Link
+              href={`/inspections?vessel=${vesselId}&view=all`}
+              className="text-sm font-medium text-primary underline-offset-4 hover:underline"
+            >
+              View all
+            </Link>
+          </CardAction>
+        ) : null}
       </CardHeader>
       <CardContent>
         {inspections.length === 0 ? (
@@ -175,17 +188,13 @@ function InspectionsCard({ inspections }: { inspections: VesselDetailData["inspe
             {inspections.map((inspection) => (
               <li key={inspection.id} className="flex flex-col gap-1 py-3 first:pt-0 last:pb-0">
                 <span className="flex flex-wrap items-center justify-between gap-2">
-                  <span className="font-medium">{inspection.title}</span>
-                  {inspection.isOverdue ? (
-                    <Badge variant="destructive">
-                      <ClockAlertIcon data-icon="inline-start" />
-                      Overdue
-                    </Badge>
-                  ) : (
-                    <Badge variant={INSPECTION_STATUS[inspection.status].variant}>
-                      {INSPECTION_STATUS[inspection.status].label}
-                    </Badge>
-                  )}
+                  <Link
+                    href={`/inspections/${inspection.id}`}
+                    className="font-medium underline-offset-4 hover:underline focus-visible:underline"
+                  >
+                    {inspection.title}
+                  </Link>
+                  <InspectionStatusBadge status={inspection.status} isOverdue={inspection.isOverdue} />
                 </span>
                 <span className="text-sm text-muted-foreground tabular-nums">
                   {inspection.inspectorName ?? "No inspector assigned"} ·{" "}

@@ -77,6 +77,21 @@ test.describe("inspections", () => {
     await expect(check(page, 1)).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Cancel inspection" })).toHaveCount(0);
     await expect(page.getByText("1 needs follow-up", { exact: true }).filter(visible)).toBeVisible();
+
+    // The follow-up: raise a work order straight from the failed check.
+    const inspectionUrl = page.url();
+    await page.getByRole("link", { name: "Raise work order" }).click();
+    await expect(page.getByText("Following up a failed check on Northwind Tern")).toBeVisible();
+    await expect(page.getByRole("textbox", { name: "Title" })).toHaveValue(/^Fix: /);
+    await expect(page.getByRole("combobox", { name: "Priority" })).toContainText("High");
+    await page.getByRole("button", { name: "Raise work order" }).click();
+    await expect(page.getByRole("status").filter({ hasText: "Work order raised" })).toBeVisible();
+    await expect(page.getByText("Port lifebuoy light missing; bracket empty.").filter(visible).first()).toBeVisible();
+
+    // Back on the inspection, the check now links to its work order instead of asking for follow-up.
+    await page.goto(inspectionUrl);
+    await expect(page.getByText("Needs follow-up", { exact: true })).toHaveCount(0);
+    await expect(page.getByText(/^Work order:/).filter(visible)).toBeVisible();
   });
 
   test("the schedule form explains what is missing", async ({ page }) => {

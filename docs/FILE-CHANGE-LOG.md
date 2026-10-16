@@ -393,3 +393,9 @@ Not tracked (machine-local, outside the repo or git-ignored): `~/.impeccable/bin
 |---|---|---|---|---|
 | UPDATE | `package.json`, `package-lock.json` | Supabase CLI 2.120.0 → 2.121.0 (lockfile: CLI packages plus npm's `libc` tags only) | D-013 | ✅ full local suite on Node 24.22.0, E2E 76/76 |
 | UPDATE | `docs/{DEPLOYMENT,TESTING,CHANGELOG,FILE-CHANGE-LOG}.md` | Auth URL configuration done (owner); secrets unset; token revocation pending; toolchain evidence | D-013 | ✅ reconciled with `git status` |
+
+## 2026-10-16 · Deployment token revoked
+
+| Action | Path | Purpose | Related | Verification |
+|---|---|---|---|---|
+| UPDATE | `docs/DEPLOYMENT.md` | `aegir-cli` token revoked by the owner; CLI logged out | D-013 | ✅ `projects list` → `AccessTokenRequiredError`; no `SUPABASE_ACCESS_TOKEN` in the environment |

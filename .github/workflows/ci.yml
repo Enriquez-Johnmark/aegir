@@ -1,0 +1,70 @@
+# Lint, types, unit tests, build and dependency audit; then migrations, pgTAP,
+# database lint and advisors on a fresh local Postgres (D-044). E2E stays local:
+# it needs the whole Supabase stack and takes about five minutes.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NEXT_TELEMETRY_DISABLED: "1"
+
+jobs:
+  app:
+    name: Lint, types, unit tests, build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      # Placeholders: the build validates these but never calls Supabase.
+      NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ci-placeholder
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=high
+
+  database:
+    name: Migrations, pgTAP, database lint, advisors
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      # The Supabase CLI is the pinned dev dependency, as locally.
+      - run: npm ci
+      - name: Start Postgres (applies every migration, then the seed)
+        run: npx supabase db start
+      # `--agent no`: with agent detection on, `--fail-on` doesn't set the exit code (CLI 2.121.0).
+      - name: Database lint
+        run: npx supabase db lint --local --fail-on error --agent no
+      - name: pgTAP
+        run: npx supabase test db --local --agent no
+      - name: Advisors
+        run: npx supabase db advisors --local --fail-on warn --agent no
+      - name: Generated types match the schema
+        run: npm run db:types && git diff --exit-code src/types/database.types.ts

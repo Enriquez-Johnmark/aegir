@@ -57,7 +57,8 @@ Each slice: schema already in place → DAL → actions → UI (loading, empty, 
 
 ## Post-MVP (not scheduled)
 - [x] CI pipeline (lint, typecheck, unit, build, audit; migrations, pgTAP, database lint and advisors, types in sync; E2E stays local), D-044 · 2026-10-16
-- [x] ✅ Sign-in rate limit per visitor: Vercel WAF rule (`POST /login`, 10 per 5 minutes per IP) live, and the login page handles its 429 (D-044)
+- [x] Sign-in rate limit per visitor: Vercel WAF rule (`POST /login`, 10 per 5 minutes per IP) live, and the login page handles its 429 (D-044) · 2026-10-16
+- [ ] Landing page: turn the homepage (`/`) into a marketing page, the only Impeccable **Persuade** surface (D-024). Today it's the name, one sentence and a Sign in button. It should sell Aegir to a visitor who has never heard of it: a hero with a clear promise and a primary call to action (try the demo), the problem it solves for ship managers, inspectors and technicians, the main workflows with real screenshots, why it can be trusted (organization isolation, audit trail, tested), the four demo roles and how to sign in as each, and links to the source and docs. Stays static (no session or database reads), self-hosted images within the CSP (D-039), axe-clean, fast on a phone; E2E and smoke test updated
 - [ ] Integration suite: DAL and Server Actions against the local stack, including TS ↔ DB transition parity (D-006)
 - [ ] Dark theme (light-only MVP, D-038)
 - [ ] Audit log: date and vessel filters, an index for the person filter, sticky day headings (D-042)

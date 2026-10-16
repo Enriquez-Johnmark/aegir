@@ -428,3 +428,9 @@ Not tracked (machine-local, outside the repo or git-ignored): `~/.impeccable/bin
 | Action | Path | Purpose | Related | Verification |
 |---|---|---|---|---|
 | UPDATE | `README.md`, `docs/{DEPLOYMENT,ROADMAP,SECURITY,TESTING,CHANGELOG,FILE-CHANGE-LOG}.md` | Firewall rule applied by the owner and checked on the live site | D-044 | ✅ 11th `POST /login` → 429 (`x-vercel-mitigated: deny`); reconciled with `git status` |
+
+## 2026-10-16 · Roadmap: homepage
+
+| Action | Path | Purpose | Related | Verification |
+|---|---|---|---|---|
+| UPDATE | `docs/{ROADMAP,FILE-CHANGE-LOG}.md` | Post-MVP item: turn the public homepage into a marketing landing page (owner's request); rate-limit line formatted like the CI line | D-024 | ✅ reconciled with `git status` |

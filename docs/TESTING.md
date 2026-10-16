@@ -70,7 +70,7 @@ rollback;
 | Lint, typecheck, build | ✅ |
 | `db lint --local`, `db advisors --local` | ✅ no errors, no issues |
 | `npm audit --omit=dev` | ✅ 0 vulnerabilities (dev tooling: see SECURITY.md §9) |
-| CI (`.github/workflows/ci.yml`, D-044) | Everything above except E2E, on every push and pull request. Rehearsed locally; the first GitHub run follows the owner's push |
+| CI (`.github/workflows/ci.yml`, D-044) | Everything above except E2E, on every push and pull request. ✅ First run green ([run 38845362682](https://github.com/Enriquez-Johnmark/aegir/actions/runs/38845362682), 2 min, no annotations) |
 
 ## Results log
 
@@ -154,6 +154,7 @@ rollback;
 | 2026-10-16 | CI gates fail when they should | ✅ advisors `--fail-on warn` exit 1 on a table without RLS; db lint `--fail-on error` exit 1 on a function reading a missing table; pgTAP exit 1 on a failing test. ⚠️ Found: with the CLI's agent detection on, `--fail-on` exits 0 even on an ERROR finding; CI passes `--agent no` |
 | 2026-10-16 | Sign-in refused by the rate limit (E2E, simulated 429) | Red first: Next's whole-page "This page couldn't load". ✅ After `login/error.tsx`: sign-in card, heading focused, retry signs in; desktop + Pixel 7 |
 | 2026-10-16 | Full checks after D-044 | ✅ lint, typecheck, unit 116/116, build; db lint/pgTAP 135/135/advisors with the CI flags on a fresh reset; E2E 78/78 (fresh seed); detector no findings |
+| 2026-10-16 | First CI run on GitHub (`1dcb00d`, run 38845362682) | ✅ both jobs green in 2m3s, no annotations: unit 13 files, build, audit 0; all 9 migrations + seed, db lint no errors, pgTAP 135/135, advisors no issues, types in sync |
 
 ## Known gaps
 

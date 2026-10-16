@@ -408,3 +408,9 @@ Not tracked (machine-local, outside the repo or git-ignored): `~/.impeccable/bin
 | CREATE | `src/app/(auth)/login/error.tsx` | Sign-in card with cause and recovery when the sign-in POST is refused (firewall 429) instead of Next's whole-page error | D-044 | ✅ E2E (red first), screenshots desktop + Pixel 7 |
 | UPDATE | `e2e/auth.spec.ts` | Simulated 429 on the sign-in POST: explained, focused, recovers | D-044 | ✅ |
 | UPDATE | `AGENTS.md`, `README.md`, `docs/{DECISIONS,SECURITY,ROADMAP,ARCHITECTURE,DEPLOYMENT,TESTING,CHANGELOG,FILE-CHANGE-LOG}.md` | D-044; CI badge; rate-limit rule procedure (owner applies); secrets table: CI holds none | D-044 | ✅ reconciled with `git status` |
+
+## 2026-10-16 · First CI run
+
+| Action | Path | Purpose | Related | Verification |
+|---|---|---|---|---|
+| UPDATE | `docs/{TESTING,FILE-CHANGE-LOG}.md` | First GitHub Actions run recorded | D-044 | ✅ run 38845362682 green |

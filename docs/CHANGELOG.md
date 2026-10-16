@@ -4,6 +4,13 @@ Meaningful functional and technical changes, newest first. Format loosely follow
 
 ## [Unreleased]
 
+### 2026-10-16: License (D-045)
+
+**Added**
+- `LICENSE`: all rights reserved (public to read as a portfolio project; no license to use, copy or modify). `package.json` `"license": "UNLICENSED"`; README License section.
+
+**Reason:** the owner's decision (D-045). **Breaking changes:** none. **Migrations:** none.
+
 ### 2026-10-16: CI and sign-in rate limit (D-044)
 
 **Added**

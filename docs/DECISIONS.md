@@ -466,3 +466,14 @@ Format: context → decision → alternatives → consequences. Status: **Accept
 **Not taken:** a CAPTCHA (friction on a demo); an app-level limiter (needs shared storage, and it would run after the request has already cost a function invocation).
 
 **Consequences:** A push that breaks lint, types, unit tests, the build, a migration, an RLS test or the generated types turns red; CI never touches the hosted project. The production smoke test makes 7 sign-in attempts, so it fits the limit once per 5 minutes from one IP; a second run straight after will see 429s. Vercel counts rate limits per region, so traffic spread across regions can exceed the limit in total.
+
+<a id="d-045"></a>
+
+## D-045 — All rights reserved
+**Status:** Accepted · 2026-10-16
+
+**Context:** The repository is public as a portfolio project and had no license file, which already means all rights reserved by default, but left readers guessing (flagged by the M6 docs review).
+
+**Decision:** The owner keeps all rights. `LICENSE` says so explicitly: the code is public to read; using, copying, modifying or distributing it needs written permission. It notes that GitHub's Terms of Service still let people view and fork public repositories on GitHub, which grants no further rights. `package.json` declares `"license": "UNLICENSED"` (npm's marker for proprietary code); the README has a License section.
+
+**Consequences:** No one else may reuse the code without asking. Revisit (e.g. MIT) if the owner wants others to build on it.

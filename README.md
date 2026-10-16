@@ -147,3 +147,7 @@ Everyone shares these accounts and safety records can't be deleted (by design), 
 - Sign-in rate limiting is Supabase's per-IP limit, which sees Vercel's servers rather than each visitor, so it is shared by everyone using the demo. No app-level limit yet.
 - CI ([D-044](docs/DECISIONS.md#d-044)) runs lint, types, unit tests, the build, the dependency audit, migrations, pgTAP and the database advisors on every push; the end-to-end suite runs locally ([TESTING.md](docs/TESTING.md)).
 - `npm audit` flags `braces` (GHSA-vfj7-8cjw-p6xm), reached only through dev tooling (`eslint-config-next`, the `shadcn` CLI); `npm audit --omit=dev` is clean. See [SECURITY.md §9](docs/SECURITY.md#9-known-risks-and-limitations).
+
+## License
+
+Copyright © 2026 Johnmark Enriquez. **All rights reserved.** The code is public to read as a portfolio project; no license is granted to use, copy or modify it. See [LICENSE](LICENSE).

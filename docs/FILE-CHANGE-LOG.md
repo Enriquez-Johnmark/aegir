@@ -414,3 +414,11 @@ Not tracked (machine-local, outside the repo or git-ignored): `~/.impeccable/bin
 | Action | Path | Purpose | Related | Verification |
 |---|---|---|---|---|
 | UPDATE | `docs/{TESTING,FILE-CHANGE-LOG}.md` | First GitHub Actions run recorded | D-044 | ✅ run 38845362682 green |
+
+## 2026-10-16 · License (D-045)
+
+| Action | Path | Purpose | Related | Verification |
+|---|---|---|---|---|
+| CREATE | `LICENSE` | All rights reserved, stated explicitly | D-045 | ✅ |
+| UPDATE | `package.json`, `package-lock.json` | `"license": "UNLICENSED"` (lockfile root entry only) | D-045 | ✅ `npm ci --dry-run` |
+| UPDATE | `README.md`, `docs/{DECISIONS,CHANGELOG,FILE-CHANGE-LOG}.md` | License section, D-045 | D-045 | ✅ reconciled with `git status` |

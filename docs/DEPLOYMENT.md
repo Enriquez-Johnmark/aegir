@@ -22,6 +22,7 @@
 | 2026-10-16 | Review-fixes deploy (`ff04991`) | ✅ smoke test 45/45, no console errors; session cookie `sb-…-auth-token` is `HttpOnly`, `Secure`, `SameSite=Lax` (so the new cookie options are live) |
 | 2026-10-16 | Owner housekeeping | ✅ `SUPABASE_DB_PASSWORD` and `DEMO_PASSWORD` unset in the owner's shell; ✅ scoped `aegir-cli` token revoked in the dashboard and `supabase logout` run; `projects list` now fails with `AccessTokenRequiredError` (a new scoped token is needed for `link` or other token commands) |
 | 2026-10-16 | Sign-in rate limit (Vercel WAF rule, D-044) | ✅ applied by the owner as in [Sign-in rate limit](#sign-in-rate-limit-vercel-firewall-d-044). Checked with bare `POST /login` requests (no form data, so nothing reaches Supabase): 1–10 → 405 from the app, 11th → 429 with `x-vercel-mitigated: deny`; `GET /login` still 200 while blocked |
+| 2026-10-16 | Landing page deploy (`688ff66`, D-046) | ✅ `/` 200 from the edge cache (`x-vercel-cache: HIT`), CSP unchanged. Smoke test 57/59: all 14 new landing checks pass on desktop and Pixel 7 (promise, role picker in the first viewport, 6 screenshots from this site, `?as=` pre-fill, no console errors). The 2 failures were the script's own race: it counted links before the streamed sections arrived. A diagnostic sign-in found 0 links immediately and then 2 dashboard handover rows and 20 audit check entries. The pages are correct; the script now waits (`scripts/smoke.mjs`) |
 
 ## Environments
 
@@ -64,13 +65,15 @@ No secret key is needed by the deployed app (D-002).
 
    Verified locally on 2026-10-15 (`db reset --no-seed`, then the script): no password echoed; published logins sign in with the demo password and not the local one; the admin and the second organization are refused with it; a re-run, a weak password and a missing variable are refused; pgTAP 85/85 on the demo-seeded data (it is the fixture data). Publish the demo password in the README only once the demo is live.
 7. Vercel: import the repo, set the env vars, deploy.
-8. Smoke test the deployed URL: sign in as each demo role; dashboard numbers match the DB; create a vessel; viewer write rejected; another organization's IDs return not found. Check Vercel and Supabase logs for errors.
+8. Smoke test the deployed URL (`scripts/smoke.mjs`, read-only; usage in its header): sign in as each demo role; dashboard numbers match the DB; create a vessel; viewer write rejected; another organization's IDs return not found. Check Vercel and Supabase logs for errors.
 9. Record the URL and results here and in the README. ✅ 2026-10-15
 10. Revoke the scoped access token once no further CLI work against the project is planned (owner).
 
 ## Subsequent deployments
 
 Merge to `main` → Vercel builds. Apply any new migration **before** the app code that depends on it (`db push`, steps 2–4). Migrations are forward-only.
+
+After every deploy, run the smoke test once (`read -s DEMO_PASSWORD && export DEMO_PASSWORD`, then `node scripts/smoke.mjs`; at most once per 5 minutes, D-044).
 
 After a deploy that changes the landing page, or after refreshing `docs/screenshots/`, look at `/` on a desktop and a phone. The lit signals in the hero (`LIT_SIGNALS`) and each step's phone zoom (`focus`) are positioned on the current captures (D-046).
 

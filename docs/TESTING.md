@@ -161,6 +161,9 @@ rollback;
 | 2026-10-16 | Landing page: Impeccable finish review (fresh reviewer, degraded role file) | `fix`, then `ship` after two verdict rounds. Fixed: lit badges anchored over the right chips, visible "Sign in" per role, one-sentence lede, phone zoom crops, DESIGN.md. Declined with reasons: dark-theme recaptures (light-only app, D-038), wider step-1 phone crop (text would shrink to ~8px) |
 | 2026-10-16 | `e2e/landing.spec.ts` | ✅ 14/14 (7 × 2). The 320px + 200% text test was red first (35px sideways scroll from the header and role rows clipping "Sign in") |
 | 2026-10-16 | Full verification after the landing page | ✅ lint · typecheck · unit 130/130 · build · `npm audit --omit=dev` 0 · `db reset --local` · `db lint` no errors · pgTAP 135/135 · advisors no issues · types unchanged · E2E 92/92 on a fresh seed (axe: 0 violations on `/`, desktop and Pixel 7) · smoke script landing checks 14/14 against the local build |
+| 2026-10-16 | Production smoke after the landing deploy (`688ff66`) | ⚠️ 57/59 → explained: all 14 landing checks pass on desktop and Pixel 7. The 2 failures were the script counting links before the streamed sections arrived; a diagnostic sign-in found 0 immediately and then 2 handover rows and 20 audit check entries |
+| 2026-10-16 | `scripts/smoke.mjs` (now in the repo, waits for streamed sections) against production | ✅ 59/59, no console errors; the two former failures pass (2 handover rows, 20 check entries) |
+| 2026-10-16 | After pinning `engines` to `"24.x"` (D-047) | ✅ `npm ci --dry-run` · lint · typecheck · unit 130/130 · build (`/` static) |
 
 ## Known gaps
 

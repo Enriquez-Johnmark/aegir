@@ -4,6 +4,16 @@ Meaningful functional and technical changes, newest first. Format loosely follow
 
 ## [Unreleased]
 
+### 2026-10-16: Smoke test in the repo; Node pinned to 24.x (D-047)
+
+**Added**
+- `scripts/smoke.mjs`: the production smoke test, previously run from a scratch file. Read-only: it signs in with the published demo accounts and creates nothing. The password comes from `DEMO_PASSWORD`. `LANDING_ONLY=1` runs only the landing checks, with no sign-ins. Checks on streamed sections now wait for them; the two failures after the landing deploy were that race, not a product bug.
+
+**Changed**
+- `engines` is `"24.x"` (was `>=22`), so Vercel can't move production to a Node major that CI never ran. Node 26 is on the roadmap for when Vercel Functions offer it.
+
+**Reason:** Close-out of the landing deploy; D-047. **Breaking changes:** local development needs Node 24 (`.nvmrc`). **Migrations:** none.
+
 ### 2026-10-16: Landing page (D-046)
 
 **Added**

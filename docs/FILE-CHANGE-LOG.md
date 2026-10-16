@@ -451,3 +451,11 @@ Not tracked (machine-local, outside the repo or git-ignored): `~/.impeccable/bin
 | UPDATE | `.impeccable/config.json` | Detector ignores `overused-font` for Geist and Geist Mono (pinned by D-026) | D-026 | ✅ |
 | UPDATE | `.gitignore` | Ignore Impeccable's local decision-page files (`.impeccable/mocks/`, `.impeccable/questions/`) | D-024 | ✅ `git check-ignore` |
 | UPDATE | `docs/{DECISIONS,ROADMAP,ARCHITECTURE,TESTING,DEPLOYMENT,CHANGELOG,FILE-CHANGE-LOG}.md` | D-046, roadmap item done, layout, results, post-deploy checks | D-046 | ✅ reconciled with `git status` |
+
+## 2026-10-16 · Landing close-out: smoke test in the repo, Node pin (D-047)
+
+| Action | Path | Purpose | Related | Verification |
+|---|---|---|---|---|
+| CREATE | `scripts/smoke.mjs` | Production smoke test (read-only), moved from a session scratch file; password from the environment; waits for streamed sections; landing-only mode | D-044, D-046 | ✅ see TESTING.md (production run) |
+| UPDATE | `package.json`, `package-lock.json` | `engines` `"24.x"` (lockfile root entry only, edited by hand; npm's regenerated lockfile was discarded) | D-047 | ✅ `npm ci --dry-run`; lint, typecheck, unit, build |
+| UPDATE | `README.md`, `docs/{DECISIONS,ROADMAP,ARCHITECTURE,DEPLOYMENT,TESTING,CHANGELOG,FILE-CHANGE-LOG}.md` | D-047, Node 26 roadmap item, smoke script usage, landing deploy recorded with the diagnosis | D-046, D-047 | ✅ reconciled with `git status` |

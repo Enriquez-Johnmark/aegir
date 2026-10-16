@@ -517,3 +517,23 @@ Format: context → decision → alternatives → consequences. Status: **Accept
 - **But the hero's lit-signal positions (`LIT_SIGNALS`) and each step's zoom region (`focus`) are measured on the current captures.** After a recapture, re-check them in a desktop and Pixel 7 screenshot.
 - Vercel's image optimisation counts against the Hobby plan's monthly quota. Seven source images at a few widths are well inside it.
 - Phones download the zoomed step images at up to the capture's full width. They are lazy-loaded below the fold, so they don't affect the first paint.
+
+<a id="d-047"></a>
+
+## D-047 — Node pinned to 24.x everywhere; Node 26 waits for Vercel
+**Status:** Accepted · 2026-10-16 (refines D-013)
+
+**Context:**
+- Node 24 enters Maintenance LTS on 2026-10-20, and Node 26 becomes Active LTS on 2026-10-28 (nodejs/Release `schedule.json`). Node 24 keeps security fixes until 2028-04-30.
+- Vercel Functions currently offer only 24.x (the default) and 22.x. Vercel's Node 26 announcement covers its Sandbox product, not Functions.
+- `package.json` declared `"engines": { "node": ">=22" }`. Vercel picks the deployed major version from `engines`. Once Vercel adds 26, that open range could move production to 26 on its own, while `.nvmrc`, CI and local development stay on 24.
+
+**Decision:**
+- `engines` is `"24.x"` in `package.json` and in the lockfile's root entry. That one line was edited by hand: `npm install --package-lock-only` also rewrote unrelated platform fields (dropping `libc` from native binaries), so its output was discarded.
+- `.nvmrc` (24) and CI (`node-version-file: .nvmrc`) are unchanged. Local development, CI and production now run the same major version, and only a commit can change it.
+- With `engine-strict=true`, `npm ci` refuses any other Node major locally.
+- Moving to Node 26 is a roadmap item for when Vercel Functions offer 26.x. It must be one change: `.nvmrc`, `engines` `"26.x"`, the Vercel project's Node.js setting and `@types/node` together, followed by the full verification list and a production smoke run.
+
+**Consequences:**
+- Contributors need Node 24, not just any version from 22 up (README updated).
+- Production can't drift to a Node major that CI never ran.

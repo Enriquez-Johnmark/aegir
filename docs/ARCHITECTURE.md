@@ -46,7 +46,7 @@ aegir/
 ├── docs/                        # All project documentation (this folder)
 ├── e2e/                         # ✅ Playwright specs per feature + accessibility (axe) + security headers; global-setup resets the LOCAL db
 ├── public/                      # Static assets served as-is
-├── scripts/                     # ✅ demo-seed.mjs and demo-reset.mjs (+ tests): hosted demo seed and reset from supabase/seed.sql (D-011, D-043); capture-screenshots.mjs (README images)
+├── scripts/                     # ✅ demo-seed.mjs and demo-reset.mjs (+ tests): hosted demo seed and reset from supabase/seed.sql (D-011, D-043); capture-screenshots.mjs (README and landing images); smoke.mjs (read-only smoke test of a deployed site)
 ├── supabase/
 │   ├── config.toml              # Local Supabase stack configuration (committed)
 │   ├── migrations/              # ✅ Timestamped, append-only SQL migrations (source of truth)

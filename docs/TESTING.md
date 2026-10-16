@@ -155,6 +155,7 @@ rollback;
 | 2026-10-16 | Sign-in refused by the rate limit (E2E, simulated 429) | Red first: Next's whole-page "This page couldn't load". ✅ After `login/error.tsx`: sign-in card, heading focused, retry signs in; desktop + Pixel 7 |
 | 2026-10-16 | Full checks after D-044 | ✅ lint, typecheck, unit 116/116, build; db lint/pgTAP 135/135/advisors with the CI flags on a fresh reset; E2E 78/78 (fresh seed); detector no findings |
 | 2026-10-16 | First CI run on GitHub (`1dcb00d`, run 38845362682) | ✅ both jobs green in 2m3s, no annotations: unit 13 files, build, audit 0; all 9 migrations + seed, db lint no errors, pgTAP 135/135, advisors no issues, types in sync |
+| 2026-10-16 | Vercel firewall rule on the live site (D-044) | ✅ 11 bare `POST /login` (no form data, nothing reaches Supabase): 1–10 → 405 from the app, 11th → 429 with `x-vercel-mitigated: deny`; `GET /login` 200 while blocked |
 
 ## Known gaps
 

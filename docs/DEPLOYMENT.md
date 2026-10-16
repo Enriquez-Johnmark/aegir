@@ -21,7 +21,7 @@
 | 2026-10-16 | `db advisors --linked` (owner) | ⚠️ one WARN, `auth_leaked_password_protection` (Auth, not schema): leaked-password checking is a Pro-plan feature, and the demo has signups disabled and passwords set by the seed (SECURITY.md §9). No database findings |
 | 2026-10-16 | Review-fixes deploy (`ff04991`) | ✅ smoke test 45/45, no console errors; session cookie `sb-…-auth-token` is `HttpOnly`, `Secure`, `SameSite=Lax` (so the new cookie options are live) |
 | 2026-10-16 | Owner housekeeping | ✅ `SUPABASE_DB_PASSWORD` and `DEMO_PASSWORD` unset in the owner's shell; ✅ scoped `aegir-cli` token revoked in the dashboard and `supabase logout` run; `projects list` now fails with `AccessTokenRequiredError` (a new scoped token is needed for `link` or other token commands) |
-| 2026-10-16 | Sign-in rate limit (Vercel WAF rule, D-044) | ⬜ owner: apply the rule in [Sign-in rate limit](#sign-in-rate-limit-vercel-firewall-d-044), then confirm |
+| 2026-10-16 | Sign-in rate limit (Vercel WAF rule, D-044) | ✅ applied by the owner as in [Sign-in rate limit](#sign-in-rate-limit-vercel-firewall-d-044). Checked with bare `POST /login` requests (no form data, so nothing reaches Supabase): 1–10 → 405 from the app, 11th → 429 with `x-vercel-mitigated: deny`; `GET /login` still 200 while blocked |
 
 ## Environments
 

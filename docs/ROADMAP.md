@@ -57,7 +57,7 @@ Each slice: schema already in place → DAL → actions → UI (loading, empty, 
 
 ## Post-MVP (not scheduled)
 - [x] CI pipeline (lint, typecheck, unit, build, audit; migrations, pgTAP, database lint and advisors, types in sync; E2E stays local), D-044 · 2026-10-16
-- [ ] 🟡 Sign-in rate limit per visitor: Vercel WAF rule specified and the login page handles its 429 (D-044); owner applies the rule in the dashboard
+- [x] ✅ Sign-in rate limit per visitor: Vercel WAF rule (`POST /login`, 10 per 5 minutes per IP) live, and the login page handles its 429 (D-044)
 - [ ] Integration suite: DAL and Server Actions against the local stack, including TS ↔ DB transition parity (D-006)
 - [ ] Dark theme (light-only MVP, D-038)
 - [ ] Audit log: date and vessel filters, an index for the person filter, sticky day headings (D-042)

@@ -422,3 +422,9 @@ Not tracked (machine-local, outside the repo or git-ignored): `~/.impeccable/bin
 | CREATE | `LICENSE` | All rights reserved, stated explicitly | D-045 | ✅ |
 | UPDATE | `package.json`, `package-lock.json` | `"license": "UNLICENSED"` (lockfile root entry only) | D-045 | ✅ `npm ci --dry-run` |
 | UPDATE | `README.md`, `docs/{DECISIONS,CHANGELOG,FILE-CHANGE-LOG}.md` | License section, D-045 | D-045 | ✅ reconciled with `git status` |
+
+## 2026-10-16 · Sign-in rate limit live (D-044)
+
+| Action | Path | Purpose | Related | Verification |
+|---|---|---|---|---|
+| UPDATE | `README.md`, `docs/{DEPLOYMENT,ROADMAP,SECURITY,TESTING,CHANGELOG,FILE-CHANGE-LOG}.md` | Firewall rule applied by the owner and checked on the live site | D-044 | ✅ 11th `POST /login` → 429 (`x-vercel-mitigated: deny`); reconciled with `git status` |

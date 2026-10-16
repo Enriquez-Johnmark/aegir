@@ -4,6 +4,13 @@ Meaningful functional and technical changes, newest first. Format loosely follow
 
 ## [Unreleased]
 
+### 2026-10-16: Sign-in rate limit live (D-044)
+
+**Changed**
+- The Vercel firewall rule (`POST /login`, 10 per 5 minutes per IP) is applied on production. Checked on the live site: the 11th request in the window gets the firewall's 429; page loads are unaffected.
+
+**Breaking changes:** none. **Migrations:** none.
+
 ### 2026-10-16: License (D-045)
 
 **Added**

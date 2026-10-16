@@ -53,4 +53,6 @@ next-env.d.ts
 .impeccable/hook.cache.json
 .impeccable/hook.pending.json
 .impeccable/review/
+.impeccable/mocks/
+.impeccable/questions/
 .impeccable/build/

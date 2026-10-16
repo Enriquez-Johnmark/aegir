@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-12T08:30:00Z",
+  "generatedAt": "2026-10-16T13:30:00Z",
   "title": "Design System: Aegir",
   "extensions": {
     "colorMeta": {
@@ -25,9 +25,14 @@
       "signal-red": { "role": "error", "displayName": "Signal Red", "canonical": "oklch(0.53 0.21 27)" },
       "signal-amber": { "role": "warning", "displayName": "Signal Amber", "canonical": "oklch(0.5 0.11 65)" },
       "signal-green": { "role": "success", "displayName": "Signal Green", "canonical": "oklch(0.5 0.12 152)" },
-      "signal-blue": { "role": "info", "displayName": "Signal Blue", "canonical": "oklch(0.5 0.11 232)" }
+      "signal-blue": { "role": "info", "displayName": "Signal Blue", "canonical": "oklch(0.5 0.11 232)" },
+      "night-hull": { "role": "neutral", "displayName": "Night Hull", "canonical": "oklch(0.21 0.045 252)", "scope": "Landing hero only (.dark.night --background)" },
+      "night-panel": { "role": "neutral", "displayName": "Night Panel", "canonical": "oklch(0.25 0.05 252)", "scope": "Landing hero only (.dark.night --card)" },
+      "night-mist": { "role": "neutral", "displayName": "Night Mist", "canonical": "oklch(0.78 0.03 252)", "scope": "Landing hero only (.dark.night --muted-foreground)" }
     },
     "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "The landing page h1 only (Persuade); 2.5rem phones, 3rem sm, 3.5rem lg." },
+      "section": { "displayName": "Section", "purpose": "Landing page h2s only; 1.875rem phones, 2.25rem sm." },
       "headline": { "displayName": "Headline", "purpose": "One page title (h1) per screen." },
       "title": { "displayName": "Title", "purpose": "Card and section titles." },
       "body": { "displayName": "Body", "purpose": "Default UI text, table cells, descriptions." },

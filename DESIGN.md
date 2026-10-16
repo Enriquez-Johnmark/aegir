@@ -16,7 +16,22 @@ colors:
   signal-amber: "oklch(0.5 0.11 65)"
   signal-blue: "oklch(0.5 0.11 232)"
   signal-red: "oklch(0.53 0.21 27)"
+  night-hull: "oklch(0.21 0.045 252)"
+  night-panel: "oklch(0.25 0.05 252)"
+  night-mist: "oklch(0.78 0.03 252)"
 typography:
+  display:
+    fontFamily: "Geist, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "3.5rem"
+    fontWeight: 600
+    lineHeight: 1.05
+    letterSpacing: "-0.03em"
+  section:
+    fontFamily: "Geist, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "2.25rem"
+    fontWeight: 600
+    lineHeight: 1.11
+    letterSpacing: "-0.025em"
   headline:
     fontFamily: "Geist, ui-sans-serif, system-ui, sans-serif"
     fontSize: "1.5rem"
@@ -109,7 +124,7 @@ Source of truth for tokens: `src/app/globals.css` (shadcn `base-nova` theme, Tai
 
 Aegir is used the way a ship's bridge is used at night: long stretches of calm monitoring, broken by moments that demand an immediate, correct response. The interface is therefore quiet by default. Surfaces are neutral, type is a single well-tuned sans, and the only persistent colour is a deep harbour navy that marks where you can act. Everything else that lights up is a signal: a failed check, an overdue work order, a blocked task, a handover waiting for acknowledgement. Because colour is rare, a signal is impossible to miss.
 
-All authenticated screens are Impeccable **Operate** surfaces: managers scan a fleet, inspectors record results on a phone on deck, technicians update status between jobs. Earned familiarity beats novelty: standard shadcn components, standard navigation (sidebar + page header), consistent controls on every screen. Brand lives in precise details: tabular numerals, exact status language, navy focus rings, a palette-tinted text selection. Density is comfortable-compact, so tables show many rows without feeling cramped and stay touch-friendly on mobile. The public landing page is the only **Persuade** surface and may carry more of the navy.
+All authenticated screens are Impeccable **Operate** surfaces: managers scan a fleet, inspectors record results on a phone on deck, technicians update status between jobs. Earned familiarity beats novelty: standard shadcn components, standard navigation (sidebar + page header), consistent controls on every screen. Brand lives in precise details: tabular numerals, exact status language, navy focus rings, a palette-tinted text selection. Density is comfortable-compact, so tables show many rows without feeling cramped and stay touch-friendly on mobile. The public landing page is the only **Persuade** surface and may carry more of the navy: its hero is the bridge at night (see Landing page below).
 
 **Key Characteristics:**
 - Quiet neutral canvas; one navy accent reserved for action, selection and focus.
@@ -143,6 +158,13 @@ Used as text/icon colour on a 10% tint of itself (20% in dark), the same pattern
 
 Dark theme signals: success `oklch(0.78 0.13 152)`, warning `oklch(0.82 0.13 75)`, info `oklch(0.78 0.1 232)`, destructive `oklch(0.704 0.191 22.216)`; all ≥4.6:1 on a 20% tint over the dark card.
 
+### Night (landing hero only)
+The landing hero and its header apply `.dark` plus `.night` (`src/app/globals.css`): the dark-theme tokens, with the neutral dark greys swapped for a deep Harbour Navy field. Nothing else uses it.
+- **Night Hull** (`oklch(0.21 0.045 252)`, `--background` under `.night`): the field. Foreground 17:1.
+- **Night Panel** (`oklch(0.25 0.05 252)`, `--card`) and `oklch(0.27 0.05 252)` (`--muted`, row hover and code chips).
+- **Night Mist** (`oklch(0.78 0.03 252)`, `--muted-foreground`): secondary text, tinted from the field rather than grey. 8.9:1.
+- Borders are white at 12%. Signals use the dark-theme signal colours; each clears 4.7:1 on its 20% tint over Night Hull but only 4.3:1 over Night Panel (red), so **badges on the night field sit on `--background`, never on a card.**
+
 Charts (`--chart-1…5`) are a single navy lightness ramp so data series read as one family; differentiate series by lightness and labels, never by hue alone.
 
 ### Named Rules
@@ -167,6 +189,7 @@ Charts (`--chart-1…5`) are a single navy lightness ramp so data series read as
 ### Named Rules
 **The Ledger Rule.** Any number that is compared, totalled or scanned in a column uses `tabular-nums`.
 **The Fixed Scale Rule.** No fluid (`clamp`) type on Operate screens; steps stay at 12/14/16/24px.
+**The Display Exception.** The landing page (Persuade) adds two steps, still fixed and never `clamp`: **Display** (600, 3.5rem from `lg`, 3rem from `sm`, 2.5rem on phones; line-height 1.05, tracking -0.03em, balanced) for its single `h1`, and **Section** (600, 2.25rem, 1.875rem on phones; tracking -0.025em) for its `h2`s. Lede text there is 18px (`text-lg`, relaxed). No app screen uses them.
 
 ### Touch
 **The Deck Hand Rule.** On coarse pointers (phones, tablets) every interactive control is at least 44px tall (`pointer-coarse:` variant in Button, Input, InputGroup, SelectTrigger, SelectItem, DropdownMenuItem and sidebar items); fine pointers keep the compact 32px density. New interactive components must follow it.
@@ -243,6 +266,15 @@ Gently rounded and consistent: base radius 10px (`--radius: 0.625rem`), controls
 - **Figures stay in ink.** A signal (overdue, blocked, failed checks without work, "for you") is a badge with an icon beside the figure; a calm state is a muted sentence ("None overdue or blocked"), never a green badge.
 - **Queue panels** are cards with an `h2` title, a one-line rule for what is listed and in what order, an optional ghost "All open" / "Watch list" link, and rows that reuse each feature's badges and stretched-link row pattern. Empty panels say what is clear in one muted sentence; a panel that leaves rows out says how many. Row headers wrap (title first, badges below) rather than squeezing the title. Two columns from `lg`; handovers span both.
 
+### Landing page (Persuade surface, D-046)
+- **The bridge at night.** The header and hero sit on Night Hull (`.dark night`). The rest of the page is the light console: Chart White sections, with Console Panel (`bg-sidebar`) on the trust section and the footer. The night field covers the first viewport only.
+- **Only what matters lights up.** The hero shows the real dashboard capture running off the right edge, dimmed (`brightness 0.6`, `saturate 0.6`). Three real signal `Badge`s ("2 overdue", "1 blocked", "Critical") are lit over the chips they repeat, anchored at the chip edge that has space beside it. They are `aria-hidden`; the image alt carries the facts. They show only at the two-column layout (`@5xl`, matched to the `<picture>` source at 64rem). Phones get the undimmed phone capture, whose own badges are the signal.
+- **The primary action is the role picker.** It is a hairline panel (`ring-primary/50`) of four whole-row links joined by 1px gaps, like the dashboard figures row. Each row has the role, what to try and a visible "Sign in →" in primary. The demo password sits in a mono chip under the rows. The links go to `/login?as=<role>`, which pre-fills the email only. The page has no sign-in form: the edge rate limit covers `POST /login` (D-044). The closing "Try it as each role" list repeats the four accounts with one filled primary ("Sign in as Marcus") and outline buttons for the others.
+- **One finding, followed.** "How it works" is an ordered list of four steps joined by a 1px trail line with numbered markers (the sequence is information). Each step pairs real product badges with a screenshot. When the line can't fit, at 20rem of section width, the number stacks above the step instead.
+- **Screenshots** (`ScreenshotFrame`) are real demo captures in a hairline-ringed 14px frame, never stretched. From 48rem of section width they show the page content with the app sidebar cropped off. Narrower, they zoom to the region the step names, so phone text stays readable. Both switches are rem container queries, so enlarged text gets the zoom too.
+- **Motion** is one authored moment: the lit badges' ring widens and fades once, staggered (`signal-ignite`, 1.4s ease-out), only under `motion-safe`. The badges are visible without it.
+- **Copy** is the product's own: true statements from PRODUCT.md and SECURITY.md, no counts that go stale, a synthetic-data and not-certified note under the hero and in the footer.
+
 ### Cards / Containers
 - **Corner:** 14px. **Background:** Chart White. **Border:** hairline ring. **Shadow:** none. **Padding:** 16px (12px `sm`).
 - Cards group a task or a record. Never nest cards; never build page scaffolds from same-size icon cards.
@@ -275,7 +307,7 @@ Gently rounded and consistent: base radius 10px (`--radius: 0.625rem`), controls
 - **Do** compose light and dark themes deliberately; signals are re-tuned for dark, not inverted. (The MVP ships light-only, D-038: the dark tokens exist but nothing applies them yet.)
 
 ### Don't:
-- **Don't** use colour as decoration: no navy hero blocks on Operate screens, no gradient text, no tinted card backgrounds (The Signal Rule).
+- **Don't** use colour as decoration: no navy hero blocks on Operate screens (the night field is the landing hero's alone), no gradient text, no tinted card backgrounds (The Signal Rule).
 - **Don't** add shadows to cards or combine a ring with a shadow (The Quiet Hull Rule).
 - **Don't** use coloured `border-left` stripes on cards, alerts or list items.
 - **Don't** use eyebrow/kicker labels above headings, or big-number "hero metric" tiles as the dashboard's structure.

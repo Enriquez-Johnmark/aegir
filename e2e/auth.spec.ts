@@ -41,6 +41,31 @@ test.describe("authentication", () => {
     await expect(page.getByLabel("Email")).toHaveValue(TECHNICIAN.email);
   });
 
+  test("explains a sign-in refused by the firewall's rate limit and recovers", async ({ page }) => {
+    // The hosted demo limits sign-in POSTs per visitor at Vercel's edge (D-044); the
+    // request never reaches the app, so the page must cope with a bare 429.
+    await page.route("**/login*", (route) =>
+      route.request().method() === "POST"
+        ? route.fulfill({ status: 429, contentType: "text/plain", body: "Too Many Requests" })
+        : route.fallback(),
+    );
+    await page.goto("/login");
+    await page.getByLabel("Email").fill(TECHNICIAN.email);
+    await page.getByLabel("Password").fill(PASSWORD);
+    await page.getByRole("button", { name: "Sign in" }).click();
+
+    // Our sign-in card with the cause and the recovery, not Next's whole-page "This page couldn't load".
+    await expect(page.getByRole("heading", { name: "Sign-in didn't go through", level: 1 })).toBeFocused();
+    await expect(page.getByText("Wait a minute, then try again.").filter(visible)).toBeVisible();
+
+    await page.unroute("**/login*");
+    await page.getByRole("button", { name: "Try again" }).click();
+    await page.getByLabel("Email").fill(TECHNICIAN.email);
+    await page.getByLabel("Password").fill(PASSWORD);
+    await page.getByRole("button", { name: "Sign in" }).click();
+    await expect(page).toHaveURL(/\/dashboard$/);
+  });
+
   test("validates the form on the server", async ({ page }) => {
     await page.goto("/login");
     await page.getByLabel("Email").fill("not-an-email");

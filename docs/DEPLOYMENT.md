@@ -1,6 +1,6 @@
 # Deployment
 
-> **Status: deployed (2026-10-15).** https://aegir-eight.vercel.app (Vercel production domain, region `sin1`) on Supabase project "Aegir" (ref `lerdmictefgrcmbovlft`, `ap-southeast-1`, Postgres 17.11) with the first 8 migrations and the demo seed. **Pending (owner, 2026-10-16):** push migration 9, `20261016000517_harden_after_independent_review` (D-043); the app code deployed alongside it doesn't depend on it, so the order doesn't matter, but the database fixes only apply once it's pushed. Per-deployment and team URLs stay behind Vercel Authentication (Standard Protection); the production domain is public.
+> **Status: deployed (2026-10-15).** https://aegir-eight.vercel.app (Vercel production domain, region `sin1`) on Supabase project "Aegir" (ref `lerdmictefgrcmbovlft`, `ap-southeast-1`, Postgres 17.11) with all 9 migrations (the ninth, `20261016000517_harden_after_independent_review` (D-043), pushed 2026-10-16) and the demo seed. Per-deployment and team URLs stay behind Vercel Authentication (Standard Protection); the production domain is public.
 
 ### Deployment log
 
@@ -17,7 +17,9 @@
 | 2026-10-15 | Security headers deploy (`1944fd8`, D-039) | ✅ CSP (with `upgrade-insecure-requests`, no `unsafe-eval`), `X-Frame-Options`, `nosniff`, `Referrer-Policy`, `Permissions-Policy`, COOP and Vercel's HSTS on `/` and `/login`; smoke test rerun 31/31, no console errors (so no CSP violations) |
 | 2026-10-15 | M4 deploy (`dcbf0f4`, D-040) | ✅ smoke test 31/31, no console errors; `/login` serves its `h1` |
 | 2026-10-15 | Handovers (`8523a48`) and audit log (`9c14a46`) deploys | ✅ smoke test 40/40 and 45/45 (read-only handover and audit checks added; phone menu closes after navigating); no console errors |
-| 2026-10-16 | Migration 9 (`20261016000517_harden_after_independent_review`, D-043) | ⬜ owner: `migration list`, `db push --dry-run`, then `db push` with explicit go-ahead; then `db advisors --linked` |
+| 2026-10-16 | Migration 9 (`20261016000517_harden_after_independent_review`, D-043): `migration list`, `db push --dry-run`, `db push` (owner's terminal and explicit go-ahead) | ✅ list showed 8 applied + this one pending; dry run listed only it; applied |
+| 2026-10-16 | `db advisors --linked` (owner) | ⚠️ one WARN, `auth_leaked_password_protection` (Auth, not schema): leaked-password checking is a Pro-plan feature, and the demo has signups disabled and passwords set by the seed (SECURITY.md §9). No database findings |
+| 2026-10-16 | Review-fixes deploy (`ff04991`) | ✅ smoke test 45/45, no console errors; session cookie `sb-…-auth-token` is `HttpOnly`, `Secure`, `SameSite=Lax` (so the new cookie options are live) |
 
 ## Environments
 

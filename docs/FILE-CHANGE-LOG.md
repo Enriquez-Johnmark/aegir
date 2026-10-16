@@ -380,3 +380,9 @@ Not tracked (machine-local, outside the repo or git-ignored): `~/.impeccable/bin
 | UPDATE | `package.json`, `package-lock.json` | `shadcn` to devDependencies (dev flags only in the lockfile); `--local` on db scripts | D-043 | ✅ `npm audit --omit=dev` 0 |
 | UPDATE | `AGENTS.md` | `db advisors --local` in the verification block | D-043 | ✅ |
 | UPDATE | `README.md`, `docs/{DECISIONS,SECURITY,DATA_MODEL,CONVENTIONS,ARCHITECTURE,ROADMAP,DEPLOYMENT,TESTING,AGENT-SKILLS,CHANGELOG,FILE-CHANGE-LOG}.md` | D-043; GitHub-safe decision anchors; docs brought in line with the code | D-043 | ✅ reconciled with `git status` |
+
+## 2026-10-16 · M6: Migration 9 in production
+
+| Action | Path | Purpose | Related | Verification |
+|---|---|---|---|---|
+| UPDATE | `docs/{DEPLOYMENT,SECURITY,TESTING,CHANGELOG,FILE-CHANGE-LOG}.md` | Migration 9 pushed (owner); hosted advisors (one Auth warning, recorded as a known limitation); production smoke and cookie flags | D-043 | ✅ smoke 45/45, cookie flags read in a browser, reconciled with `git status` |

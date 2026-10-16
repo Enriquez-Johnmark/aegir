@@ -147,6 +147,8 @@ rollback;
 | 2026-10-16 | `npm test` | ✅ 116/116 (+ deleted audit entries, 3 redirect normalisation cases (red first), 3 demo-reset SQL tests) |
 | 2026-10-16 | `scripts/demo-reset.mjs` against the local database | ✅ visitor edit removed; two consecutive resets each restored the seeded counts; refused without `confirm` and with a third organization present |
 | 2026-10-16 | `npm run test:e2e` after the review fixes (fresh seed each run) | ✅ 76/76 twice in a row (audit date read from the page, session cookies asserted `httpOnly`, isolation unfiltered, figures read from accessible names) |
+| 2026-10-16 | Hosted Supabase: `migration list`, `db push --dry-run`, `db push`, `db advisors --linked` (owner) | ✅ migration 9 applied (only it pending in the dry run); ⚠️ advisors: one Auth warning, `auth_leaked_password_protection` (Pro-plan feature; SECURITY.md §9), no database findings |
+| 2026-10-16 | Production after the review-fixes deploy (`ff04991`) | ✅ smoke 45/45, no console errors; session cookie `HttpOnly`, `Secure`, `SameSite=Lax` |
 
 ## Known gaps
 

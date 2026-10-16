@@ -26,8 +26,8 @@ Meaningful functional and technical changes, newest first. Format loosely follow
 - `scripts/demo-reset.mjs` (+ tests): restores the demo to its seed in one transaction, with guards (destructive; owner-run).
 - pgTAP `11_review_hardening` (11) and `12_read_isolation` (28).
 
-**Reason:** M6 independent review (D-043). **Affected areas:** database, audit, work-order and handover queues, auth cookies, redirects, E2E, scripts, docs. **Breaking changes:** none. **Migrations:** `20261016000517_harden_after_independent_review` (forward only; production push pending, owner).
-**Verification:** unit 116/116 ✅ · pgTAP 135/135 ✅ (new tests red against the old schema first) · lint/typecheck/build ✅ · `db lint`/advisors ✅ · races before/after ✅ · `impeccable detect` `[]` ✅ · E2E 76/76 ✅ twice (fresh seed).
+**Reason:** M6 independent review (D-043). **Affected areas:** database, audit, work-order and handover queues, auth cookies, redirects, E2E, scripts, docs. **Breaking changes:** none. **Migrations:** `20261016000517_harden_after_independent_review` (forward only; pushed to production by the owner on 2026-10-16).
+**Verification:** unit 116/116 ✅ · pgTAP 135/135 ✅ (new tests red against the old schema first) · lint/typecheck/build ✅ · `db lint`/advisors ✅ · races before/after ✅ · `impeccable detect` `[]` ✅ · E2E 76/76 ✅ twice (fresh seed). Production: `db advisors --linked` ⚠️ one Auth warning (leaked-password protection, a Pro-plan feature; SECURITY.md §9), no database findings · smoke 45/45 ✅ · session cookie `HttpOnly`/`Secure`/`SameSite=Lax` ✅.
 
 ### 2026-10-16: README screenshots (M6)
 

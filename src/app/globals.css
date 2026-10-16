@@ -145,3 +145,28 @@
     caret-color: var(--primary);
   }
 }
+/*
+ * "Night bridge": the landing page hero only (DESIGN.md: Landing page, D-046).
+ * Applied together with `.dark`, so components take the dark-theme tokens; this
+ * scope swaps the neutral dark greys for a deep Harbour Navy field. Contrast is
+ * computed, not estimated: foreground 17:1, muted 8.9:1, every signal ≥4.7:1 on
+ * its 20% tint over --background (badges sit on --background, never on --card).
+ */
+.dark.night {
+  --background: oklch(0.21 0.045 252);
+  --card: oklch(0.25 0.05 252);
+  --muted: oklch(0.27 0.05 252);
+  --muted-foreground: oklch(0.78 0.03 252);
+  --border: oklch(1 0 0 / 12%);
+  --input: oklch(1 0 0 / 18%);
+}
+
+/* A signal lighting once as the page opens: a ring that widens and fades. Motion-safe only. */
+@keyframes signal-ignite {
+  from {
+    box-shadow: 0 0 0 0 color-mix(in oklch, currentColor 55%, transparent);
+  }
+  to {
+    box-shadow: 0 0 0 12px transparent;
+  }
+}

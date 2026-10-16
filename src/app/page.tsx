@@ -1,19 +1,31 @@
+import type { Metadata } from "next";
 
-import { ButtonLink } from "@/components/shared/button-link";
+import { DemoAccounts } from "@/features/landing/components/demo-accounts";
+import { HowItWorks } from "@/features/landing/components/how-it-works";
+import { LandingFooter } from "@/features/landing/components/landing-footer";
+import { LandingHeader } from "@/features/landing/components/landing-header";
+import { LandingHero } from "@/features/landing/components/landing-hero";
+import { TrustSection } from "@/features/landing/components/trust-section";
 
+export const metadata: Metadata = {
+  title: { absolute: "Aegir: maritime safety and fleet operations" },
+  description:
+    "Vessels, safety inspections, work orders and shift handovers in one audited workspace. Try the live demo as a fleet manager, inspector, technician or viewer.",
+};
+
+// The public landing page (Impeccable Persuade surface, D-024, D-046). Fully static:
+// no session or database reads, so it prerenders.
 export default function Home() {
   return (
-    <main className="flex flex-1 flex-col items-center justify-center gap-6 px-6 py-24 text-center">
-      <div className="flex flex-col items-center gap-3">
-        <h1 className="text-4xl font-semibold tracking-tight">Aegir</h1>
-        <p className="max-w-md text-muted-foreground">
-          Maritime safety and fleet operations management: vessels, inspections, work orders and
-          handovers in one audited workspace.
-        </p>
-      </div>
-      <ButtonLink size="lg" href="/login">
-        Sign in
-      </ButtonLink>
-    </main>
+    <>
+      <LandingHeader />
+      <main className="flex-1">
+        <LandingHero />
+        <HowItWorks />
+        <TrustSection />
+        <DemoAccounts />
+      </main>
+      <LandingFooter />
+    </>
   );
 }

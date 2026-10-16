@@ -4,6 +4,25 @@ Meaningful functional and technical changes, newest first. Format loosely follow
 
 ## [Unreleased]
 
+### 2026-10-16: Integration suite (D-049)
+
+**Added**
+- `npm run test:integration`: 94 Vitest tests in `integration/` that run the real Server Actions and data layer against the local Supabase stack, signed in as seeded users. Only Next's request plumbing is stubbed (cookies, `connection`, `revalidatePath`, `server-only`). The suite refuses any non-local Supabase URL and resets the local database from the seed first.
+- Status parity (D-006): every pair of work-order, inspection and handover statuses is tried against the database and compared with the TypeScript rules.
+- The other tests cover:
+  - every reachable error message, through the action;
+  - each write action as each role;
+  - other organizations' IDs, and an `organization_id` or `from_user_id` slipped into a form;
+  - organization isolation in every list and detail read;
+  - sign-in and signed-out access.
+- `INSPECTION_STATUSES`, `NEXT_STATUSES` and `canTransition` in `features/inspections/domain.ts`, unit tested. Behaviour is unchanged; the UI keeps its checks.
+
+**Changed**
+- CONVENTIONS §7: every new mutation, and every database error matched by code or text, gets an integration test.
+- AGENTS.md, TESTING, README, ARCHITECTURE and the CI header comment list the new command. CI doesn't run the suite yet (a separate roadmap item).
+
+**Reason:** Post-MVP roadmap item; D-006's planned drift test. **Breaking changes:** none. **Migrations:** none.
+
 ### 2026-10-16: App shell with enlarged text (D-048)
 
 **Fixed**

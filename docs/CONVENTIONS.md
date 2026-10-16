@@ -153,6 +153,10 @@ Project config: `base-nova` style, **Base UI** primitives (`base`), lucide icons
 
 See [TESTING.md](TESTING.md). In short: pure domain rules get unit tests; every migration with RLS gets pgTAP tests; critical flows get Playwright tests. A green build is not evidence of correctness.
 
+- **Every new mutation or Server Action gets an integration test** (`integration/`, D-049): the success path, each role that should be refused, and another organization's ID.
+- **Every database error the code matches by code or message text gets an integration test** that triggers the real error and checks the user's message. Rewording a trigger's `raise exception` then fails a test instead of silently showing the generic fallback.
+- **A new status, or a change to a status rule,** updates the trigger and the `NEXT_STATUSES` table together; the parity tests check every pair of the database enum (D-006).
+
 ## 8. Change management
 
 - Every meaningful file create, update, delete, move or rename goes in [FILE-CHANGE-LOG.md](FILE-CHANGE-LOG.md). Every coherent change goes in [CHANGELOG.md](CHANGELOG.md).

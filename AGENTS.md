@@ -31,12 +31,13 @@ npm run db:start      # once per session (Docker)
 npm run db:reset      # LOCAL only: rebuild from migrations + seed
 npm run db:lint && npm run db:test && npx supabase db advisors --local
 npm run db:types      # after any migration
+npm run test:integration   # Server Actions against the LOCAL stack (resets it from the seed first)
 npm run test:e2e      # Playwright (needs the local stack running + seeded)
 ```
 
-CI (`.github/workflows/ci.yml`, D-044) runs all of these except E2E on every push and pull request. Keep it green, and keep its steps in step with this list.
+CI (`.github/workflows/ci.yml`, D-044) runs all of these except the integration suite and E2E on every push and pull request. Keep it green, and keep its steps in step with this list.
 
-A feature is done only when its migration, pgTAP and unit tests, docs, ledger and changelog entries all exist and these commands pass.
+A feature is done only when its migration, pgTAP, unit and integration tests, docs, ledger and changelog entries all exist and these commands pass.
 
 <!-- BEGIN:nextjs-agent-rules -->
 

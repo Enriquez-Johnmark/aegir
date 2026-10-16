@@ -1,6 +1,7 @@
 # Lint, types, unit tests, build and dependency audit; then migrations, pgTAP,
 # database lint and advisors on a fresh local Postgres (D-044). E2E stays local:
-# it needs the whole Supabase stack and takes about five minutes.
+# it needs the whole Supabase stack and takes about five minutes. So does the
+# integration suite for now (D-049): it needs Auth and the API, not just Postgres.
 name: CI
 
 on:

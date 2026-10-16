@@ -32,7 +32,7 @@ Aegir is a single **Next.js 16 (App Router)** application backed by **Supabase**
 | Validation | Zod 4 | Shared client/server schemas per feature |
 | Auth & DB | Supabase Auth + Postgres 17, `@supabase/ssr` 0.12, `supabase-js` 2.117 | Publishable key only in the app |
 | DB tooling | Supabase CLI 2.120 pinned as a devDependency | Run via `npx supabase` / npm scripts |
-| Tests | Vitest 5 (unit), pgTAP via `supabase test db` (RLS, constraints, triggers), Playwright 1.64 (E2E) | |
+| Tests | Vitest 5 (unit; integration against the local stack, D-049), pgTAP via `supabase test db` (RLS, constraints, triggers), Playwright 1.64 (E2E) | |
 | Hosting | Vercel + Supabase Cloud ✅ (2026-10-15, see DEPLOYMENT.md) | |
 
 ## 3. Project folder layout
@@ -44,6 +44,7 @@ aegir/
 ├── .github/workflows/ci.yml     # CI: app checks and database checks on every push (D-044)
 ├── .claude/skills/              # Project-local Claude Code skills (see docs/AGENT-SKILLS.md)
 ├── docs/                        # All project documentation (this folder)
+├── integration/                 # ✅ Vitest: real Server Actions and data layer against the LOCAL stack, as seeded users (D-049)
 ├── e2e/                         # ✅ Playwright specs per feature + accessibility (axe) + security headers; global-setup resets the LOCAL db
 ├── public/                      # Static assets served as-is
 ├── scripts/                     # ✅ demo-seed.mjs and demo-reset.mjs (+ tests): hosted demo seed and reset from supabase/seed.sql (D-011, D-043); capture-screenshots.mjs (README and landing images); smoke.mjs (read-only smoke test of a deployed site)

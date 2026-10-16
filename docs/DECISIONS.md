@@ -57,7 +57,7 @@ Format: context → decision → alternatives → consequences. Status: **Accept
 **Status:** Accepted · 2026-10-12
 
 **Decision:** Allowed transitions (work orders, inspections, handovers) are enforced by `before update` triggers (authoritative). The same table lives in `features/*/domain.ts` for UX: showing only valid actions and validating early. Both are tested: pgTAP for the trigger, Vitest for the domain function.
-**Consequence:** Two copies of the rule. A drift test (TS table vs DB behaviour) is planned in the integration suite. *Not built as of 2026-10-16 (post-MVP item in ROADMAP.md); each side is tested separately (pgTAP, Vitest).*
+**Consequence:** Two copies of the rule. A drift test (TS table vs DB behaviour) is planned in the integration suite. *Built 2026-10-16 (D-049): every status pair of work orders, inspections and handovers is checked against the database.*
 
 <a id="d-007"></a>
 
@@ -555,3 +555,42 @@ Format: context → decision → alternatives → consequences. Status: **Accept
 - `e2e/enlarged-text.spec.ts` covers both ways, on desktop and Pixel 7. With a 32px default font at 412, 1024 and 1360px, and with a 200% root font at 768 and 1024px, it checks 7 pages for sideways scroll and checks that the sidebar's links can be reached. Against the old code it failed for each problem above.
 
 **Consequences:** CONVENTIONS §6 now asks for both ways of enlarging text, rem breakpoints in JavaScript, and `max-w-*` caps instead of fixed rem widths. The sidebar is a shadcn-managed file: a future `shadcn add sidebar --overwrite` must keep `SIDEBAR_WIDTH`'s cap, as it must keep the earlier local changes.
+
+<a id="d-049"></a>
+
+## D-049 — Integration suite: the real Server Actions against the local stack
+**Status:** Accepted · 2026-10-16
+
+**Context:**
+- The data layer turns database errors into plain-language messages by matching each error's code and text (`explain()` in the `server/mutations.ts` files). 12 of these messages appeared in no test, so rewording an error in a migration would silently show users the generic fallback while every check stayed green.
+- D-006 keeps two copies of the status rules (a trigger and a TypeScript table). Only each copy on its own was tested. Inspections had no TypeScript table at all, only a comment.
+- Server Actions' role checks and organization handling were covered only indirectly, through E2E and pgTAP.
+
+**Decision:**
+- `integration/` holds Vitest tests run by `npm run test:integration` (`vitest.integration.config.mts`). `npm test` stays database-free.
+- **What runs for real:** each test runs the real code path: Server Action → data layer → `requireUser` → `createClient` (`@supabase/ssr`) → local Auth and PostgREST, so RLS and the triggers apply. Users sign in as seeded users with the local password. No service key is used.
+- **What is stubbed:** only Next's request plumbing. `cookies()` returns an in-memory cookie store per signed-in user, `connection()` does nothing, `revalidatePath` is a spy, and `server-only` resolves to an empty module. `redirect()` stays real, and tests read its target from the `NEXT_REDIRECT` error it throws.
+- **Safety:** the config refuses any Supabase URL other than `127.0.0.1` or `localhost`, because this repository is linked to the hosted project. Like E2E, global setup runs `supabase db reset --local` first (`INTEGRATION_SKIP_DB_RESET=1` skips it). It then signs each seeded user in once and passes the session cookies to the tests, which keeps the run far below the local Auth rate limit.
+- **Status parity (D-006):** for every pair in the database enum (from the generated `Constants`, so a new status can't slip past), the suite asks the database and compares its answer with `canTransition`. Work orders go through the Server Action. Inspections go straight to the table, because the action only offers start, complete and cancel. Handovers are checked against `canAcknowledge`.
+  - `inspections/domain.ts` gains `INSPECTION_STATUSES`, `NEXT_STATUSES` and `canTransition` (unit tested), matching what D-006 describes. The UI keeps its existing checks, so behaviour is unchanged.
+- **Also covered:**
+  - Every reachable error message, through the action.
+  - Each write action as each role, including roles the database refuses after the app's own check passes, such as a technician the work isn't assigned to.
+  - Other organizations' IDs, and an `organization_id` or `from_user_id` slipped into a form.
+  - Every list and detail read, as a Northwind and a Meridian manager.
+  - Sign-in (one message for wrong password and unknown account; `next` kept inside the app) and signed-out access.
+- **Local only, for now.** CI's database job starts Postgres alone. Running the suite there would also need Auth and the API, plus that throwaway stack's keys. That will be a separate, reviewed change.
+
+**Alternatives:**
+- Mock Supabase in unit tests: this would test the mocks, not the trigger wording or RLS.
+- Drive everything through E2E: slower by minutes, and it can't reach most error paths from the UI.
+- Use a service-role client to arrange data: this would skip RLS, which is part of what is being tested.
+
+**Consequences:**
+- 94 tests, about 40 s with the reset or about 3 s without it.
+- Breaking a status table, an error-message match or an acknowledgement message each made the matching test fail (checked once, then reverted).
+- Three error branches can't be reached through the actions, so they are not covered:
+  - work orders' "Only managers…" `42501`: the app's own check answers first;
+  - inspections' `23514` "finding and severity": Zod answers first;
+  - the trigger's "needs at least one checklist item": `create_inspection` requires 1–100 checks, and no migration grants deletes on checklist items.
+- CONVENTIONS §7 now requires an integration test for every new mutation and every new error-message match.

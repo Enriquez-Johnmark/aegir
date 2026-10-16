@@ -92,6 +92,7 @@ Applied migrations are never edited; changes go forward in new migrations. See [
 ```bash
 npm run lint && npm run typecheck && npm test && npm run build   # app checks
 npm run db:test                                                  # 135 pgTAP tests (RLS, isolation, rules, audit)
+npm run test:integration                                         # 94 tests: Server Actions against the LOCAL stack (resets it from the seed first)
 npx playwright install chromium                                  # once, before the first E2E run
 npm run test:e2e                                                 # Playwright: resets the LOCAL db from the seed first; needs db:start
 ```
@@ -144,7 +145,7 @@ Everyone shares these accounts and safety records can't be deleted (by design), 
 - Light theme only for now (D-038).
 - Shared demo accounts: data entered by visitors stays (no deletes by design) until the owner restores the seed with `scripts/demo-reset.mjs` (destructive; [DEPLOYMENT.md](docs/DEPLOYMENT.md#recovery)).
 - Supabase's sign-in rate limit sees Vercel's servers rather than each visitor, so it is shared by everyone using the demo. A Vercel firewall rule limits each visitor to 10 sign-in attempts per 5 minutes ([D-044](docs/DECISIONS.md#d-044)), but many visitors together can still use it up.
-- CI ([D-044](docs/DECISIONS.md#d-044)) runs lint, types, unit tests, the build, the dependency audit, migrations, pgTAP and the database advisors on every push; the end-to-end suite runs locally ([TESTING.md](docs/TESTING.md)).
+- CI ([D-044](docs/DECISIONS.md#d-044)) runs lint, types, unit tests, the build, the dependency audit, migrations, pgTAP and the database advisors on every push; the integration and end-to-end suites run locally ([TESTING.md](docs/TESTING.md)).
 - `npm audit` flags `braces` (GHSA-vfj7-8cjw-p6xm), reached only through dev tooling (`eslint-config-next`, the `shadcn` CLI); `npm audit --omit=dev` is clean. See [SECURITY.md §9](docs/SECURITY.md#9-known-risks-and-limitations).
 
 ## License

@@ -472,3 +472,15 @@ Not tracked (machine-local, outside the repo or git-ignored): `~/.impeccable/bin
 | CREATE | `e2e/enlarged-text.spec.ts` | Default font 32px at 412/1024/1360 and root 200% at 768/1024: no sideways scroll on 7 pages, navigation reachable | D-048 | ✅ red against the old code, then green |
 | UPDATE | `README.md`, `DESIGN.md`, `docs/{CONVENTIONS,DECISIONS,ROADMAP,TESTING,CHANGELOG,FILE-CHANGE-LOG}.md` | Known limitation removed; sidebar cap; enlarged-text rules; D-048; roadmap item done; results | D-048 | ✅ reconciled with `git status` |
 | UPDATE | `docs/{TESTING,CHANGELOG,FILE-CHANGE-LOG}.md` | D-048 deploy recorded: production smoke 59/59, enlarged-text checks 5/5 | D-048 | ✅ reconciled with `git status` |
+
+## 2026-10-16 · Integration suite (D-049)
+
+| Action | Path | Purpose | Related | Verification |
+|---|---|---|---|---|
+| CREATE | `vitest.integration.config.mts` | Integration config: loads `.env.local`, refuses a non-local Supabase URL, files run one at a time, `server-only` stubbed | D-049 | ✅ refuses non-local hosts by design; runs against 127.0.0.1 |
+| CREATE | `integration/support/{global-setup,next-runtime,session,helpers,users,server-only}.ts` | Reset the LOCAL db, sign seeded users in once, in-memory cookie store, stubs for `next/headers`, `next/server`, `next/cache` | D-049 | ✅ |
+| CREATE | `integration/{work-orders,inspections,handovers,vessels,session-and-isolation}.test.ts` | 94 tests: status parity, error messages, roles, isolation, sign-in | D-049, D-006 | ✅ 94/94 fresh and on reused data; 4 deliberate breaks each caught, then reverted |
+| UPDATE | `src/features/inspections/domain.ts`, `src/features/inspections/inspections.test.ts` | `INSPECTION_STATUSES`, `NEXT_STATUSES`, `canTransition` + unit tests | D-049, D-006 | ✅ unit 132/132 |
+| UPDATE | `package.json` | `test:integration` script | D-049 | ✅ |
+| UPDATE | `.github/workflows/ci.yml` | Header comment only: the integration suite stays local for now | D-049 | ✅ no step changed |
+| UPDATE | `AGENTS.md`, `README.md`, `docs/{ARCHITECTURE,CONVENTIONS,DECISIONS,ROADMAP,TESTING,CHANGELOG,FILE-CHANGE-LOG}.md` | New command; §7 integration rules; D-049 and the D-006 note; roadmap; results | D-049 | ✅ reconciled with `git status` |

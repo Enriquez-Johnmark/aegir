@@ -8,7 +8,7 @@ A green build is not evidence of correctness. Tests target **business rules** an
 |---|---|---|---|
 | Unit | Vitest 5 | `src/**/*.test.ts` (colocated), `scripts/*.test.mjs` | Pure rules: transitions, Zod schemas, entry wording, URL params, redirects, env validation, demo seed/reset SQL |
 | Database | pgTAP via `supabase test db` | `supabase/tests/*.test.sql` | Constraints, triggers, **RLS per role and organization**, audit immutability |
-| Integration | Vitest against the local Supabase stack | not built (post-MVP, ROADMAP) | Would cover DAL and Server Action behaviour with real sessions and TS↔DB transition parity (D-006); today each side is tested separately |
+| Integration | Vitest against the local Supabase stack (D-049) | `integration/` ✅ | The real Server Actions and data layer, signed in as seeded users: TS ↔ DB status parity (D-006), every reachable error message, role checks, organization isolation in every read, sign-in |
 | End-to-end | Playwright 1.64 (desktop + Pixel 7 projects) | `e2e/` ✅ | Critical user flows in a real browser against a production build |
 
 ## Commands
@@ -16,7 +16,8 @@ A green build is not evidence of correctness. Tests target **business rules** an
 ```bash
 npm run lint          # ESLint (next/core-web-vitals + typescript)
 npm run typecheck     # next typegen && tsc --noEmit
-npm test              # Vitest unit tests
+npm test              # Vitest unit tests (no database)
+npm run test:integration   # Vitest against the LOCAL stack: resets the db from the seed, then 94 tests (needs db:start; INTEGRATION_SKIP_DB_RESET=1 skips the reset)
 npm run db:start      # start local Supabase (Docker required)
 npm run db:reset      # rebuild LOCAL db from migrations + seed
 npm run db:lint       # plpgsql lint (supabase db lint)
@@ -63,8 +64,9 @@ rollback;
 
 | Check | Result |
 |---|---|
-| Unit (`npm test`) | ✅ 130/130 in 14 files |
+| Unit (`npm test`) | ✅ 132/132 in 14 files |
 | Database (`npm run db:test`) | ✅ 135/135 in 12 files |
+| Integration (`npm run test:integration`) | ✅ 94/94 in 5 files, on a fresh seed |
 | End-to-end (`npm run test:e2e`) | ✅ 102/102 (51 tests × desktop and Pixel 7) on a fresh seed |
 | Accessibility (axe, WCAG 2.2 AA, in E2E) | ✅ 0 violations on every route |
 | Lint, typecheck, build | ✅ |
@@ -169,10 +171,13 @@ rollback;
 | 2026-10-16 | Full verification after D-048 | ✅ lint · typecheck · unit 130/130 · build (`/` static) · `db reset --local` · `db lint` no errors · pgTAP 135/135 · advisors no issues · types unchanged · E2E 102/102 on a fresh seed |
 | 2026-10-16 | Production after the D-048 deploy (`a67c7b5`, CI run 38880117890 green) | ✅ smoke 59/59, no console errors |
 | 2026-10-16 | Enlarged text on production (one viewer sign-in, 6 pages per case) | ✅ 5/5: navigation reachable and no sideways scroll with a 32px default font at 412, 1024 and 1360px and a 200% root font at 768 and 1024px |
+| 2026-10-16 | `npm run test:integration` (D-049) | ✅ 94/94 from a fresh seed (about 40 s) and again on the same data (about 3 s): work orders 34, inspections 28, handovers 13, vessels 10, sign-in and isolation 9. Every test passed on its first run, so the suite was checked for teeth: making `open → completed` allowed in TS, dropping `scheduled → cancelled`, changing one error-message match and one acknowledgement message each failed the matching test (reverted). Two failures from the first runs were in the tests themselves (an IMO reused across reruns; a Meridian test vessel named like Northwind data), fixed |
+| 2026-10-16 | Full verification after D-049 | ✅ lint · typecheck · unit 132/132 · build (`/` static) · `db reset --local` · `db lint` no errors · pgTAP 135/135 · advisors no issues · types unchanged · integration 94/94 · E2E 102/102 on a fresh seed |
 
 ## Known gaps
 
-- No integration tests against the local stack (post-MVP): Server Actions' role pre-checks and error mapping are covered only through E2E and the database rules they rely on (pgTAP).
+- **CI doesn't run the integration suite yet** (D-049): CI's database job starts Postgres alone, and the suite also needs Auth and the API. Run it locally before pushing a change to an action, a mutation or a trigger.
+- Three error branches can't be reached through the actions and stay untested (D-049): work orders' `42501` "Only managers…", inspections' `23514` "finding and severity", and the "needs at least one checklist item" trigger error.
 - **CI doesn't run E2E** (D-044): it needs the whole Supabase stack and about five minutes, so it stays a local check before pushing. The Vercel firewall's rate limit itself can only be checked on the live site; E2E covers the page's handling of its 429.
 - axe covers WCAG 2.2 A/AA rules only; it cannot judge everything (e.g. whether a heading names its section well). The dashboard and inspection/work-order critiques cover the rest.
 - pgTAP uses the seed as its fixture (D-018): run `npm run db:reset` before `npm run db:test` after any manual, agent or screenshot clicking in the local app, or seeded-row tests fail on drifted data.

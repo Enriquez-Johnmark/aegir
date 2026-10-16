@@ -16,7 +16,7 @@ function toFieldErrors(messages: string[] | undefined) {
   return messages?.map((message) => ({ message }));
 }
 
-export function LoginForm({ next }: { next: string }) {
+export function LoginForm({ next, defaultEmail }: { next: string; defaultEmail?: string }) {
   const [state, formAction, isPending] = useActionState(signIn, initialState);
   const emailErrors = state.fieldErrors?.email;
   const passwordErrors = state.fieldErrors?.password;
@@ -41,7 +41,7 @@ export function LoginForm({ next }: { next: string }) {
             type="email"
             autoComplete="email"
             required
-            defaultValue={state.email}
+            defaultValue={state.email ?? defaultEmail}
             aria-invalid={emailErrors ? true : undefined}
           />
           <FieldError errors={toFieldErrors(emailErrors)} />

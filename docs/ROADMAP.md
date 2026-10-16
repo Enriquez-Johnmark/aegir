@@ -65,7 +65,7 @@ Each slice: schema already in place → DAL → actions → UI (loading, empty, 
 - [ ] Dark theme (light-only MVP, D-038)
 - [ ] Audit log: date and vessel filters, an index for the person filter, sticky day headings (D-042)
 - [ ] Invariants enforced only in Zod/UI moved into the database (e.g. date ranges); `private` default privileges revoke EXECUTE
-- [ ] App shell at 768px with 200% text (sidebar forces sideways scroll)
+- [x] App shell with enlarged text (D-048): no sideways scroll at 768px with 200% text, and the navigation stays reachable when the browser's own font size is enlarged (it had disappeared from 768 to 1535px at 32px) · 2026-10-16
 
 ## Blockers / prerequisites
 - None open. (Supabase Cloud project, scoped token and Vercel account were provided at M5.)

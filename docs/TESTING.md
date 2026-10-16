@@ -65,7 +65,7 @@ rollback;
 |---|---|
 | Unit (`npm test`) | ✅ 130/130 in 14 files |
 | Database (`npm run db:test`) | ✅ 135/135 in 12 files |
-| End-to-end (`npm run test:e2e`) | ✅ 92/92 (46 tests × desktop and Pixel 7) on a fresh seed |
+| End-to-end (`npm run test:e2e`) | ✅ 102/102 (51 tests × desktop and Pixel 7) on a fresh seed |
 | Accessibility (axe, WCAG 2.2 AA, in E2E) | ✅ 0 violations on every route |
 | Lint, typecheck, build | ✅ |
 | `db lint --local`, `db advisors --local` | ✅ no errors, no issues |
@@ -164,6 +164,9 @@ rollback;
 | 2026-10-16 | Production smoke after the landing deploy (`688ff66`) | ⚠️ 57/59 → explained: all 14 landing checks pass on desktop and Pixel 7. The 2 failures were the script counting links before the streamed sections arrived; a diagnostic sign-in found 0 immediately and then 2 handover rows and 20 audit check entries |
 | 2026-10-16 | `scripts/smoke.mjs` (now in the repo, waits for streamed sections) against production | ✅ 59/59, no console errors; the two former failures pass (2 handover rows, 20 check entries) |
 | 2026-10-16 | After pinning `engines` to `"24.x"` (D-047) | ✅ `npm ci --dry-run` · lint · typecheck · unit 130/130 · build (`/` static) |
+| 2026-10-16 | App shell with enlarged text: reproduction (manager, 8 pages; local production build) | Before: root 200% at 768px: every page scrolled sideways by 64–432px (sidebar 512px); at 1024px `/work-orders/new` by 176px (fixed-width assignee select). Default font 32px (`Page.setFontSizes`): at 1024 and 1360px no rail and the menu button opened nothing, so the navigation was unreachable (CSS `md:` at 48rem = 1536px vs `useIsMobile` at 768px). At 412px, list badges ran 31–60px past the edge. After (D-048): navigation reachable and no sideways scroll at 412, 768, 820, 1024, 1360 and 1600px, both ways and at normal size; every nav label fits at 200% (a 33vw cap cut "Work orders" short, so the cap is 40vw) |
+| 2026-10-16 | `e2e/enlarged-text.spec.ts` | ✅ 10/10 (5 × 2). Red against the old code first: navigation not found at 1024/1360px, sideways scroll on `/dashboard` (412px, 768px) and `/work-orders/new` (176px) |
+| 2026-10-16 | Full verification after D-048 | ✅ lint · typecheck · unit 130/130 · build (`/` static) · `db reset --local` · `db lint` no errors · pgTAP 135/135 · advisors no issues · types unchanged · E2E 102/102 on a fresh seed |
 
 ## Known gaps
 

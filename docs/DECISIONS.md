@@ -537,3 +537,21 @@ Format: context → decision → alternatives → consequences. Status: **Accept
 **Consequences:**
 - Contributors need Node 24, not just any version from 22 up (README updated).
 - Production can't drift to a Node major that CI never ran.
+
+<a id="d-048"></a>
+
+## D-048 — The app shell with enlarged text: rem breakpoints in JavaScript, a capped sidebar
+**Status:** Accepted · 2026-10-16
+
+**Context:** The roadmap listed "app shell at 768px with 200% text: the sidebar forces sideways scroll". Reproducing it (with a manager, on 8 pages) showed two problems, one of them worse than the listed one:
+- **The page's root font at 200%** (`html { font-size: 200% }`) doubles rem lengths but doesn't move media queries. The 16rem sidebar became 512px, so at 768px every page scrolled sideways by 64–432px. At 1024px, `/work-orders/new` overflowed by 176px: its assignee select was a fixed `md:w-80` (20rem, so 640px).
+- **The browser's default font size at 32px**, which is how most people enlarge text (Chrome: Settings → Appearance → Font size). This also moves rem media queries. Tailwind's `md:` (48rem) then starts at 1536px, so the CSS hid the desktop sidebar below that. But `useIsMobile` used a px query (`max-width: 767px`), so it still thought this was desktop and never offered the phone sheet. **From 768 to 1535px the navigation was unreachable**: no rail, and the menu button opened nothing.
+
+**Decision:**
+- `useIsMobile` queries `(width < 48rem)`: the same breakpoint, in the same unit, as the `md:` classes in the sidebar. CSS and JavaScript now always agree on which navigation to show.
+- `SIDEBAR_WIDTH` is `min(16rem, 40vw)`. At normal text sizes 16rem is always the smaller value from 48rem up, so nothing changes. With enlarged text the rail stays at 40% of the window, wide enough for every navigation label at 200%; only the user menu's name is shortened, and the menu shows it in full. A third of the window was tried first and cut "Work orders" short.
+- The work-order assignee select is `w-full md:max-w-80` (capped, not fixed). `Skeleton` gets `max-w-full`, so loading placeholders can't overflow either.
+- The vessel and inspection lists' phone rows wrap their status badge under the title. "In maintenance" and "In progress" ran 31–60px past a 412px phone at a 32px default font.
+- `e2e/enlarged-text.spec.ts` covers both ways, on desktop and Pixel 7. With a 32px default font at 412, 1024 and 1360px, and with a 200% root font at 768 and 1024px, it checks 7 pages for sideways scroll and checks that the sidebar's links can be reached. Against the old code it failed for each problem above.
+
+**Consequences:** CONVENTIONS §6 now asks for both ways of enlarging text, rem breakpoints in JavaScript, and `max-w-*` caps instead of fixed rem widths. The sidebar is a shadcn-managed file: a future `shadcn add sidebar --overwrite` must keep `SIDEBAR_WIDTH`'s cap, as it must keep the earlier local changes.

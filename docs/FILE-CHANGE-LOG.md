@@ -459,3 +459,15 @@ Not tracked (machine-local, outside the repo or git-ignored): `~/.impeccable/bin
 | CREATE | `scripts/smoke.mjs` | Production smoke test (read-only), moved from a session scratch file; password from the environment; waits for streamed sections; landing-only mode | D-044, D-046 | ✅ see TESTING.md (production run) |
 | UPDATE | `package.json`, `package-lock.json` | `engines` `"24.x"` (lockfile root entry only, edited by hand; npm's regenerated lockfile was discarded) | D-047 | ✅ `npm ci --dry-run`; lint, typecheck, unit, build |
 | UPDATE | `README.md`, `docs/{DECISIONS,ROADMAP,ARCHITECTURE,DEPLOYMENT,TESTING,CHANGELOG,FILE-CHANGE-LOG}.md` | D-047, Node 26 roadmap item, smoke script usage, landing deploy recorded with the diagnosis | D-046, D-047 | ✅ reconciled with `git status` |
+
+## 2026-10-16 · App shell with enlarged text (D-048)
+
+| Action | Path | Purpose | Related | Verification |
+|---|---|---|---|---|
+| UPDATE | `src/hooks/use-mobile.ts` | `(width < 48rem)`, the same breakpoint and unit as the sidebar's `md:` CSS | D-048 | ✅ navigation reachable at 1024/1360px with a 32px default font (was unreachable) |
+| UPDATE | `src/components/ui/sidebar.tsx` | `SIDEBAR_WIDTH` `min(16rem, 40vw)` (shadcn-managed file; keep on overwrite) | D-048 | ✅ no sideways scroll at 768px + 200% (was 64–432px); every nav label fits |
+| UPDATE | `src/components/ui/skeleton.tsx` | `max-w-full` | D-048 | ✅ |
+| UPDATE | `src/features/work-orders/components/work-order-form.tsx` | Assignee select `md:max-w-80` instead of `md:w-80` | D-048 | ✅ `/work-orders/new` at 1024px + 200% (was 176px) |
+| UPDATE | `src/features/{vessels,inspections}/components/*-list.tsx` | Phone rows wrap the status badge under the title | D-048 | ✅ 412px with a 32px default font (was 31/60px) |
+| CREATE | `e2e/enlarged-text.spec.ts` | Default font 32px at 412/1024/1360 and root 200% at 768/1024: no sideways scroll on 7 pages, navigation reachable | D-048 | ✅ red against the old code, then green |
+| UPDATE | `README.md`, `DESIGN.md`, `docs/{CONVENTIONS,DECISIONS,ROADMAP,TESTING,CHANGELOG,FILE-CHANGE-LOG}.md` | Known limitation removed; sidebar cap; enlarged-text rules; D-048; roadmap item done; results | D-048 | ✅ reconciled with `git status` |

@@ -4,6 +4,18 @@ Meaningful functional and technical changes, newest first. Format loosely follow
 
 ## [Unreleased]
 
+### 2026-10-16: App shell with enlarged text (D-048)
+
+**Fixed**
+- With the browser's own font size enlarged (32px), the navigation disappeared on windows 768–1535px wide: the sidebar's CSS treated them as phones while `useIsMobile` (a px breakpoint) didn't. It now uses the same rem breakpoint as the CSS.
+- With 200% text at 768px every app page scrolled sideways (by up to 432px), and `/work-orders/new` did at 1024px too. The sidebar is now capped at 40% of the window, the assignee select is capped instead of fixed, and skeletons can't outgrow their container.
+- On a phone with a 32px default font, the vessel and inspection list rows wrap their status badge under the title instead of running off the screen.
+
+**Added**
+- `e2e/enlarged-text.spec.ts`: both ways of enlarging text, on desktop and Pixel 7. It was red against the old code first.
+
+**Reason:** Post-MVP roadmap item. **Breaking changes:** none. **Migrations:** none.
+
 ### 2026-10-16: Smoke test in the repo; Node pinned to 24.x (D-047)
 
 **Added**

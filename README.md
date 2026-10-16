@@ -142,7 +142,6 @@ Everyone shares these accounts and safety records can't be deleted (by design), 
 
 - The audit log has no date or vessel filter yet, and demo-data entries show as "System (seed data)" because the seed is loaded by the database, not by a person (D-042).
 - Light theme only for now (D-038).
-- At very large text sizes on tablet-width windows the sidebar stays open and pages scroll sideways; phone layouts and normal sizes are unaffected.
 - Shared demo accounts: data entered by visitors stays (no deletes by design) until the owner restores the seed with `scripts/demo-reset.mjs` (destructive; [DEPLOYMENT.md](docs/DEPLOYMENT.md#recovery)).
 - Supabase's sign-in rate limit sees Vercel's servers rather than each visitor, so it is shared by everyone using the demo. A Vercel firewall rule limits each visitor to 10 sign-in attempts per 5 minutes ([D-044](docs/DECISIONS.md#d-044)), but many visitors together can still use it up.
 - CI ([D-044](docs/DECISIONS.md#d-044)) runs lint, types, unit tests, the build, the dependency audit, migrations, pgTAP and the database advisors on every push; the end-to-end suite runs locally ([TESTING.md](docs/TESTING.md)).

@@ -149,6 +149,7 @@ rollback;
 | 2026-10-16 | `npm run test:e2e` after the review fixes (fresh seed each run) | ✅ 76/76 twice in a row (audit date read from the page, session cookies asserted `httpOnly`, isolation unfiltered, figures read from accessible names) |
 | 2026-10-16 | Hosted Supabase: `migration list`, `db push --dry-run`, `db push`, `db advisors --linked` (owner) | ✅ migration 9 applied (only it pending in the dry run); ⚠️ advisors: one Auth warning, `auth_leaked_password_protection` (Pro-plan feature; SECURITY.md §9), no database findings |
 | 2026-10-16 | Production after the review-fixes deploy (`ff04991`) | ✅ smoke 45/45, no console errors; session cookie `HttpOnly`, `Secure`, `SameSite=Lax` |
+| 2026-10-16 | Toolchain update: Node 24.14.0 → 24.22.0 (LTS, npm 11.19.1), Supabase CLI 2.120.0 → 2.121.0 | ✅ lint, typecheck, unit 116/116, build; `db lint --local`, pgTAP 135/135, `db advisors --local` no issues; E2E 76/76 (fresh seed) |
 
 ## Known gaps
 

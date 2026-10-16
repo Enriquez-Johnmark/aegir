@@ -386,3 +386,10 @@ Not tracked (machine-local, outside the repo or git-ignored): `~/.impeccable/bin
 | Action | Path | Purpose | Related | Verification |
 |---|---|---|---|---|
 | UPDATE | `docs/{DEPLOYMENT,SECURITY,TESTING,CHANGELOG,FILE-CHANGE-LOG}.md` | Migration 9 pushed (owner); hosted advisors (one Auth warning, recorded as a known limitation); production smoke and cookie flags | D-043 | ✅ smoke 45/45, cookie flags read in a browser, reconciled with `git status` |
+
+## 2026-10-16 · Toolchain update and owner steps
+
+| Action | Path | Purpose | Related | Verification |
+|---|---|---|---|---|
+| UPDATE | `package.json`, `package-lock.json` | Supabase CLI 2.120.0 → 2.121.0 (lockfile: CLI packages plus npm's `libc` tags only) | D-013 | ✅ full local suite on Node 24.22.0, E2E 76/76 |
+| UPDATE | `docs/{DEPLOYMENT,TESTING,CHANGELOG,FILE-CHANGE-LOG}.md` | Auth URL configuration done (owner); secrets unset; token revocation pending; toolchain evidence | D-013 | ✅ reconciled with `git status` |

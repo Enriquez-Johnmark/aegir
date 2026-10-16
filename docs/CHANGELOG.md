@@ -4,6 +4,15 @@ Meaningful functional and technical changes, newest first. Format loosely follow
 
 ## [Unreleased]
 
+### 2026-10-16: Toolchain update
+
+**Changed**
+- Supabase CLI (dev dependency) 2.120.0 → 2.121.0. The lockfile also gains npm 11.19's `libc` tags on the CLI's Linux packages; nothing else moved.
+- Verified on Node 24.22.0 (latest 24 LTS; `.nvmrc` stays `24`, `engines` stays `>=22`).
+
+**Reason:** routine updates after deployment; Node 24.17.0 and 24.18.1 were security releases. **Breaking changes:** none. **Migrations:** none.
+**Verification:** lint/typecheck/build ✅ · unit 116/116 ✅ · `db lint`/advisors `--local` ✅ · pgTAP 135/135 ✅ · E2E 76/76 ✅.
+
 ### 2026-10-16: Independent review fixes (M6, D-043)
 
 **Fixed**

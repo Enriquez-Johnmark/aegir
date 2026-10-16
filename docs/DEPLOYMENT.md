@@ -12,7 +12,7 @@
 | 2026-10-15 | `migration list` / `db advisors --linked` | ✅ local = remote for all 8; advisors "No issues found". (`db advisors --linked` needs `database_write` through the read-only token, so the owner ran it with the password; the token was not widened) |
 | 2026-10-15 | Demo seed (`scripts/demo-seed.mjs` → session pooler, single transaction) | ✅ 2 organizations, 8 users and memberships, 8 vessels, 7 inspections, 22 checklist items, 7 work orders, 4 handovers; no password echoed. Demo password chosen by the owner; admin password random and unrecorded |
 | 2026-10-15 | Vercel import (root `./`, Next.js preset, `NEXT_PUBLIC_SUPABASE_URL` + publishable key only) | ✅ production deployment of `437dd75` succeeded |
-| 2026-10-15 | Supabase Auth URL configuration (Site URL + redirect `https://aegir-eight.vercel.app/**`) | ⬜ owner to confirm (password sign-in works without it; needed for any email links) |
+| 2026-10-15 | Supabase Auth URL configuration (Site URL + redirect `https://aegir-eight.vercel.app/**`) | ✅ set by the owner on 2026-10-16 (password sign-in worked without it; needed for any email links) |
 | 2026-10-15 | Smoke test (Playwright against production; read-only and permission checks, no data created) | ✅ 31/31: `/` and `/login` 200; `/dashboard` signed out → 307 to `/login`; all four demo roles sign in (2.2–3.1 s to dashboard content); figures match the seed (4 of 6 vessels active, 3 inspections due / 2 overdue, 5 open work orders / 2 overdue / 1 blocked, 0 follow-ups, 2 pending handovers); no Meridian data; another organization's inspection, vessel and work order are not found; viewer sees no write controls and `/vessels/new`, `/inspections/new` refuse; admin and Meridian logins refused with the demo password; no console errors (desktop + Pixel 7) |
 | 2026-10-15 | Security headers deploy (`1944fd8`, D-039) | ✅ CSP (with `upgrade-insecure-requests`, no `unsafe-eval`), `X-Frame-Options`, `nosniff`, `Referrer-Policy`, `Permissions-Policy`, COOP and Vercel's HSTS on `/` and `/login`; smoke test rerun 31/31, no console errors (so no CSP violations) |
 | 2026-10-15 | M4 deploy (`dcbf0f4`, D-040) | ✅ smoke test 31/31, no console errors; `/login` serves its `h1` |
@@ -20,6 +20,7 @@
 | 2026-10-16 | Migration 9 (`20261016000517_harden_after_independent_review`, D-043): `migration list`, `db push --dry-run`, `db push` (owner's terminal and explicit go-ahead) | ✅ list showed 8 applied + this one pending; dry run listed only it; applied |
 | 2026-10-16 | `db advisors --linked` (owner) | ⚠️ one WARN, `auth_leaked_password_protection` (Auth, not schema): leaked-password checking is a Pro-plan feature, and the demo has signups disabled and passwords set by the seed (SECURITY.md §9). No database findings |
 | 2026-10-16 | Review-fixes deploy (`ff04991`) | ✅ smoke test 45/45, no console errors; session cookie `sb-…-auth-token` is `HttpOnly`, `Secure`, `SameSite=Lax` (so the new cookie options are live) |
+| 2026-10-16 | Owner housekeeping | ✅ `SUPABASE_DB_PASSWORD` and `DEMO_PASSWORD` unset in the owner's shell; ⬜ revoke the scoped `aegir-cli` token (dashboard → Account → Access Tokens) |
 
 ## Environments
 

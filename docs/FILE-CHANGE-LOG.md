@@ -434,3 +434,20 @@ Not tracked (machine-local, outside the repo or git-ignored): `~/.impeccable/bin
 | Action | Path | Purpose | Related | Verification |
 |---|---|---|---|---|
 | UPDATE | `docs/{ROADMAP,FILE-CHANGE-LOG}.md` | Post-MVP item: turn the public homepage into a marketing landing page (owner's request); rate-limit line formatted like the CI line | D-024 | ✅ reconciled with `git status` |
+
+## 2026-10-16 · Landing page (D-046)
+
+| Action | Path | Purpose | Related | Verification |
+|---|---|---|---|---|
+| UPDATE | `src/app/page.tsx` | The public landing page: composes the landing sections; static, own metadata | D-046 | ✅ build marks `/` static (○); E2E + axe |
+| CREATE | `src/features/landing/components/{landing-header,landing-hero,role-picker,how-it-works,screenshot-frame,trust-section,demo-accounts,landing-footer}.tsx` | Header, night hero with lit signals, role picker, the four-step trail, cropped/zoomed screenshot frame, trust facts, demo accounts, footer | D-046 | ✅ screenshots desktop, Pixel 7, 200% text; finish review `ship` |
+| CREATE | `src/features/landing/{screenshots,links}.ts` | Static imports of `docs/screenshots/*.png` with alt text; repository and section links | D-046 | ✅ images load same-origin, no CSP violation (E2E) |
+| CREATE | `src/features/auth/demo-accounts.ts`, `demo-accounts.test.ts` | The four published demo accounts, the hosted demo password, `?as=` parsing (Zod) | D-011, D-046 | ✅ unit 14 |
+| UPDATE | `src/app/(auth)/login/page.tsx`, `src/features/auth/components/login-form.tsx` | Pre-fill the email from `?as=<role>` | D-046 | ✅ E2E |
+| UPDATE | `src/app/globals.css` | `.dark.night` token scope (landing hero), `signal-ignite` keyframes | D-046 | ✅ contrast computed; axe |
+| CREATE | `e2e/landing.spec.ts` | Promise and action in the first viewport, pre-fill per role, unpublished never pre-filled, sign-in from `/`, screenshots load under the CSP, repository links, no sideways scroll at 320px or 200% text | D-046 | ✅ the overflow test was red first (35px at 320px + 200%) |
+| UPDATE | `DESIGN.md`, `.impeccable/design.json` | Night tokens, display and section type, Landing page rules | D-026, D-046 | ✅ finish review |
+| CREATE | `.impeccable/surfaces/src-app-page-tsx.md` | Impeccable surface brief with the direction contract (seed `08e5ca3c`) | D-024 | ✅ read back |
+| UPDATE | `.impeccable/config.json` | Detector ignores `overused-font` for Geist and Geist Mono (pinned by D-026) | D-026 | ✅ |
+| UPDATE | `.gitignore` | Ignore Impeccable's local decision-page files (`.impeccable/mocks/`, `.impeccable/questions/`) | D-024 | ✅ `git check-ignore` |
+| UPDATE | `docs/{DECISIONS,ROADMAP,ARCHITECTURE,TESTING,DEPLOYMENT,CHANGELOG,FILE-CHANGE-LOG}.md` | D-046, roadmap item done, layout, results, post-deploy checks | D-046 | ✅ reconciled with `git status` |

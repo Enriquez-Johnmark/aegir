@@ -63,9 +63,9 @@ rollback;
 
 | Check | Result |
 |---|---|
-| Unit (`npm test`) | ✅ 116/116 in 13 files |
+| Unit (`npm test`) | ✅ 130/130 in 14 files |
 | Database (`npm run db:test`) | ✅ 135/135 in 12 files |
-| End-to-end (`npm run test:e2e`) | ✅ 78/78 (39 tests × desktop and Pixel 7) on a fresh seed |
+| End-to-end (`npm run test:e2e`) | ✅ 92/92 (46 tests × desktop and Pixel 7) on a fresh seed |
 | Accessibility (axe, WCAG 2.2 AA, in E2E) | ✅ 0 violations on every route |
 | Lint, typecheck, build | ✅ |
 | `db lint --local`, `db advisors --local` | ✅ no errors, no issues |
@@ -156,6 +156,11 @@ rollback;
 | 2026-10-16 | Full checks after D-044 | ✅ lint, typecheck, unit 116/116, build; db lint/pgTAP 135/135/advisors with the CI flags on a fresh reset; E2E 78/78 (fresh seed); detector no findings |
 | 2026-10-16 | First CI run on GitHub (`1dcb00d`, run 38845362682) | ✅ both jobs green in 2m3s, no annotations: unit 13 files, build, audit 0; all 9 migrations + seed, db lint no errors, pgTAP 135/135, advisors no issues, types in sync |
 | 2026-10-16 | Vercel firewall rule on the live site (D-044) | ✅ 11 bare `POST /login` (no form data, nothing reaches Supabase): 1–10 → 405 from the app, 11th → 429 with `x-vercel-mitigated: deny`; `GET /login` 200 while blocked |
+| 2026-10-16 | Landing page (D-046): unit, build | ✅ unit 130/130 (+14 demo accounts: each published role pre-fills its email; repeated, empty, admin, other-organization, email-shaped, wrong-case and non-string values pre-fill nothing); build marks `/` static (○) |
+| 2026-10-16 | Landing page: screenshot rounds (desktop 1440, Pixel 7, 1360 at 200% text; local production build) | Round 1: the hero showed the neutral dark grey, not navy. Turbopack's build cache had served the previous `globals.css`, so `.dark.night` and its keyframes were missing from the CSS; a clean `.next` fixed it. At 200% text the two-column sections squeezed their screenshots to 16px, so they moved to rem container queries. Round 2: no overflow, no broken images, no console errors on all three |
+| 2026-10-16 | Landing page: Impeccable finish review (fresh reviewer, degraded role file) | `fix`, then `ship` after two verdict rounds. Fixed: lit badges anchored over the right chips, visible "Sign in" per role, one-sentence lede, phone zoom crops, DESIGN.md. Declined with reasons: dark-theme recaptures (light-only app, D-038), wider step-1 phone crop (text would shrink to ~8px) |
+| 2026-10-16 | `e2e/landing.spec.ts` | ✅ 14/14 (7 × 2). The 320px + 200% text test was red first (35px sideways scroll from the header and role rows clipping "Sign in") |
+| 2026-10-16 | Full verification after the landing page | ✅ lint · typecheck · unit 130/130 · build · `npm audit --omit=dev` 0 · `db reset --local` · `db lint` no errors · pgTAP 135/135 · advisors no issues · types unchanged · E2E 92/92 on a fresh seed (axe: 0 violations on `/`, desktop and Pixel 7) · smoke script landing checks 14/14 against the local build |
 
 ## Known gaps
 
@@ -166,6 +171,7 @@ rollback;
 - Intermittent E2E failures: the mobile inspections viewer failure was explained and fixed (hidden duplicate matched by an unfiltered text locator, D-040). The earlier dashboard one (row not found within 10 s, ~4× slower run) hasn't recurred in 6 fresh-seed runs; it stays listed until it has a clean history. When a test fails, keep the log and `test-results/` (traces are retained on failure) before rerunning.
 - E2E covers authentication, dashboard, vessels, inspections, work orders, handovers and the audit log. Dashboard tests compare figures before and after their own actions instead of asserting global totals (D-030).
 - Tests that change state create their own records (seeded work orders and inspections are never moved), and since M4 every run also starts from a fresh seed (`e2e/global-setup.ts` runs `supabase db reset --local`; `E2E_SKIP_DB_RESET=1` skips it for quick reruns of one spec).
+- Turbopack's build cache once served a stale `globals.css` to `next build` (2026-10-16): new rules were missing from the CSS while the TSX changes were live. If a CSS change doesn't show up in a build, delete `.next` and rebuild before debugging the CSS.
 - Inputs with a `list` (datalist) are exposed as `combobox`, not `textbox`; locate them by that role.
 - E2E locator policy under Cache Components: see D-030 and D-040 (role locators, `visible` filter for text, scoped to `main`; isolation checks stay unfiltered, since a hidden leak is still a leak).
 - E2E runs leave their records in the local database until the next run's reset; pgTAP needs a fresh seed too (`npm run db:reset` before `npm run db:test`).

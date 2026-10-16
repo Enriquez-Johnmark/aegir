@@ -56,7 +56,7 @@ aegir/
 │   ├── proxy.ts                 # ✅ Session refresh + optimistic redirects (Next 16 "proxy", formerly middleware)
 │   ├── app/                     # ROUTING ONLY: layouts, pages, loading/error/not-found
 │   │   ├── layout.tsx           # ✅ Root layout (fonts, metadata)
-│   │   ├── page.tsx             # ✅ Public landing
+│   │   ├── page.tsx             # ✅ Public landing page (static; composes features/landing, D-046)
 │   │   ├── (auth)/              # ✅ Route group: centred auth layout (no URL segment)
 │   │   │   ├── login/page.tsx   # ✅ Sign-in (searchParams read inside <Suspense>)
 │   │   │   └── no-access/page.tsx # ✅ Signed in but no organization membership
@@ -69,7 +69,7 @@ aegir/
 │   │       ├── work-orders/{page.tsx, new/, [workOrderId]/, [workOrderId]/edit/}  # ✅ M3 slice 3
 │   │       ├── handovers/{page.tsx, new/, [handoverId]/}  # ✅ M3 slice 5
 │   │       └── audit/page.tsx   # ✅ M3 slice 6: organization-wide audit log (D-042)
-│   ├── features/                # ✅ One folder per business capability (auth ✅, vessels ✅, inspections ✅, work-orders ✅, dashboard ✅, handovers ✅, audit ✅)
+│   ├── features/                # ✅ One folder per business capability (auth ✅, vessels ✅, inspections ✅, work-orders ✅, dashboard ✅, handovers ✅, audit ✅, landing ✅: the public page's sections, no server code)
 │   │   └── <feature>/           #    e.g. vessels, inspections, work-orders, handovers, audit, dashboard
 │   │       ├── components/      #    Feature UI (Server Components by default; "use client" only when needed)
 │   │       ├── server/

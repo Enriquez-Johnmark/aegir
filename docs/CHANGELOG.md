@@ -4,6 +4,24 @@ Meaningful functional and technical changes, newest first. Format loosely follow
 
 ## [Unreleased]
 
+### 2026-10-16: Landing page (D-046)
+
+**Added**
+- The homepage is now a marketing page, the app's only Impeccable Persuade surface:
+  - **Hero:** a deep-navy field, the promise "Every failed check stays in sight until the work is done.", and a role picker as the primary action. The real dashboard runs off the right edge with its overdue, blocked and critical signals lit.
+  - **How it works:** one failed check followed through inspection, work order, handover and dashboard, with real badges and screenshots. On phones each screenshot zooms to the part its step names.
+  - **Trust:** organization isolation, the audit trail, rules in the database, tests.
+  - **Demo:** all four demo accounts with the published password.
+  - **Footer:** source and docs links, and the not-certified note.
+- `/login?as=<role>` pre-fills a published demo account's email; anything else pre-fills nothing (`src/features/auth/demo-accounts.ts`).
+- `e2e/landing.spec.ts`, and unit tests for the demo accounts.
+
+**Changed**
+- `globals.css`: the `.night` token scope for the landing hero and the `signal-ignite` keyframes. DESIGN.md records the night tokens, the landing display type and the Landing page rules; `.impeccable/design.json` matches.
+
+**Reason:** Post-MVP roadmap item (D-024, D-046). **Affected areas:** `/`, sign-in pre-fill, design system docs. **Breaking changes:** none. **Migrations:** none.
+**Verification:** see TESTING.md (2026-10-16, landing page).
+
 ### 2026-10-16: Sign-in rate limit live (D-044)
 
 **Changed**

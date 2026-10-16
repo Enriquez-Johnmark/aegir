@@ -477,3 +477,43 @@ Format: context → decision → alternatives → consequences. Status: **Accept
 **Decision:** The owner keeps all rights. `LICENSE` says so explicitly: the code is public to read; using, copying, modifying or distributing it needs written permission. It notes that GitHub's Terms of Service still let people view and fork public repositories on GitHub, which grants no further rights. `package.json` declares `"license": "UNLICENSED"` (npm's marker for proprietary code); the README has a License section.
 
 **Consequences:** No one else may reuse the code without asking. Revisit (e.g. MIT) if the owner wants others to build on it.
+
+<a id="d-046"></a>
+
+## D-046 — The landing page: the bridge at night, a role picker, real screenshots
+**Status:** Accepted · 2026-10-16
+
+**Context:** The homepage was the name, one sentence and a Sign in button. The roadmap asked for a marketing page, the only Impeccable **Persuade** surface (D-024): a clear promise, a call to action to try the demo, the workflows with real screenshots, why the records can be trusted, the four demo roles, and links to the source and docs. It had to stay static, use self-hosted images within the CSP (D-039), pass axe, and stay fast on a phone. It also had to be true: synthetic data, no invented customers or numbers.
+
+**Decision:**
+- **Structure.** Impeccable's surface roll (seed `08e5ca3c`) dealt three structures inside "The Bridge Console". The owner chose **Night bridge**, with the role detail from "Pick your watch" and the facts list from "Spec sheet" reused as the trust section. The build was code-led, because no image generation was available. The direction contract is in `.impeccable/surfaces/src-app-page-tsx.md`.
+- **The page, in order:**
+  1. a hero on a deep Harbour Navy field: the promise, a one-sentence lede, the role picker, and the real dashboard with its signals lit;
+  2. one failed check followed through four steps (inspection, work order, handover, dashboard), each with real badges and a screenshot;
+  3. "Records you can stand behind": isolation, the audit trail, rules in the database, tests;
+  4. "Try it as each role";
+  5. a footer with the source and docs links and the not-certified note.
+- **Who it's for is shown, not listed.** Each step names the role that does it, so there is no separate "who it's for" section of same-size cards.
+- **Night tokens.** The hero and header apply `.dark` plus a new `.night` scope (`globals.css`): the dark-theme tokens with a navy field (Night Hull `oklch(0.21 0.045 252)`, Night Panel, Night Mist). Contrast was computed: foreground 17:1, muted 8.9:1, every signal at least 4.7:1 on its tint over the field. Red reaches only 4.3:1 over Night Panel, so badges never sit on a card there. DESIGN.md records the tokens, two display type steps for this page only, and the Landing page component rules.
+- **Static.** `src/app/page.tsx` composes `src/features/landing/*`. It reads no session and no database, and the build marks `/` as static (○). Copy comes from PRODUCT.md and SECURITY.md, with no counts that would go stale.
+- **Demo sign-in.**
+  - Each role links to `/login?as=<role>`. The login page parses `as` with Zod against the four published roles (`src/features/auth/demo-accounts.ts`) and pre-fills the email only.
+  - The administrator and the second organization can never be pre-filled. A password never goes in a URL.
+  - There is no sign-in form on `/`: the firewall limit covers `POST /login` only (D-044), and a second form would get around it.
+  - A visitor who is already signed in and follows a role link lands on their own dashboard (the proxy's existing redirect).
+- **The demo password is shown**, as the README shows it. It is public by design (D-011) and opens only the four shared accounts. It lives in one constant, `HOSTED_DEMO_PASSWORD`. The local seed uses a different password, which the page points to through the README.
+- **Screenshots.**
+  - The page imports the README captures straight from `docs/screenshots/` into `next/image`, so one set serves both. Next serves them optimised from this site (`/_next/image`) with `data:` blur placeholders, which the existing CSP (`img-src 'self' blob: data:`) already allows. The CSP did not change.
+  - The hero uses art direction (`getImageProps` + `<picture>`): the desktop capture from 64rem up, the phone capture below.
+  - On narrow sections, `ScreenshotFrame` zooms each desktop capture to the region its step names. A rem container query drives the switch, so enlarged text gets the zoom too.
+
+**Not taken:**
+- Dark-theme recaptures for the hero, which the finish review suggested: the app ships light-only (D-038), so a dark capture would show a theme the product doesn't have.
+- A sign-in form or a one-click demo button on `/` (rate limit, above; D-011 option (b) was already declined).
+- Filled "Sign in" chips in every role row: that would make four navy primaries in one region.
+
+**Consequences:**
+- Refreshing the screenshots (`scripts/capture-screenshots.mjs`) updates the landing page automatically.
+- **But the hero's lit-signal positions (`LIT_SIGNALS`) and each step's zoom region (`focus`) are measured on the current captures.** After a recapture, re-check them in a desktop and Pixel 7 screenshot.
+- Vercel's image optimisation counts against the Hobby plan's monthly quota. Seven source images at a few widths are well inside it.
+- Phones download the zoomed step images at up to the capture's full width. They are lazy-loaded below the fold, so they don't affect the first paint.

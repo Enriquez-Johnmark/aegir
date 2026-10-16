@@ -72,6 +72,8 @@ No secret key is needed by the deployed app (D-002).
 
 Merge to `main` → Vercel builds. Apply any new migration **before** the app code that depends on it (`db push`, steps 2–4). Migrations are forward-only.
 
+After a deploy that changes the landing page, or after refreshing `docs/screenshots/`, look at `/` on a desktop and a phone. The lit signals in the hero (`LIT_SIGNALS`) and each step's phone zoom (`focus`) are positioned on the current captures (D-046).
+
 ## Sign-in rate limit (Vercel Firewall, D-044)
 
 The owner applies this once, in the Vercel dashboard (Hobby allows one rate-limit rule per project):

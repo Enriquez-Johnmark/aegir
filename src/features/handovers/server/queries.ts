@@ -33,27 +33,41 @@ const LIST_COLUMNS = `id, summary, status, created_at, acknowledged_at, from_use
 /**
  * Handovers of the caller's organization, as an inbox: pending ones for the
  * caller first, then other pending ones (longest-waiting first), then
- * acknowledged ones. RLS limits rows to the caller's organizations; the
+ * acknowledged ones (newest first). RLS limits rows to the caller's organizations; the
  * explicit organization filter keeps multi-membership users honest (D-019).
  */
 export async function listHandovers(params: HandoverListParams): Promise<HandoverListItem[]> {
   const user = await requireUser();
   const supabase = await createClient();
 
-  let query = supabase.from("handovers").select(LIST_COLUMNS).eq("organization_id", user.organization.id);
+  const base = () => {
+    let query = supabase.from("handovers").select(LIST_COLUMNS).eq("organization_id", user.organization.id);
+    if (params.vessel) query = query.eq("vessel_id", params.vessel);
+    if (params.view === "pending") query = query.eq("status", "pending");
+    if (params.view === "for-you") query = query.eq("to_user_id", user.id).eq("status", "pending");
+    if (params.view === "sent") query = query.eq("from_user_id", user.id);
+    if (params.view === "acknowledged") query = query.eq("status", "acknowledged");
+    return query;
+  };
 
-  if (params.vessel) query = query.eq("vessel_id", params.vessel);
-  if (params.view === "pending") query = query.eq("status", "pending");
-  if (params.view === "for-you") query = query.eq("to_user_id", user.id).eq("status", "pending");
-  if (params.view === "sent") query = query.eq("from_user_id", user.id);
-  if (params.view === "acknowledged") query = query.eq("status", "acknowledged");
-
-  const { data, error } = await query.order("created_at", { ascending: false }).limit(LIST_LIMIT);
-  if (error) {
-    throw new Error("Could not load handovers.", { cause: error });
+  // Cut to LIST_LIMIT after sorting, never before: each part of the inbox order is
+  // read in that order, so the longest-waiting pending handovers can't drop out.
+  const results = await Promise.all([
+    base().eq("status", "pending").eq("to_user_id", user.id).order("created_at", { ascending: true }).limit(LIST_LIMIT),
+    base().eq("status", "pending").neq("to_user_id", user.id).order("created_at", { ascending: true }).limit(LIST_LIMIT),
+    base()
+      .eq("status", "acknowledged")
+      .order("acknowledged_at", { ascending: false, nullsFirst: false })
+      .limit(LIST_LIMIT),
+  ]);
+  for (const result of results) {
+    if (result.error) {
+      throw new Error("Could not load handovers.", { cause: result.error });
+    }
   }
 
-  return (data ?? [])
+  return results
+    .flatMap((result) => result.data ?? [])
     .map((row) => ({
       id: row.id,
       summary: row.summary,
@@ -67,7 +81,8 @@ export async function listHandovers(params: HandoverListParams): Promise<Handove
       vessel: row.vessel ? { id: row.vessel.id, name: row.vessel.name } : null,
       workOrder: row.work_order ? { id: row.work_order.id, title: row.work_order.title } : null,
     }))
-    .toSorted((a, b) => compareHandovers(user.id, a, b));
+    .toSorted((a, b) => compareHandovers(user.id, a, b))
+    .slice(0, LIST_LIMIT);
 }
 
 export type HandoverDetail = HandoverListItem & { outstandingTasks: string };

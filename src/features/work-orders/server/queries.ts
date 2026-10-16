@@ -36,43 +36,60 @@ const LIST_LIMIT = 200;
 
 /**
  * Work orders of the caller's organization. Open views read as a queue
- * (overdue, then priority, then due date); completed work reads as a log.
+ * (tiered urgency, compareByUrgency); completed work reads as a log.
  */
 export async function listWorkOrders(params: WorkOrderListParams): Promise<WorkOrderListItem[]> {
   const user = await requireUser();
   const supabase = await createClient();
-
-  let query = supabase
-    .from("work_orders")
-    .select(
-      `id, title, priority, status, due_date, completed_at, blocked_reason, inspection_item_id,
-       vessel:vessels!work_orders_vessel_id_organization_id_fkey (id, name),
-       assignee:profiles!work_orders_assignee_id_fkey (full_name)`,
-    )
-    .eq("organization_id", user.organization.id);
-
-  if (params.vessel) query = query.eq("vessel_id", params.vessel);
-  if (params.priority) query = query.eq("priority", params.priority);
-
-  if (params.view === "open") {
-    query = query.neq("status", "completed");
-  } else if (params.view === "mine") {
-    query = query.eq("assignee_id", user.id).neq("status", "completed");
-  } else if (params.view === "blocked") {
-    query = query.eq("status", "blocked");
-  } else if (params.view === "completed") {
-    query = query.eq("status", "completed").order("completed_at", { ascending: false });
-  } else {
-    query = query.order("updated_at", { ascending: false });
-  }
-
-  const { data, error } = await query.limit(LIST_LIMIT);
-  if (error) {
-    throw new Error("Could not load work orders.", { cause: error });
-  }
-
   const today = todayIsoDate();
-  const items = (data ?? []).flatMap((row) =>
+
+  const base = () => {
+    let query = supabase
+      .from("work_orders")
+      .select(
+        `id, title, priority, status, due_date, completed_at, blocked_reason, inspection_item_id,
+         vessel:vessels!work_orders_vessel_id_organization_id_fkey (id, name),
+         assignee:profiles!work_orders_assignee_id_fkey (full_name)`,
+      )
+      .eq("organization_id", user.organization.id);
+    if (params.vessel) query = query.eq("vessel_id", params.vessel);
+    if (params.priority) query = query.eq("priority", params.priority);
+    if (params.view === "open") query = query.neq("status", "completed");
+    if (params.view === "mine") query = query.eq("assignee_id", user.id).neq("status", "completed");
+    if (params.view === "blocked") query = query.eq("status", "blocked");
+    if (params.view === "completed") query = query.eq("status", "completed");
+    return query;
+  };
+
+  const isQueue = params.view === "open" || params.view === "mine" || params.view === "blocked";
+
+  // A queue is cut to LIST_LIMIT after sorting, never before: overdue work and the
+  // rest are each read most important first (priority, then due date), so the
+  // first LIST_LIMIT of each contain the first LIST_LIMIT of the urgency order.
+  const results = isQueue
+    ? await Promise.all(
+        [base().lt("due_date", today), base().or(`due_date.gte.${today},due_date.is.null`)].map((query) =>
+          query
+            .order("priority", { ascending: false })
+            .order("due_date", { ascending: true, nullsFirst: false })
+            .order("title", { ascending: true })
+            .limit(LIST_LIMIT),
+        ),
+      )
+    : [
+        await base()
+          .order(params.view === "completed" ? "completed_at" : "updated_at", { ascending: false })
+          .limit(LIST_LIMIT),
+      ];
+
+  for (const result of results) {
+    if (result.error) {
+      throw new Error("Could not load work orders.", { cause: result.error });
+    }
+  }
+  const data = results.flatMap((result) => result.data ?? []);
+
+  const items = data.flatMap((row) =>
     row.vessel
       ? [
           {
@@ -92,8 +109,7 @@ export async function listWorkOrders(params: WorkOrderListParams): Promise<WorkO
       : [],
   );
 
-  const isQueue = params.view === "open" || params.view === "mine" || params.view === "blocked";
-  return isQueue ? items.toSorted(compareByUrgency) : items;
+  return isQueue ? items.toSorted(compareByUrgency).slice(0, LIST_LIMIT) : items;
 }
 
 export type WorkOrderDetail = {

@@ -15,6 +15,10 @@ describe("safeNextPath", () => {
     ["absolute URL", "https://evil.example/phish"],
     ["protocol-relative", "//evil.example"],
     ["backslash trick", "/\\evil.example"],
+    // Dot segments normalise to a protocol-relative path (independent review, D-043).
+    ["dot-segment to protocol-relative", "/..//evil.example"],
+    ["dot and backslash", "/./\\evil.example"],
+    ["encoded dot segment", "/%2e%2e//evil.example"],
     ["javascript URL", "javascript:alert(1)"],
     ["login loop", "/login"],
   ])("falls back to the dashboard for %s", (_label, value) => {

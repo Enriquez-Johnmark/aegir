@@ -50,6 +50,16 @@ export const RECORD_TYPE_LABELS: Record<AuditedTable, string> = {
   memberships: "Member",
 };
 
+/** What removing each kind of record is called. Only memberships are removed in practice. */
+export const DELETED_LABELS: Record<AuditedTable, string> = {
+  vessels: "Deleted",
+  inspections: "Deleted",
+  inspection_items: "Removed from the checklist",
+  work_orders: "Deleted",
+  handovers: "Deleted",
+  memberships: "Removed",
+};
+
 /** What creating each kind of record is called in this product. */
 export const CREATED_LABELS: Record<AuditedTable, string> = {
   vessels: "Added",
@@ -148,6 +158,8 @@ export type FieldChange = {
 
 export type AuditEntry =
   | { kind: "created"; detail: string | null }
+  /** A removed row (audited since D-043; in practice a membership, i.e. withdrawn access). */
+  | { kind: "deleted"; detail: string | null }
   | { kind: "status"; from: string; to: string; note: string | null; changes: FieldChange[] }
   | { kind: "updated"; changes: FieldChange[] };
 
@@ -224,11 +236,16 @@ export function describeAuditEvent(
   person: PersonName,
 ): AuditEntry | null {
   if (!isObject(changes)) {
-    return action === "insert" ? { kind: "created", detail: null } : null;
+    return action === "insert" ? { kind: "created", detail: null } : action === "delete" ? { kind: "deleted", detail: null } : null;
   }
 
   if (action === "insert") {
     return { kind: "created", detail: createdDetail(table, changes, person) };
+  }
+  if (action === "delete") {
+    // The snapshot is the row as it was: for a membership, the role that was withdrawn.
+    const role = table === "memberships" && typeof changes.role === "string" ? changes.role : null;
+    return { kind: "deleted", detail: role ? `(was ${ROLE_LABELS[role as keyof typeof ROLE_LABELS] ?? role})` : null };
   }
 
   const status = changes.status;

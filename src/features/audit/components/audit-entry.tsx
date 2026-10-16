@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { CREATED_LABELS, RECORD_TYPE_LABELS, type FieldChange } from "@/features/audit/domain";
+import { CREATED_LABELS, DELETED_LABELS, RECORD_TYPE_LABELS, type FieldChange } from "@/features/audit/domain";
 import type { AuditItem } from "@/features/audit/server/queries";
 
 /**
@@ -39,6 +39,12 @@ function split(item: AuditItem): { headline: React.ReactNode; rest: FieldChange[
   if (item.kind === "created") {
     return {
       headline: item.detail ? `${CREATED_LABELS[item.table]} ${item.detail}` : CREATED_LABELS[item.table],
+      rest: [],
+    };
+  }
+  if (item.kind === "deleted") {
+    return {
+      headline: item.detail ? `${DELETED_LABELS[item.table]} ${item.detail}` : DELETED_LABELS[item.table],
       rest: [],
     };
   }

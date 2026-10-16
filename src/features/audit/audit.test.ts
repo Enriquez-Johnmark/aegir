@@ -76,6 +76,14 @@ describe("describeAuditEvent", () => {
     });
   });
 
+  it("names a removal, with the role a removed member had", () => {
+    expect(
+      describeAuditEvent("memberships", "delete", { user_id: "a1000000-0000-4000-8000-000000000004", role: "technician" }, person),
+    ).toEqual({ kind: "deleted", detail: "(was Technician)" });
+    expect(describeAuditEvent("vessels", "delete", { name: "Petrel" }, person)).toEqual({ kind: "deleted", detail: null });
+    expect(describeAuditEvent("vessels", "delete", null, person)).toEqual({ kind: "deleted", detail: null });
+  });
+
   it("labels status moves per record type and keeps the block reason as the note", () => {
     expect(
       describeAuditEvent(

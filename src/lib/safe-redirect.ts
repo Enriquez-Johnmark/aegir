@@ -19,7 +19,8 @@ export function safeNextPath(value: unknown): string {
     return DEFAULT_AUTHENTICATED_PATH;
   }
 
-  if (url.origin !== PLACEHOLDER_ORIGIN || url.pathname === "/login") {
+  // Dot segments can normalise "/..//evil.com" to "//evil.com", so check the result too.
+  if (url.origin !== PLACEHOLDER_ORIGIN || url.pathname.startsWith("//") || url.pathname === "/login") {
     return DEFAULT_AUTHENTICATED_PATH;
   }
 

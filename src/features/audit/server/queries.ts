@@ -79,8 +79,12 @@ async function resolveEvents(
     if (!entry) {
       return [];
     }
+    const removedMember =
+      event.table === "memberships" && typeof (event.changes as { user_id?: unknown } | null)?.user_id === "string"
+        ? person((event.changes as { user_id: string }).user_id)
+        : null;
     const record = records.get(`${event.table}:${event.entity_id}`) ?? {
-      name: snapshotName(event.table, event.changes) ?? RECORD_LABEL_FALLBACK[event.table],
+      name: snapshotName(event.table, event.changes) ?? removedMember ?? RECORD_LABEL_FALLBACK[event.table],
       href: null,
       context: null,
     };

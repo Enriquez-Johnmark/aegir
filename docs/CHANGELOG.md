@@ -14,7 +14,7 @@ Meaningful functional and technical changes, newest first. Format loosely follow
 **Added**
 - `e2e/enlarged-text.spec.ts`: both ways of enlarging text, on desktop and Pixel 7. It was red against the old code first.
 
-**Reason:** Post-MVP roadmap item. **Breaking changes:** none. **Migrations:** none.
+**Reason:** Post-MVP roadmap item. **Breaking changes:** none. **Migrations:** none. **Deployed:** `a67c7b5`; production smoke 59/59 and the enlarged-text checks 5/5.
 
 ### 2026-10-16: Smoke test in the repo; Node pinned to 24.x (D-047)
 

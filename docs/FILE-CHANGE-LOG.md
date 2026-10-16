@@ -471,3 +471,4 @@ Not tracked (machine-local, outside the repo or git-ignored): `~/.impeccable/bin
 | UPDATE | `src/features/{vessels,inspections}/components/*-list.tsx` | Phone rows wrap the status badge under the title | D-048 | ✅ 412px with a 32px default font (was 31/60px) |
 | CREATE | `e2e/enlarged-text.spec.ts` | Default font 32px at 412/1024/1360 and root 200% at 768/1024: no sideways scroll on 7 pages, navigation reachable | D-048 | ✅ red against the old code, then green |
 | UPDATE | `README.md`, `DESIGN.md`, `docs/{CONVENTIONS,DECISIONS,ROADMAP,TESTING,CHANGELOG,FILE-CHANGE-LOG}.md` | Known limitation removed; sidebar cap; enlarged-text rules; D-048; roadmap item done; results | D-048 | ✅ reconciled with `git status` |
+| UPDATE | `docs/{TESTING,CHANGELOG,FILE-CHANGE-LOG}.md` | D-048 deploy recorded: production smoke 59/59, enlarged-text checks 5/5 | D-048 | ✅ reconciled with `git status` |

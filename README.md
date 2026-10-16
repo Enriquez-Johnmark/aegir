@@ -54,7 +54,7 @@ Next.js 16 (App Router, Cache Components) · React 19 · TypeScript (strict) · 
 
 ## Getting started
 
-Prerequisites: Node ≥ 22 (`.nvmrc` pins 24), Docker running.
+Prerequisites: Node 24 (`.nvmrc`; `engines` requires 24.x, D-047), Docker running.
 
 ```bash
 npm ci

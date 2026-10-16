@@ -1,7 +1,9 @@
 import * as React from "react"
 
-const MOBILE_BREAKPOINT = 768
-const MOBILE_QUERY = `(max-width: ${MOBILE_BREAKPOINT - 1}px)`
+// Must match Tailwind's `md:` breakpoint (48rem), which the sidebar's CSS uses to hide
+// the desktop rail. Both are in rem, so a larger browser default font moves them
+// together; a px query here once left wide windows with no rail and no sheet (D-048).
+const MOBILE_QUERY = "(width < 48rem)"
 
 // Subscribes to the media query with useSyncExternalStore instead of
 // setState-in-effect, so there is no extra render and no tearing.

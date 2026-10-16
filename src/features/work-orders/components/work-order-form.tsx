@@ -205,7 +205,7 @@ export function WorkOrderForm({
         <Field data-invalid={errors.assigneeId ? true : undefined}>
           <FieldLabel htmlFor="assigneeId">Assignee</FieldLabel>
           <Select name="assigneeId" items={assigneeItems} defaultValue={values.assigneeId || UNASSIGNED}>
-            <SelectTrigger id="assigneeId" aria-invalid={errors.assigneeId ? true : undefined} className="w-full md:w-80">
+            <SelectTrigger id="assigneeId" aria-invalid={errors.assigneeId ? true : undefined} className="w-full md:max-w-80">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

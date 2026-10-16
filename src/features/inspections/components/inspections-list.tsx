@@ -144,7 +144,7 @@ export async function InspectionsList({
               href={`/inspections/${inspection.id}`}
               className="flex flex-col gap-1.5 p-4 outline-none focus-visible:bg-muted active:bg-muted"
             >
-              <span className="flex items-start justify-between gap-2">
+              <span className="flex flex-wrap items-start justify-between gap-2">
                 <span className="font-medium">{inspection.title}</span>
                 <InspectionStatusBadge status={inspection.status} isOverdue={inspection.isOverdue} />
               </span>

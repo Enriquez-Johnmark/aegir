@@ -126,7 +126,7 @@ export async function VesselsList({ params }: { params: VesselListParams }) {
               href={`/vessels/${vessel.id}`}
               className="flex flex-col gap-1.5 p-4 outline-none focus-visible:bg-muted active:bg-muted"
             >
-              <span className="flex items-center justify-between gap-2">
+              <span className="flex flex-wrap items-center justify-between gap-2">
                 <span className="font-medium">{vessel.name}</span>
                 <VesselStatusBadge status={vessel.status} />
               </span>

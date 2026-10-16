@@ -49,7 +49,7 @@ test.describe("handovers", () => {
     await manager.getByRole("button", { name: "Acknowledge handover" }).click();
     await expect(manager.getByRole("status").filter({ hasText: "Handover acknowledged" })).toBeVisible();
     await expect(manager.getByRole("button", { name: "Acknowledge handover" })).toHaveCount(0);
-    await expect(manager.locator("main [data-slot=badge]", { hasText: "Acknowledged" }).first()).toBeVisible();
+    await expect(manager.locator("main [data-slot=badge]", { hasText: "Acknowledged" }).filter(visible).first()).toBeVisible();
     await manager.context().close();
   });
 

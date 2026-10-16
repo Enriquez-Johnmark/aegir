@@ -92,7 +92,7 @@ test.describe("inspections", () => {
     for (const button of await page.getByRole("button", { name: "Complete inspection" }).all()) {
       await expect(button).toBeDisabled();
     }
-    await expect(page.getByText("Save or cancel the open finding to complete the inspection.").first()).toBeVisible();
+    await expect(page.getByText("Save or cancel the open finding to complete the inspection.").filter(visible).first()).toBeVisible();
     await page.getByRole("button", { name: "Cancel", exact: true }).click();
     await expect(page.getByRole("button", { name: "Complete inspection" }).last()).toBeEnabled();
 
@@ -105,7 +105,7 @@ test.describe("inspections", () => {
     await expect(
       page.getByRole("status").filter({ hasText: "Inspection completed · 1 failed check needs a work order" }),
     ).toBeVisible();
-    await expect(page.locator("main [data-slot=badge]", { hasText: "Completed" }).first()).toBeVisible();
+    await expect(page.locator("main [data-slot=badge]", { hasText: "Completed" }).filter(visible).first()).toBeVisible();
     // Closed inspections are read-only: no result controls or lifecycle buttons.
     await expect(check(page, 1)).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Cancel inspection" })).toHaveCount(0);
@@ -165,6 +165,6 @@ test.describe("inspections", () => {
     await signIn(page, USERS.manager);
     await page.goto(`/inspections/${MERIDIAN_INSPECTION_ID}`);
     await expect(page.getByText("Inspection not found").filter(visible)).toBeVisible();
-    await expect(page.getByText("Cargo tank inspection").filter(visible)).toHaveCount(0);
+    await expect(page.getByText("Cargo tank inspection")).toHaveCount(0); // unfiltered: a hidden leak is still a leak
   });
 });

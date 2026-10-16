@@ -58,7 +58,7 @@ test.describe("work orders", () => {
     await expect(dialog).toContainText("closed for good");
     await dialog.getByRole("button", { name: "Mark completed" }).click();
 
-    await expect(tech.locator("main [data-slot=badge]", { hasText: "Completed" }).first()).toBeVisible();
+    await expect(tech.locator("main [data-slot=badge]", { hasText: "Completed" }).filter(visible).first()).toBeVisible();
     await expect(tech.getByRole("button", { name: "Start work" })).toHaveCount(0);
     // The history comes from the audit log, attributed to the real actors.
     const history = tech.getByRole("main").getByRole("listitem").filter(visible);
@@ -98,6 +98,6 @@ test.describe("work orders", () => {
     await signIn(page, USERS.manager);
     await page.goto(`/work-orders/${MERIDIAN_WORK_ORDER_ID}`);
     await expect(page.getByText("Work order not found").filter(visible)).toBeVisible();
-    await expect(page.getByText("Recalibrate tank 3P level gauge").filter(visible)).toHaveCount(0);
+    await expect(page.getByText("Recalibrate tank 3P level gauge")).toHaveCount(0); // unfiltered: a hidden leak is still a leak
   });
 });

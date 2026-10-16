@@ -114,7 +114,7 @@ test.describe("audit log", () => {
     await signIn(page, USERS.viewer);
     await page.goto("/audit?type=members");
     await expect(entriesIn(page.getByRole("main")).filter({ hasText: "Joined as Viewer" })).toHaveCount(1);
-    await expect(page.getByRole("main").getByText(USERS.viewer.name).first()).toBeVisible();
+    await expect(page.getByRole("main").getByText(USERS.viewer.name).filter(visible).first()).toBeVisible();
     // Unfiltered: a hidden leak is still a leak.
     await expect(page.getByText(/Meridian|Owen Price|Sofia Marin/)).toHaveCount(0);
 
@@ -135,7 +135,9 @@ test.describe("audit log", () => {
     await page.goto(`/inspections/${SEED_INSPECTION_ID}`);
     const history = historyCard(page);
     const entries = entriesIn(history);
-    await expect(entries.first()).toContainText("Scheduled for 25 Sept 2026");
+    // The seed schedules relative to today, so the expected date is read from the record itself.
+    const scheduledFor = page.getByRole("main").locator("dt", { hasText: "Scheduled for" }).locator("xpath=following-sibling::dd[1]");
+    await expect(entries.first()).toContainText(`Scheduled for ${(await scheduledFor.innerText()).trim()}`);
     // A check recorded as failed when it was created says so in its headline.
     await expect(entries.filter({ hasText: "Portable fire extinguishers in date and accessible" })).toContainText(
       "Added to the checklist as Fail (High severity)",

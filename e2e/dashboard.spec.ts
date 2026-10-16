@@ -7,11 +7,23 @@ const visible = { visible: true } as const;
 
 const TERN_VESSEL_ID = "a2000000-0000-4000-8000-000000000005";
 
-/** A headline figure: the number inside the summary link that starts with `label`. */
+/** A headline figure's link; its accessible name reads "Needs follow-up: 0, …". */
+function figureLink(page: Page, label: string) {
+  return page.getByRole("main").getByRole("link", { name: new RegExp(`^${label}: \\d+`) });
+}
+
+/** The current value of a headline figure, read once the figure has rendered. */
 async function figure(page: Page, label: string): Promise<number> {
-  const link = page.getByRole("main").getByRole("link", { name: new RegExp(`^${label}`) });
-  const value = await link.locator(":scope > span").nth(1).textContent();
+  const link = figureLink(page, label);
+  await expect(link).toBeVisible();
+  const value = (await link.getAttribute("aria-label"))?.match(/: (\d+)/)?.[1];
+  if (value === undefined) throw new Error(`No value in the "${label}" figure`);
   return Number(value);
+}
+
+/** Retries until the figure shows `value` (streamed boundaries can resolve late). */
+async function expectFigure(page: Page, label: string, value: number) {
+  await expect(figureLink(page, label)).toHaveAccessibleName(new RegExp(`^${label}: ${value}\\b`));
 }
 
 function panel(page: Page, name: string) {
@@ -72,7 +84,7 @@ test.describe("dashboard", () => {
 
     // The dashboard flags it, never truncated, with the way to address it.
     await page.goto("/dashboard");
-    expect(await figure(page, "Needs follow-up")).toBe(followUpsBefore + 1);
+    await expectFigure(page, "Needs follow-up", followUpsBefore + 1);
     const row = panel(page, "Failed checks").getByRole("listitem").filter({ hasText: title });
     await expect(row.getByText("Needs follow-up", { exact: true }).filter(visible)).toBeVisible();
 
@@ -96,8 +108,8 @@ test.describe("dashboard", () => {
 
     // Back on the dashboard the flag is gone and the work is counted.
     await page.goto("/dashboard");
-    expect(await figure(page, "Needs follow-up")).toBe(followUpsBefore);
-    expect(await figure(page, "Open work orders")).toBe(openWorkBefore + 1);
+    await expectFigure(page, "Needs follow-up", followUpsBefore);
+    await expectFigure(page, "Open work orders", openWorkBefore + 1);
     await expect(
       panel(page, "Failed checks").getByRole("listitem").filter({ hasText: title }).getByText("Needs follow-up"),
     ).toHaveCount(0);

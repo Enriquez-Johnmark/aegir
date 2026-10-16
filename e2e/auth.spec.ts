@@ -21,6 +21,11 @@ test.describe("authentication", () => {
     // The dashboard is the technician's own organization, with their own work called out.
     await expect(page.getByRole("main").getByText("Northwind Shipping", { exact: true }).filter(visible)).toBeVisible();
     await expect(page.getByRole("link", { name: /assigned to you$/ })).toBeVisible();
+
+    // The session lives in cookies only the server can read (D-043): scripts never see the refresh token.
+    const session = (await page.context().cookies()).filter((cookie) => cookie.name.startsWith("sb-"));
+    expect(session.length).toBeGreaterThan(0);
+    expect(session.map((cookie) => [cookie.name, cookie.httpOnly])).toEqual(session.map((cookie) => [cookie.name, true]));
   });
 
   test("rejects a wrong password without revealing which field was wrong", async ({ page }) => {

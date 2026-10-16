@@ -75,11 +75,11 @@ Membership management is seed-only in the MVP (no UI).
 | Secret | Where it may live | Never |
 |---|---|---|
 | Publishable key + URL | `NEXT_PUBLIC_*` env (Vercel, `.env.local`) | n/a (browser-safe by design; RLS protects data) |
-| Secret / service-role key | Local shell for seed and test scripts (a CI secret store if CI is added) | App runtime, any `NEXT_PUBLIC_*` var, git, logs, chat |
-| DB password, access tokens | Developer password manager (a CI secret store if CI is added) | git, docs, chat |
+| Secret / service-role key | Local shell for seed and test scripts (CI needs none, D-044) | App runtime, any `NEXT_PUBLIC_*` var, git, logs, chat |
+| DB password, access tokens | Developer password manager (CI needs none, D-044) | git, docs, chat |
 
 - `.env*` is git-ignored except `.env.example`, which contains placeholders only.
-- Use **scoped** Supabase personal access tokens for the CLI (and CI, if added), not the full-account browser-login token. There is no CI pipeline yet.
+- Use **scoped** Supabase personal access tokens for the CLI, not the full-account browser-login token. CI (D-044) holds no secrets or tokens: it tests its own throwaway local Postgres, with a read-only `GITHUB_TOKEN` and actions pinned to commit SHAs.
 - The local stack's printed keys are well-known development defaults. They are still kept out of git.
 
 ## 5. Audit integrity
@@ -136,6 +136,6 @@ Covered by pgTAP (highlights): RLS enabled on every public table; anon has zero 
 - **Tooling-only advisory:** `npm audit` reports high-severity entries for one advisory: `braces` stack exhaustion on deeply nested glob patterns (GHSA-vfj7-8cjw-p6xm), reached through `fast-glob`/`micromatch` in `eslint-config-next` (lint) and in the `shadcn` CLI package. Both are dev dependencies since 2026-10-16 (`shadcn` moved, D-043), and `npm audit --omit=dev` reports **0 vulnerabilities**. The app imports only `shadcn/tailwind.css` at build time; the vulnerable glob code never runs in the app or on the server. The suggested `--force` fix downgrades `eslint-config-next` to Next 14's config, so it is not applied. Re-check when either package updates.
 - **Leaked-password protection is off** on the hosted project (the advisor's `auth_leaked_password_protection` warning). Supabase offers the HaveIBeenPwned check on the Pro plan and above. The demo's exposure is small: public signups are disabled, so every password is set by the seed; the demo password is published on purpose; the admin password is random and unrecorded. Turn it on (Auth → Providers → Email) if the project moves to Pro or takes real signups.
 - Demo access: seeded non-admin accounts (D-011). Locally every seeded user shares the password in `supabase/seed.sql`; the hosted demo must use different passwords and must not publish the admin account.
-- **Sign-in rate limiting is shared by all visitors.** Sign-in runs in a Server Action, so Supabase Auth sees Vercel's egress IPs, not the visitor's: about 30 bad attempts in 5 minutes could lock everyone out of the shared demo for a while. There is no app-level limit. Mitigation (not applied, owner's choice): a Vercel Firewall rate-limit rule on the login POST, or a CAPTCHA.
+- **Sign-in rate limiting is shared by all visitors.** Sign-in runs in a Server Action, so Supabase Auth sees Vercel's egress IPs, not the visitor's: about 30 bad attempts in 5 minutes could lock everyone out of the shared demo for a while. Mitigation (D-044): a Vercel WAF rule limits `POST /login` to 10 per 5 minutes per IP, so one visitor can use at most a third of that budget (the owner applies it in the dashboard; see DEPLOYMENT.md). Many IPs together can still exhaust it; a CAPTCHA would be the next step. A refused sign-in shows the sign-in card with a wait-and-retry message, not a broken page.
 - **The shared demo can be defaced** with the published logins (records can't be deleted by design). Recovery: `scripts/demo-reset.mjs` restores the seed (destructive; DEPLOYMENT.md). Users can still edit their own display name (`profiles.full_name`), which isn't audited.
 - JWT claims refresh only on token refresh. Role changes take effect at the latest after `jwt_expiry` (3600 s). Roles are read from the table, not the JWT, so this mainly affects session validity, not role checks.

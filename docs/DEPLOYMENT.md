@@ -21,6 +21,7 @@
 | 2026-10-16 | `db advisors --linked` (owner) | ⚠️ one WARN, `auth_leaked_password_protection` (Auth, not schema): leaked-password checking is a Pro-plan feature, and the demo has signups disabled and passwords set by the seed (SECURITY.md §9). No database findings |
 | 2026-10-16 | Review-fixes deploy (`ff04991`) | ✅ smoke test 45/45, no console errors; session cookie `sb-…-auth-token` is `HttpOnly`, `Secure`, `SameSite=Lax` (so the new cookie options are live) |
 | 2026-10-16 | Owner housekeeping | ✅ `SUPABASE_DB_PASSWORD` and `DEMO_PASSWORD` unset in the owner's shell; ✅ scoped `aegir-cli` token revoked in the dashboard and `supabase logout` run; `projects list` now fails with `AccessTokenRequiredError` (a new scoped token is needed for `link` or other token commands) |
+| 2026-10-16 | Sign-in rate limit (Vercel WAF rule, D-044) | ⬜ owner: apply the rule in [Sign-in rate limit](#sign-in-rate-limit-vercel-firewall-d-044), then confirm |
 
 ## Environments
 
@@ -70,6 +71,18 @@ No secret key is needed by the deployed app (D-002).
 ## Subsequent deployments
 
 Merge to `main` → Vercel builds. Apply any new migration **before** the app code that depends on it (`db push`, steps 2–4). Migrations are forward-only.
+
+## Sign-in rate limit (Vercel Firewall, D-044)
+
+The owner applies this once, in the Vercel dashboard (Hobby allows one rate-limit rule per project):
+
+1. Project **aegir** → **Firewall** → **Configure** → **+ New Rule**. Name: `Sign-in attempts`.
+2. **If** Request Path **equals** `/login` **and** Method **equals** `POST`.
+3. **Then** Rate Limit: **Fixed Window**, time window **300 s**, request limit **10**, key **IP**, action **Default (429)**.
+4. **Save Rule** → **Review Changes** → **Publish**.
+5. Check: page loads still work; from one browser, the eleventh sign-in attempt within 5 minutes shows "Sign-in didn't go through". Firewall overview → the rule shows the blocked requests. To trial it first, set the action to **Log**, then switch to the 429.
+
+The production smoke test makes 7 sign-in attempts: one run per 5 minutes from one IP.
 
 ## Recovery
 

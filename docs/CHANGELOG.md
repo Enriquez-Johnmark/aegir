@@ -4,6 +4,16 @@ Meaningful functional and technical changes, newest first. Format loosely follow
 
 ## [Unreleased]
 
+### 2026-10-16: CI and sign-in rate limit (D-044)
+
+**Added**
+- CI (`.github/workflows/ci.yml`) on every push and pull request. An app job runs lint, typecheck, unit tests, the build and the production dependency audit. A database job runs every migration and the seed on a fresh Postgres, then db lint, pgTAP, advisors, and checks the generated types are in sync. Actions are pinned to commit SHAs, the token is read-only, and there are no secrets. README badge.
+- `src/app/(auth)/login/error.tsx`: a sign-in refused at the edge (429) shows the sign-in card with the cause and "Wait a minute, then try again", not Next's whole-page error.
+- The Vercel WAF rule (`POST /login`, 10 per 5 minutes per IP) is documented in DEPLOYMENT.md; the owner applies it in the dashboard.
+
+**Reason:** Post-MVP hardening (D-044). **Affected areas:** CI, sign-in, docs. **Breaking changes:** none. **Migrations:** none.
+**Verification:** actionlint ✅ · both CI jobs rehearsed locally ✅ · each gate failed on a deliberate fault ✅ (found: the CLI's `--fail-on` needs `--agent no`) · unit 116/116 ✅ · pgTAP 135/135 ✅ · build ✅ · E2E 78/78 ✅ (new 429 test red first).
+
 ### 2026-10-16: Toolchain update
 
 **Changed**

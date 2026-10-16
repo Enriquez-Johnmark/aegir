@@ -34,6 +34,8 @@ npm run db:types      # after any migration
 npm run test:e2e      # Playwright (needs the local stack running + seeded)
 ```
 
+CI (`.github/workflows/ci.yml`, D-044) runs all of these except E2E on every push and pull request. Keep it green, and keep its steps in step with this list.
+
 A feature is done only when its migration, pgTAP and unit tests, docs, ledger and changelog entries all exist and these commands pass.
 
 <!-- BEGIN:nextjs-agent-rules -->

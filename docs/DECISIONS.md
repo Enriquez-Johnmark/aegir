@@ -446,3 +446,23 @@ Format: context → decision → alternatives → consequences. Status: **Accept
 **Not taken now (owner's choice):** CI (no pipeline; checks run locally), a Vercel Firewall rate limit on sign-in (Supabase sees Vercel's egress IPs, so its per-IP limit is shared by all visitors), unit tests for the Server Action layer, an index for the audit log's person filter, `private` default privileges, invariants enforced only in Zod. Listed in ROADMAP.md.
 **Consequences:** One more migration to push to production (owner's step). Deleting a user with handovers still fails by design.
 
+<a id="d-044"></a>
+
+## D-044 — CI on every push, and a per-visitor sign-in limit at the edge
+**Status:** Accepted · 2026-10-16
+
+**Context:** With the MVP deployed, two Post-MVP items carried the most risk for the least work. Nothing ran on push, so a commit could break lint, types, the build or a database rule unnoticed until the next local run. And sign-in runs in a Server Action, so Supabase sees Vercel's egress IPs: its per-IP limit (about 30 attempts per 5 minutes) is shared by every visitor of a demo whose password is public, and one visitor could lock everyone out (SECURITY.md §9).
+
+**Decision:**
+- **CI:** `.github/workflows/ci.yml` runs on pushes to `main` and on pull requests, as two parallel jobs.
+  - *App:* `npm ci`, lint, typecheck, unit tests, build, `npm audit --omit=dev --audit-level=high`. The build gets placeholder public Supabase values: it validates them but never calls Supabase.
+  - *Database:* `supabase db start` (Postgres only: every migration, then the seed), `db lint --fail-on error`, pgTAP, `db advisors --fail-on warn` (a fresh database's INFO "unused index" notes don't fail it), and the generated types must match the committed file.
+  - *Hardening:* `permissions: contents: read`, `persist-credentials: false`, no secrets or tokens of any kind, superseded runs cancelled, actions pinned to commit SHAs (checkout v7.0.1, setup-node v7.0.0: the newest releases at least two weeks old). The Supabase CLI is the pinned dev dependency, as locally.
+  - *E2E stays local:* it needs the whole Supabase stack and takes about five minutes.
+  - *Gates proven:* each one was made to fail on a deliberate fault locally (a table without RLS, a function reading a missing table, a failing pgTAP test). That found a CLI quirk: with agent detection on, `--fail-on` exits 0 even on an ERROR finding; with `--agent no` it exits 1. The workflow passes `--agent no` explicitly.
+- **Sign-in limit at the edge:** one Vercel WAF rate-limit rule (Hobby allows one per project): `POST` requests to path `/login`, fixed window 300 s, 10 requests, keyed by IP, default 429 response. One visitor can then use at most a third of Supabase's shared budget. Page loads (GET) and signed-in traffic aren't counted. The owner applies it in the Vercel dashboard (DEPLOYMENT.md); it isn't in code.
+- **The login page copes with the 429.** The firewall answers before the app, so the Server Action gets a bare 429 and Next replaced the whole page with its generic "This page couldn't load". `src/app/(auth)/login/error.tsx` now shows the sign-in card with the cause and the recovery ("Wait a minute, then try again"), with the heading focused. Next forwards only a `text/plain` body as the error message, not the status, so the copy covers both a rate limit and a dropped connection. E2E simulates the 429; it was red against Next's generic page first.
+
+**Not taken:** a CAPTCHA (friction on a demo); an app-level limiter (needs shared storage, and it would run after the request has already cost a function invocation).
+
+**Consequences:** A push that breaks lint, types, unit tests, the build, a migration, an RLS test or the generated types turns red; CI never touches the hosted project. The production smoke test makes 7 sign-in attempts, so it fits the limit once per 5 minutes from one IP; a second run straight after will see 429s. Vercel counts rate limits per region, so traffic spread across regions can exceed the limit in total.

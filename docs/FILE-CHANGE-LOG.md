@@ -399,3 +399,12 @@ Not tracked (machine-local, outside the repo or git-ignored): `~/.impeccable/bin
 | Action | Path | Purpose | Related | Verification |
 |---|---|---|---|---|
 | UPDATE | `docs/DEPLOYMENT.md` | `aegir-cli` token revoked by the owner; CLI logged out | D-013 | ✅ `projects list` → `AccessTokenRequiredError`; no `SUPABASE_ACCESS_TOKEN` in the environment |
+
+## 2026-10-16 · Post-MVP: CI and sign-in rate limit (D-044)
+
+| Action | Path | Purpose | Related | Verification |
+|---|---|---|---|---|
+| CREATE | `.github/workflows/ci.yml` | CI on push and pull request: app job (lint, typecheck, unit, build, production audit) and database job (migrations + seed, db lint, pgTAP, advisors, types in sync); SHA-pinned actions, read-only token, no secrets | D-044 | ✅ actionlint 1.7.12; both jobs rehearsed locally (clean `git archive` + `npm ci`; Postgres-only `db start`); each gate failed on a deliberate fault. First GitHub run follows the owner's push |
+| CREATE | `src/app/(auth)/login/error.tsx` | Sign-in card with cause and recovery when the sign-in POST is refused (firewall 429) instead of Next's whole-page error | D-044 | ✅ E2E (red first), screenshots desktop + Pixel 7 |
+| UPDATE | `e2e/auth.spec.ts` | Simulated 429 on the sign-in POST: explained, focused, recovers | D-044 | ✅ |
+| UPDATE | `AGENTS.md`, `README.md`, `docs/{DECISIONS,SECURITY,ROADMAP,ARCHITECTURE,DEPLOYMENT,TESTING,CHANGELOG,FILE-CHANGE-LOG}.md` | D-044; CI badge; rate-limit rule procedure (owner applies); secrets table: CI holds none | D-044 | ✅ reconciled with `git status` |

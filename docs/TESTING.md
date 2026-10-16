@@ -65,12 +65,12 @@ rollback;
 |---|---|
 | Unit (`npm test`) | ✅ 116/116 in 13 files |
 | Database (`npm run db:test`) | ✅ 135/135 in 12 files |
-| End-to-end (`npm run test:e2e`) | ✅ 76/76 (38 tests × desktop and Pixel 7), twice in a row on fresh seeds |
+| End-to-end (`npm run test:e2e`) | ✅ 78/78 (39 tests × desktop and Pixel 7) on a fresh seed |
 | Accessibility (axe, WCAG 2.2 AA, in E2E) | ✅ 0 violations on every route |
 | Lint, typecheck, build | ✅ |
 | `db lint --local`, `db advisors --local` | ✅ no errors, no issues |
 | `npm audit --omit=dev` | ✅ 0 vulnerabilities (dev tooling: see SECURITY.md §9) |
-| CI | none: everything above runs locally (Known gaps) |
+| CI (`.github/workflows/ci.yml`, D-044) | Everything above except E2E, on every push and pull request. Rehearsed locally; the first GitHub run follows the owner's push |
 
 ## Results log
 
@@ -150,11 +150,15 @@ rollback;
 | 2026-10-16 | Hosted Supabase: `migration list`, `db push --dry-run`, `db push`, `db advisors --linked` (owner) | ✅ migration 9 applied (only it pending in the dry run); ⚠️ advisors: one Auth warning, `auth_leaked_password_protection` (Pro-plan feature; SECURITY.md §9), no database findings |
 | 2026-10-16 | Production after the review-fixes deploy (`ff04991`) | ✅ smoke 45/45, no console errors; session cookie `HttpOnly`, `Secure`, `SameSite=Lax` |
 | 2026-10-16 | Toolchain update: Node 24.14.0 → 24.22.0 (LTS, npm 11.19.1), Supabase CLI 2.120.0 → 2.121.0 | ✅ lint, typecheck, unit 116/116, build; `db lint --local`, pgTAP 135/135, `db advisors --local` no issues; E2E 76/76 (fresh seed) |
+| 2026-10-16 | CI rehearsal (D-044) | ✅ actionlint 1.7.12 clean. App job in a clean `git archive` with `npm ci` and placeholder Supabase values: lint, typecheck, unit 116/116, build, `npm audit --omit=dev` 0. Database job on a Postgres-only `db start` (migrations + seed): db lint, pgTAP 135/135, advisors (INFO only), generated types unchanged |
+| 2026-10-16 | CI gates fail when they should | ✅ advisors `--fail-on warn` exit 1 on a table without RLS; db lint `--fail-on error` exit 1 on a function reading a missing table; pgTAP exit 1 on a failing test. ⚠️ Found: with the CLI's agent detection on, `--fail-on` exits 0 even on an ERROR finding; CI passes `--agent no` |
+| 2026-10-16 | Sign-in refused by the rate limit (E2E, simulated 429) | Red first: Next's whole-page "This page couldn't load". ✅ After `login/error.tsx`: sign-in card, heading focused, retry signs in; desktop + Pixel 7 |
+| 2026-10-16 | Full checks after D-044 | ✅ lint, typecheck, unit 116/116, build; db lint/pgTAP 135/135/advisors with the CI flags on a fresh reset; E2E 78/78 (fresh seed); detector no findings |
 
 ## Known gaps
 
 - No integration tests against the local stack (post-MVP): Server Actions' role pre-checks and error mapping are covered only through E2E and the database rules they rely on (pgTAP).
-- **No CI.** Every check in this file was run locally and recorded by hand; nothing runs on push (post-MVP, ROADMAP).
+- **CI doesn't run E2E** (D-044): it needs the whole Supabase stack and about five minutes, so it stays a local check before pushing. The Vercel firewall's rate limit itself can only be checked on the live site; E2E covers the page's handling of its 429.
 - axe covers WCAG 2.2 A/AA rules only; it cannot judge everything (e.g. whether a heading names its section well). The dashboard and inspection/work-order critiques cover the rest.
 - pgTAP uses the seed as its fixture (D-018): run `npm run db:reset` before `npm run db:test` after any manual, agent or screenshot clicking in the local app, or seeded-row tests fail on drifted data.
 - Intermittent E2E failures: the mobile inspections viewer failure was explained and fixed (hidden duplicate matched by an unfiltered text locator, D-040). The earlier dashboard one (row not found within 10 s, ~4× slower run) hasn't recurred in 6 fresh-seed runs; it stays listed until it has a clean history. When a test fails, keep the log and `test-results/` (traces are retained on failure) before rerunning.

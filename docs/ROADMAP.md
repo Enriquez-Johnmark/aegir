@@ -56,8 +56,8 @@ Each slice: schema already in place → DAL → actions → UI (loading, empty, 
 - [x] Independent review (four read-only reviewers: security, database and migrations, tests, docs): no Critical issues; every confirmed finding fixed (D-043): user deletion, checklist insert rights, two races, handover role re-check, audited deletes, queue cut after sorting, httpOnly cookies, redirect normalisation, read-isolation pgTAP, E2E date and locator fixes, docs; demo reset script
 
 ## Post-MVP (not scheduled)
-- [ ] CI pipeline (lint, typecheck, unit, pgTAP, build on push; E2E stays local or nightly)
-- [ ] Sign-in rate limit per visitor (Vercel Firewall rule on the login POST, or a CAPTCHA); SECURITY.md §9
+- [x] CI pipeline (lint, typecheck, unit, build, audit; migrations, pgTAP, database lint and advisors, types in sync; E2E stays local), D-044 · 2026-10-16
+- [ ] 🟡 Sign-in rate limit per visitor: Vercel WAF rule specified and the login page handles its 429 (D-044); owner applies the rule in the dashboard
 - [ ] Integration suite: DAL and Server Actions against the local stack, including TS ↔ DB transition parity (D-006)
 - [ ] Dark theme (light-only MVP, D-038)
 - [ ] Audit log: date and vessel filters, an index for the person filter, sticky day headings (D-042)

@@ -1,6 +1,6 @@
 # Security Model
 
-> **Status (2026-10-12):** authentication, organization roles, RLS on every table, column-level grants, transition/immutability triggers and the audit log are **implemented and tested** (73 pgTAP tests, 10 Playwright auth tests). Evidence: §8. Do not claim a control is in place until §8 shows a passing test.
+> **Status (2026-10-16):** authentication, organization roles, RLS on every table, column-level grants, transition/immutability triggers and the audit log are **implemented and tested** (135 pgTAP tests in 12 files; 76 Playwright tests including auth, role limits, cross-organization not-found and axe). An independent review on 2026-10-16 found no Critical or High security issues; its fixes are in D-043. Evidence: §8. Do not claim a control is in place until §8 shows a passing test.
 
 Aegir is a portfolio demonstration using synthetic data. It is **not** a certified maritime safety system.
 
@@ -8,10 +8,10 @@ Aegir is a portfolio demonstration using synthetic data. It is **not** a certifi
 
 - Supabase Auth, email and password. **Public sign-up is disabled** with `[auth] enable_signup = false` in `supabase/config.toml` (verified: `/auth/v1/signup` returns `signup_disabled`). Note: `[auth.email] enable_signup` must stay `true`, because in GoTrue it switches the whole email provider (password logins) off. Users are provisioned into an organization.
 - Password policy (local config): minimum 10 characters, letters and digits. Mirror this on the hosted project.
-- Sessions are stored in cookies via `@supabase/ssr`. `src/proxy.ts` refreshes them on every request with `supabase.auth.getClaims()`.
+- Sessions are stored in `httpOnly` cookies via `@supabase/ssr` (`Secure` on Vercel; `src/lib/supabase/cookie-options.ts`, D-043): only the server reads them, so scripts never see the refresh token. `src/proxy.ts` refreshes them on every request with `supabase.auth.getClaims()`.
 - Server code protects pages and data with **`getClaims()`**, which validates the JWT. **`getSession()` is never trusted on the server.**
 - The proxy is **not** an authorization boundary. It only redirects optimistically (signed out → `/login?next=…`, signed in → away from `/login`). Every page, Server Action and DAL function re-verifies the user (`requireUser()` in `src/lib/auth/session.ts`), and RLS verifies again in the database.
-- `next` redirect targets are sanitised (`src/lib/safe-redirect.ts`), so off-site URLs fall back to `/dashboard` (open-redirect protection, unit- and E2E-tested).
+- `next` redirect targets are sanitised (`src/lib/safe-redirect.ts`), so off-site URLs fall back to `/dashboard` (open-redirect protection, unit- and E2E-tested). The normalised path is checked too, so dot segments can't turn `/..//evil.com` into `//evil.com` (D-043).
 - Sign-in errors are generic ("Invalid email or password.") to prevent account enumeration; Supabase's rate-limit error is surfaced as "Too many sign-in attempts".
 - **Sign-out uses `scope: "local"`**: it ends only the current browser session. The default global scope would sign the same account out everywhere, which would break shared demo logins (found by the E2E suite).
 
@@ -24,12 +24,13 @@ A user's roles live in `public.memberships (organization_id, user_id, role)`. **
 | Read all organization data (vessels, inspections, work orders, handovers, audit) | ✓ | ✓ | ✓ | ✓ | ✓ |
 | Create and edit vessels | ✓ | ✓ | | | |
 | Create inspections | ✓ | ✓ | ✓ | | |
+| Add checks to an inspection | ✓ | ✓ | assigned inspector, or creator while scheduled (D-043) | | |
 | Record results / complete an inspection | ✓ | ✓ | assigned inspector (role re-checked, D-031) | | |
 | Create work orders (incl. from failed checks) | ✓ | ✓ | ✓ | | |
 | Edit any work-order field / reassign | ✓ | ✓ | | | |
 | Change status of a work order assigned to me | ✓ | ✓ | ✓ | ✓ | |
 | Create a handover (as `from_user`) | ✓ | ✓ | ✓ | ✓ | |
-| Acknowledge a handover addressed to me | ✓ | ✓ | ✓ | ✓ | |
+| Acknowledge a handover addressed to me (role re-checked, D-043) | ✓ | ✓ | ✓ | ✓ | |
 | Delete any safety record | ✗ | ✗ | ✗ | ✗ | ✗ |
 | Modify audit events | ✗ | ✗ | ✗ | ✗ | ✗ |
 
@@ -74,16 +75,17 @@ Membership management is seed-only in the MVP (no UI).
 | Secret | Where it may live | Never |
 |---|---|---|
 | Publishable key + URL | `NEXT_PUBLIC_*` env (Vercel, `.env.local`) | n/a (browser-safe by design; RLS protects data) |
-| Secret / service-role key | Local shell for seed and test scripts; CI secret store | App runtime, any `NEXT_PUBLIC_*` var, git, logs, chat |
-| DB password, access tokens | Developer password manager, CI secret store | git, docs, chat |
+| Secret / service-role key | Local shell for seed and test scripts (a CI secret store if CI is added) | App runtime, any `NEXT_PUBLIC_*` var, git, logs, chat |
+| DB password, access tokens | Developer password manager (a CI secret store if CI is added) | git, docs, chat |
 
 - `.env*` is git-ignored except `.env.example`, which contains placeholders only.
-- Use **scoped** Supabase personal access tokens for CLI and CI, not the full-account browser-login token.
+- Use **scoped** Supabase personal access tokens for the CLI (and CI, if added), not the full-account browser-login token. There is no CI pipeline yet.
 - The local stack's printed keys are well-known development defaults. They are still kept out of git.
 
 ## 5. Audit integrity
 
 - Audit rows are written only by triggers. App roles have no INSERT, UPDATE or DELETE privilege or policy on `audit_events`.
+- Inserts, updates and (since D-043) deletes are recorded on all six audited tables, so removing a membership, which withdraws access, leaves a trace.
 - Audit payloads store **changed business columns only**. Never credentials, tokens or auth metadata.
 
 ## 6. Application-layer controls
@@ -120,14 +122,18 @@ Membership management is seed-only in the MVP (no UI).
 | 2026-10-15 | `npx supabase test db` (9 files) | ✅ 90/90 | + `09_handover_access` (5): viewer can't send; another organization sees none of ours, can't write into ours, can't point at our vessel; the sender can't acknowledge their own handover |
 | 2026-10-15 | `npx supabase test db` (10 files) | ✅ 96/96 | + `10_audit_log_access` (6): a viewer reads exactly the organization's log (all six record types), resolves every actor's name, can't delete events; another organization can't resolve our actors' names; events of one transaction share a timestamp (the log's paging tie-break, D-042) |
 | 2026-10-15 | `npx supabase db advisors --linked` (hosted, after the first `db push`) | ✅ no issues | First run against the hosted project; schema identical to local (8/8 migrations) |
+| 2026-10-16 | Independent review (security, database, tests, docs; read-only reviewers) | ✅ no Critical/High security findings | Probed locally in rolled-back transactions: cross-organization reads/writes/FK tricks blocked, grants and definer functions as documented, Server Actions validate and re-verify, no secrets in 132 commits. Confirmed and fixed in D-043: frozen records blocked user deletion; any inspector could add checks anywhere; two races; demoted recipients could acknowledge; deletes unaudited; protocol-relative redirect after normalisation; readable session cookies |
+| 2026-10-16 | `npx supabase test db --local` (12 files) | ✅ 135/135 | + `11_review_hardening` (11; 6 red against the schema before the migration: user deletion ×3, membership removal audited, inspector can't add to another's inspection, demoted recipient can't acknowledge) + `12_read_isolation` (28: each organization sees its own rows and none of the other's, on vessels, inspections, inspection_items, work_orders, handovers, audit_events, memberships). Races: both two-session reproductions went through before and wait on the new lock after |
+| 2026-10-16 | `npx supabase db lint --local` / `db advisors --local` | ✅ no errors / no issues | After `20261016000517_harden_after_independent_review` |
 
-Covered by pgTAP (highlights): RLS enabled on every public table; anon has zero privileges; no private function executable by anon; every security-definer function pins `search_path`; cross-organization reads return nothing; cross-organization inserts/moves rejected; forged `created_by`/`from_user_id` rejected; role limits per table; invalid transitions rejected; closed inspections and acknowledged handovers frozen; audit rows unwritable by clients and stamped with the real actor.
+Covered by pgTAP (highlights): RLS enabled on every public table; anon has zero privileges; no private function executable by anon; every security-definer function pins `search_path`; cross-organization reads return nothing (table by table, with positive controls, `12_read_isolation`); cross-organization inserts/moves rejected; forged `created_by`/`from_user_id` rejected; role limits per table; invalid transitions rejected; closed inspections and acknowledged handovers frozen; audit rows unwritable by clients and stamped with the real actor.
 
 ## 9. Known risks and limitations
 
 - **CSP allows inline scripts and styles** (`'unsafe-inline'`). Nonce-based CSP is incompatible with the prerendered static shells Aegir uses (Partial Prerendering), and Next's streamed React payload is inline script. The remaining protection against script injection is React's output escaping and the absence of `dangerouslySetInnerHTML`; every other directive is strict (D-039). Revisit if Next supports nonces or hashes for prerendered shells.
 
-- **Tooling-only advisory:** `npm audit` reports 9 high-severity entries, all one advisory: `braces` stack exhaustion on deeply nested glob patterns (GHSA-vfj7-8cjw-p6xm), reached through `fast-glob`/`micromatch` in `eslint-config-next` (lint) and in the `shadcn` CLI package (re-counted 2026-10-15; the earlier "5" predates the `shadcn` path). The app imports only `shadcn/tailwind.css` from that package at build time; the vulnerable glob code runs only in the CLI and the linter, never in the app or on the server. The suggested `--force` fix downgrades `eslint-config-next` to Next 14's config, so it is not applied. Re-check when either package updates.
+- **Tooling-only advisory:** `npm audit` reports high-severity entries for one advisory: `braces` stack exhaustion on deeply nested glob patterns (GHSA-vfj7-8cjw-p6xm), reached through `fast-glob`/`micromatch` in `eslint-config-next` (lint) and in the `shadcn` CLI package. Both are dev dependencies since 2026-10-16 (`shadcn` moved, D-043), and `npm audit --omit=dev` reports **0 vulnerabilities**. The app imports only `shadcn/tailwind.css` at build time; the vulnerable glob code never runs in the app or on the server. The suggested `--force` fix downgrades `eslint-config-next` to Next 14's config, so it is not applied. Re-check when either package updates.
 - Demo access: seeded non-admin accounts (D-011). Locally every seeded user shares the password in `supabase/seed.sql`; the hosted demo must use different passwords and must not publish the admin account.
-- Supabase Auth's own login rate limits apply; there is no additional app-level rate limiting yet.
+- **Sign-in rate limiting is shared by all visitors.** Sign-in runs in a Server Action, so Supabase Auth sees Vercel's egress IPs, not the visitor's: about 30 bad attempts in 5 minutes could lock everyone out of the shared demo for a while. There is no app-level limit. Mitigation (not applied, owner's choice): a Vercel Firewall rate-limit rule on the login POST, or a CAPTCHA.
+- **The shared demo can be defaced** with the published logins (records can't be deleted by design). Recovery: `scripts/demo-reset.mjs` restores the seed (destructive; DEPLOYMENT.md). Users can still edit their own display name (`profiles.full_name`), which isn't audited.
 - JWT claims refresh only on token refresh. Role changes take effect at the latest after `jwt_expiry` (3600 s). Roles are read from the table, not the JWT, so this mainly affects session validity, not role checks.

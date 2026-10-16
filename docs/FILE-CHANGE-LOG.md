@@ -364,3 +364,19 @@ Not tracked (machine-local, outside the repo or git-ignored): `~/.impeccable/bin
 | CREATE | `scripts/capture-screenshots.mjs` | Reproducible, read-only capture; password from the environment | D-011 | ✅ run against production, eslint |
 | UPDATE | `README.md` | Screenshots section; status, pgTAP count, limitations | M6 | ✅ |
 | UPDATE | `docs/{ROADMAP,CHANGELOG,FILE-CHANGE-LOG}.md` | M6 item, change entries | M6 | ✅ reconciled with `git status` |
+
+## 2026-10-16 · M6: Independent review fixes (D-043)
+
+| Action | Path | Purpose | Related | Verification |
+|---|---|---|---|---|
+| CREATE | `supabase/migrations/20261016000517_harden_after_independent_review.sql` | User deletion past frozen records; checklist insert policy; `FOR SHARE` lock helpers against two races; handover acknowledge role re-check; audited deletes | D-043 | ✅ pgTAP 135/135, lint, advisors, race reproductions |
+| CREATE | `supabase/tests/11_review_hardening.test.sql`, `supabase/tests/12_read_isolation.test.sql` | Tests for the fixes (6 red before); table-by-table read isolation with positive controls | D-043 | ✅ |
+| CREATE | `scripts/demo-reset.mjs`, `scripts/demo-reset.test.mjs` | Guarded, single-transaction demo reset to the seed | D-043, D-011 | ✅ unit 3, local runs |
+| CREATE | `src/lib/supabase/cookie-options.ts`; UPDATE `src/lib/supabase/{server,proxy}.ts` | `httpOnly` session cookies (`Secure` on Vercel) | D-043 | ✅ E2E cookie assertion |
+| UPDATE | `src/lib/safe-redirect.ts`, `src/lib/safe-redirect.test.ts` | Reject a protocol-relative path after normalisation | D-043 | ✅ unit (red first) |
+| UPDATE | `src/features/work-orders/server/queries.ts`, `src/features/handovers/server/queries.ts` | Queues and inbox ordered in SQL before the limit | D-043 | ✅ E2E |
+| UPDATE | `src/features/audit/{domain.ts,audit.test.ts,server/queries.ts,components/audit-entry.tsx}` | Deleted entries ("Removed (was …)") | D-043 | ✅ unit |
+| UPDATE | `e2e/{audit,auth,dashboard,inspections,work-orders,handovers}.spec.ts` | Date from the page; cookie flags; figures by accessible name; locator policy | D-043, D-040 | ✅ 76/76 ×2 |
+| UPDATE | `package.json`, `package-lock.json` | `shadcn` to devDependencies (dev flags only in the lockfile); `--local` on db scripts | D-043 | ✅ `npm audit --omit=dev` 0 |
+| UPDATE | `AGENTS.md` | `db advisors --local` in the verification block | D-043 | ✅ |
+| UPDATE | `README.md`, `docs/{DECISIONS,SECURITY,DATA_MODEL,CONVENTIONS,ARCHITECTURE,ROADMAP,DEPLOYMENT,TESTING,AGENT-SKILLS,CHANGELOG,FILE-CHANGE-LOG}.md` | D-043; GitHub-safe decision anchors; docs brought in line with the code | D-043 | ✅ reconciled with `git status` |

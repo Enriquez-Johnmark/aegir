@@ -29,7 +29,7 @@ Project-local Claude Code skills, installed **2026-10-12** with `npx skills@1.7.
   - `scripts/live-browser*.js`: injected into the local dev page in `live` mode; network calls go only to its own `localhost` helper server and asset URLs.
   - `scripts/modern-screenshot.umd.js` (bundled screenshot library) and `scripts/data/font-index.json` (font metadata) are data/library files.
   - `agents/*.toml`: Codex subagent definitions (finish reviewer, documenter, asset producer, manual-edit applier). Claude Code does not load them.
-  - `reference/hooks.md`: `impeccable hooks on` writes `.impeccable/config.json` and a PostToolUse/Stop hook in `.claude/settings.local.json` (git-ignored). **Not enabled** (D-024).
+  - `reference/hooks.md`: `impeccable hooks on` writes `.impeccable/config.json` and a PostToolUse/Stop hook in `.claude/settings.local.json` (git-ignored). **Not enabled** at install time (D-024; enabled later with approval, next line).
 - [x] Engine and hooks enabled with the owner's approval (D-024): engine 0.1.14 SHA-256 verified against the published sidecar; `hooks on` installed the PostToolUse + Stop hooks in git-ignored `.claude/settings.local.json`. The hook fires on Edit/Write of UI files (verified). `live` mode not used.
 - [x] `impeccable document` run in scan mode → `DESIGN.md` + `.impeccable/design.json` (D-026). `impeccable detect` over all changed UI: no findings.
 

@@ -1,6 +1,6 @@
 # Data Model
 
-> **Status: implemented (M2, 2026-10-12)** in `supabase/migrations/`, verified by 73 pgTAP tests (`supabase/tests/`). Conventions: [CONVENTIONS.md §4](CONVENTIONS.md#4-database-and-migrations-postgres).
+> **Status: implemented** (M2 2026-10-12; fix-forward migrations 2026-10-14, 10-15 and 10-16) in `supabase/migrations/`, verified by 135 pgTAP tests in 12 files (`supabase/tests/`; counts and history in [TESTING.md](TESTING.md)). Conventions: [CONVENTIONS.md §4](CONVENTIONS.md#4-database-and-migrations-postgres).
 
 | Migration | Contents |
 |---|---|
@@ -12,6 +12,7 @@
 | `20261012070240_create_audit_log.sql` | audit_events + audit triggers on every operational table |
 | `20261014174645_require_inspector_role_for_item_updates.sql` | Fix forward: the assigned-inspector branch of the `inspection_items` update policy also requires a current `inspector` role (D-031) |
 | `20261015051635_protect_linked_failed_checks.sql` | A failed check that a work order references can no longer change its result (`inspection_items_protect_linked_failure` trigger, D-037) |
+| `20261016000517_harden_after_independent_review.sql` | Fixes from the independent review (D-043): user deletion past frozen records, who may add checklist items, `FOR SHARE` locks against two races (`private.lock_inspection`, `private.lock_inspection_item`, `private.profile_exists`), role re-check on acknowledging handovers, audited deletes (`action = 'delete'`) |
 
 ## 1. Entity relationships
 
@@ -88,17 +89,18 @@ Indexes: `(organization_id, status)`, `(created_by)`; `organization_id` lookups 
 | organization_id | uuid | not null |
 | vessel_id | uuid | composite FK `(vessel_id, organization_id)` → vessels **restrict** |
 | inspector_id | uuid | FK → profiles set null |
-| title | text | not null |
+| title | text | not null, 3–160 characters (trimmed) |
 | status | inspection_status | not null default `scheduled` |
 | scheduled_for | date | not null |
 | completed_at | timestamptz | `(status = 'completed') = (completed_at is not null)` |
-| notes | text | null |
+| notes | text | null, ≤ 4000 characters |
+| created_by | uuid | FK → profiles **set null**; stamped by trigger |
 | | | `unique (id, organization_id)` |
 
-Derived (in a view or query, not stored): `is_overdue = status in ('scheduled','in_progress') and scheduled_for < current_date`; `requires_follow_up = exists failed item without a linked work order`.
+Derived in the DAL/domain code (no view, not stored): `is_overdue = status in ('scheduled','in_progress') and scheduled_for < current_date`; `requires_follow_up = exists failed item without a linked work order`.
 Indexes: `(organization_id, status, scheduled_for)`, `(vessel_id, organization_id)` (covers the composite FK), `(inspector_id)`, `(created_by)`.
 Inspector must be a member with role admin/manager/inspector (trigger). `completed_at` is set by the trigger, never by clients.
-Transitions (trigger): `scheduled → in_progress | cancelled`, `in_progress → completed | cancelled`. `completed` and `cancelled` are terminal. An inspection can only be completed when **no item is `pending`**.
+Transitions (trigger): `scheduled → in_progress | cancelled`, `in_progress → completed | cancelled`. `completed` and `cancelled` are terminal. An inspection can only be completed when it has **at least one item and no item is `pending`** (trigger, P0001). Checks can be added by managers/admins, the assigned inspector, or the creator while the inspection is scheduled (RLS, D-043); while it is being closed, writers wait on a `FOR SHARE` lock (D-043).
 
 ### inspection_items
 | Column | Type | Constraints |
@@ -153,13 +155,14 @@ Transitions (trigger, mirrored in `features/work-orders/domain.ts`):
 | work_order_id | uuid | null, composite FK → work_orders restrict |
 | from_user_id | uuid | not null, FK → profiles restrict; **must equal `auth.uid()` on insert** (RLS `with check`) |
 | to_user_id | uuid | not null, FK → profiles restrict; `<> from_user_id` |
-| summary | text | not null |
-| outstanding_tasks | text | not null |
+| summary | text | not null, 3–200 characters (trimmed) |
+| outstanding_tasks | text | not null, 1–4000 characters (trimmed) |
 | status | handover_status | not null default `pending` |
 | acknowledged_at | timestamptz | `status = 'acknowledged'` ⇔ not null |
 | | | at least one of `vessel_id`, `work_order_id` not null |
 
-Rules: `from_user_id` is always set to the acting user by trigger. The recipient must be a non-viewer member. When only `work_order_id` is given, `vessel_id` is copied from the work order (and must match if both are given). After insert, **content is immutable** (only `status` is updatable, by column grant). The only allowed update is `pending → acknowledged`, by `to_user_id` (RLS), which stamps `acknowledged_at`. Corrections are made by creating a new handover, so history is never silently overwritten.
+Rules: `from_user_id` is always set to the acting user by trigger. The recipient must be a non-viewer member. When only `work_order_id` is given, `vessel_id` is copied from the work order (and must match if both are given). After insert, **content is immutable** (only `status` is updatable, by column grant). The only allowed update is `pending → acknowledged`, by `to_user_id` (RLS), which stamps `acknowledged_at`. Corrections are made by creating a new handover, so history is never silently overwritten. Acknowledging requires a crew role at the time (a recipient demoted to viewer can't, D-043).
+Indexes: `(organization_id, status, created_at desc)`, `(vessel_id, organization_id)`, `(work_order_id, organization_id)`, `(from_user_id)`, `(to_user_id)`.
 
 ### audit_events (append-only)
 | Column | Type | Constraints |
@@ -169,11 +172,11 @@ Rules: `from_user_id` is always set to the acting user by trigger. The recipient
 | actor_id | uuid | null (no FK, so history survives user deletion; null = system) |
 | entity_type | text | not null (table name) |
 | entity_id | uuid | not null |
-| action | text | `in ('insert','update','status_change')` |
+| action | text | `in ('insert','update','status_change','delete')` (`delete` since D-043) |
 | changes | jsonb | not null default `'{}'`: changed columns only, as `{column: {old, new}}` |
 | occurred_at | timestamptz | not null default now() |
 
-Written **only** by `private.record_audit_event()` (security definer `after insert or update` trigger on memberships, vessels, inspections, inspection_items, work_orders and handovers). `actor_id` comes from `auth.uid()` inside the trigger, so it cannot be forged. Insert events store a snapshot of the new row; updates store only changed columns; no-op updates are not recorded. `authenticated` gets SELECT only, with **no** insert, update or delete grants or policies.
+Written **only** by `private.record_audit_event()` (security definer `after insert or update` and, since D-043, `after delete` triggers on memberships, vessels, inspections, inspection_items, work_orders and handovers). `actor_id` comes from `auth.uid()` inside the trigger, so it cannot be forged. Insert and delete events store a snapshot of the row; updates store only changed columns; no-op updates are not recorded. `authenticated` gets SELECT only, with **no** insert, update or delete grants or policies.
 Indexes: `(organization_id, occurred_at desc)`, `(entity_type, entity_id, occurred_at desc)`.
 
 ## 4. Data lifecycle and retention
@@ -184,7 +187,7 @@ Indexes: `(organization_id, occurred_at desc)`, `(entity_type, entity_id, occurr
 | vessels | No DELETE policy. Retire with `status = 'decommissioned'`. |
 | inspections, items, work orders, handovers | No DELETE policy. Cancel or complete instead. Kept for history. |
 | audit_events | Immutable. No UPDATE or DELETE for any app role. |
-| profiles / memberships | Removing an auth user cascades to the profile and memberships. Authored records keep their history (`created_by`/`assignee_id` set to null, `actor_id` kept). Handover user FKs are `restrict`, so a user with handovers must be deactivated (membership removed), not deleted. |
+| profiles / memberships | Removing an auth user cascades to the profile and memberships (the membership removal is audited). Authored records keep their history (`created_by`/`inspector_id`/`assignee_id` set to null, `actor_id` kept); the freeze triggers let exactly this cleanup through on completed and cancelled records (D-043, tested in `11_review_hardening`). Handover user FKs are `restrict`, so a user with handovers must be deactivated (membership removed), not deleted. |
 
 ## 5. Atomic operations (RPC)
 

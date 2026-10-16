@@ -29,7 +29,7 @@ Load the relevant skill before working in its area: `supabase` (any Supabase wor
 npm run lint && npm run typecheck && npm test && npm run build
 npm run db:start      # once per session (Docker)
 npm run db:reset      # LOCAL only: rebuild from migrations + seed
-npm run db:lint && npm run db:test && npx supabase db advisors
+npm run db:lint && npm run db:test && npx supabase db advisors --local
 npm run db:types      # after any migration
 npm run test:e2e      # Playwright (needs the local stack running + seeded)
 ```

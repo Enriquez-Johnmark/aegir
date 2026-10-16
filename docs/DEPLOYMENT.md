@@ -1,6 +1,6 @@
 # Deployment
 
-> **Status: deployed (2026-10-15).** https://aegir-eight.vercel.app (Vercel production domain, region `sin1`) on Supabase project "Aegir" (ref `lerdmictefgrcmbovlft`, `ap-southeast-1`, Postgres 17.11) with all 8 migrations and the demo seed. Per-deployment and team URLs stay behind Vercel Authentication (Standard Protection); the production domain is public.
+> **Status: deployed (2026-10-15).** https://aegir-eight.vercel.app (Vercel production domain, region `sin1`) on Supabase project "Aegir" (ref `lerdmictefgrcmbovlft`, `ap-southeast-1`, Postgres 17.11) with the first 8 migrations and the demo seed. **Pending (owner, 2026-10-16):** push migration 9, `20261016000517_harden_after_independent_review` (D-043); the app code deployed alongside it doesn't depend on it, so the order doesn't matter, but the database fixes only apply once it's pushed. Per-deployment and team URLs stay behind Vercel Authentication (Standard Protection); the production domain is public.
 
 ### Deployment log
 
@@ -16,13 +16,15 @@
 | 2026-10-15 | Smoke test (Playwright against production; read-only and permission checks, no data created) | ✅ 31/31: `/` and `/login` 200; `/dashboard` signed out → 307 to `/login`; all four demo roles sign in (2.2–3.1 s to dashboard content); figures match the seed (4 of 6 vessels active, 3 inspections due / 2 overdue, 5 open work orders / 2 overdue / 1 blocked, 0 follow-ups, 2 pending handovers); no Meridian data; another organization's inspection, vessel and work order are not found; viewer sees no write controls and `/vessels/new`, `/inspections/new` refuse; admin and Meridian logins refused with the demo password; no console errors (desktop + Pixel 7) |
 | 2026-10-15 | Security headers deploy (`1944fd8`, D-039) | ✅ CSP (with `upgrade-insecure-requests`, no `unsafe-eval`), `X-Frame-Options`, `nosniff`, `Referrer-Policy`, `Permissions-Policy`, COOP and Vercel's HSTS on `/` and `/login`; smoke test rerun 31/31, no console errors (so no CSP violations) |
 | 2026-10-15 | M4 deploy (`dcbf0f4`, D-040) | ✅ smoke test 31/31, no console errors; `/login` serves its `h1` |
+| 2026-10-15 | Handovers (`8523a48`) and audit log (`9c14a46`) deploys | ✅ smoke test 40/40 and 45/45 (read-only handover and audit checks added; phone menu closes after navigating); no console errors |
+| 2026-10-16 | Migration 9 (`20261016000517_harden_after_independent_review`, D-043) | ⬜ owner: `migration list`, `db push --dry-run`, then `db push` with explicit go-ahead; then `db advisors --linked` |
 
 ## Environments
 
 | Environment | Database | App | Notes |
 |---|---|---|---|
 | Local | `npx supabase start` (Docker) | `npm run dev` | Seeded synthetic data; `db reset` allowed **only here** |
-| Production (demo) | Supabase Cloud project (⬜) | Vercel (⬜) | Migrations pushed from the repo; never edited in the dashboard |
+| Production (demo) | Supabase project "Aegir" (`ap-southeast-1`) ✅ | Vercel, https://aegir-eight.vercel.app ✅ | Migrations pushed from the repo; never edited in the dashboard |
 
 ## Prerequisites (provided by the owner, never pasted in chat)
 
@@ -39,7 +41,7 @@
 
 No secret key is needed by the deployed app (D-002).
 
-## First deployment (planned procedure)
+## First deployment (procedure; completed 2026-10-15)
 
 1. `npx supabase link --project-ref <ref>`, then **confirm the target** (`npx supabase projects list`, which marks the linked one).
 2. `npx supabase migration list` to compare local and remote history; investigate any drift before continuing.
@@ -70,4 +72,14 @@ Merge to `main` → Vercel builds. Apply any new migration **before** the app co
 
 - App: roll back in Vercel to the previous deployment (instant).
 - Schema: **forward-fix** with a new migration. Do not edit applied migrations. Destructive changes need explicit approval and a backup first (Supabase daily backups, or a `pg_dump` before risky changes).
-- Demo data: re-run the demo-seed script against the demo organization.
+- Demo data: `scripts/demo-reset.mjs` restores the demo to its seeded state (D-043). It deletes the two demo organizations' data and the seed's logins, then runs the demo seed unchanged, in **one transaction** (any failure leaves nothing changed). It refuses without `-v confirm=reset-demo` and on a database that holds any other organization. **Destructive:** every visitor change is lost, so it needs the owner's explicit approval each time, and a `pg_dump` first if anything should be kept. The owner runs it in their own terminal:
+
+   ```bash
+   read -s DEMO_PASSWORD && export DEMO_PASSWORD   # the published demo password, to keep it unchanged
+   node scripts/demo-reset.mjs | psql "<session-pooler connection string>" \
+     -v ON_ERROR_STOP=1 --single-transaction -v confirm=reset-demo \
+     -v demo_password="$DEMO_PASSWORD" -v private_password="$(openssl rand -base64 24)"
+   unset DEMO_PASSWORD
+   ```
+
+   Verified locally on 2026-10-16: after a visitor edit, two consecutive resets each restored exactly the seeded counts (2 organizations, 8 users, 8 vessels, 7 inspections, 7 work orders, 4 handovers, 68 audit events); a run without `confirm` and a run with a third organization present were both refused before any delete. Then rerun the smoke test.

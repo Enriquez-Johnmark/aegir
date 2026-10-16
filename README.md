@@ -6,11 +6,11 @@
 
 **Live demo: [aegir-eight.vercel.app](https://aegir-eight.vercel.app)** · sign in with a [demo account](#demo-access).
 
-**Status:** MVP complete and deployed (Vercel + Supabase Cloud): dashboard, vessels, inspections, work orders, handovers and the audit log are live. An independent review is next. See the [roadmap](docs/ROADMAP.md).
+**Status:** MVP complete and deployed (Vercel + Supabase Cloud): dashboard, vessels, inspections, work orders, handovers and the audit log are live. An independent review (security, database, tests, docs) found no critical issues; its fixes are in [D-043](docs/DECISIONS.md#d-043). See the [roadmap](docs/ROADMAP.md).
 
 ## Screenshots
 
-Taken from the live demo with the published accounts (synthetic data). Refresh with `scripts/capture-screenshots.mjs`.
+Taken from the live demo with the published accounts (synthetic data). Refresh with `DEMO_PASSWORD=… node scripts/capture-screenshots.mjs` (needs `npx playwright install chromium` once).
 
 ![Dashboard: live fleet figures, the work queue (most urgent first) and inspections due](docs/screenshots/dashboard.png)
 
@@ -89,8 +89,9 @@ Applied migrations are never edited; changes go forward in new migrations. See [
 
 ```bash
 npm run lint && npm run typecheck && npm test && npm run build   # app checks
-npm run db:test                                                  # 96 pgTAP tests (RLS, rules, audit)
-npm run test:e2e                                                 # Playwright (local stack must be running + seeded)
+npm run db:test                                                  # 135 pgTAP tests (RLS, isolation, rules, audit)
+npx playwright install chromium                                  # once, before the first E2E run
+npm run test:e2e                                                 # Playwright: resets the LOCAL db from the seed first; needs db:start
 ```
 
 Strategy and latest results: [docs/TESTING.md](docs/TESTING.md).
@@ -140,5 +141,7 @@ Everyone shares these accounts and safety records can't be deleted (by design), 
 - The audit log has no date or vessel filter yet, and demo-data entries show as "System (seed data)" because the seed is loaded by the database, not by a person (D-042).
 - Light theme only for now (D-038).
 - At very large text sizes on tablet-width windows the sidebar stays open and pages scroll sideways; phone layouts and normal sizes are unaffected.
-- Shared demo accounts: data entered by visitors stays (no deletes by design).
-- `npm audit` flags a dev-only lint dependency (`braces` via `eslint-config-next`); see [SECURITY.md §9](docs/SECURITY.md#9-known-risks-and-limitations).
+- Shared demo accounts: data entered by visitors stays (no deletes by design) until the owner restores the seed with `scripts/demo-reset.mjs` (destructive; [DEPLOYMENT.md](docs/DEPLOYMENT.md#recovery)).
+- Sign-in rate limiting is Supabase's per-IP limit, which sees Vercel's servers rather than each visitor, so it is shared by everyone using the demo. No app-level limit yet.
+- No CI pipeline: checks are run locally and recorded in [TESTING.md](docs/TESTING.md).
+- `npm audit` flags `braces` (GHSA-vfj7-8cjw-p6xm), reached only through dev tooling (`eslint-config-next`, the `shadcn` CLI); `npm audit --omit=dev` is clean. See [SECURITY.md §9](docs/SECURITY.md#9-known-risks-and-limitations).

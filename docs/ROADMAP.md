@@ -1,6 +1,6 @@
 # Roadmap
 
-**Target:** presentable MVP around **2026-10-15**. As of **2026-10-12** that leaves about three working days. That is very tight for the full brief, so the plan protects **P0 vertical slices first** and cuts P1/P2 before quality, security or honesty. A later, honest date beats a rushed one.
+**Target:** presentable MVP around **2026-10-15**. On 2026-10-12 that left about three working days, so the plan protected **P0 vertical slices first** and would have cut P1/P2 before quality, security or honesty. **Outcome:** MVP delivered and deployed on 2026-10-15 with every P0 and P1 slice; the independent review and its fixes followed on 2026-10-16 (D-043).
 
 Legend: ✅ done · 🟡 in progress · ⬜ not started · ✂️ cut candidate if time runs out
 
@@ -29,7 +29,7 @@ Acceptance: `db reset` builds the schema from migrations alone; pgTAP proves cro
 - [x] D-011 demo access decided (option a)
 - Found and fixed along the way: email provider accidentally disabled (D-015 correction), global sign-out (D-020), legacy default privileges (D-022)
 
-## M3: Vertical slices (P0 → P1) 🟡 ← in progress
+## M3: Vertical slices (P0 → P1) ✅ (2026-10-15)
 Each slice: schema already in place → DAL → actions → UI (loading, empty, error, unauthorized states) → Impeccable `critique` + `audit`, fixes, `polish` (D-024) → tests → docs and ledger.
 0. [x] D-025 accepted; design system captured with `impeccable document` → `DESIGN.md` "The Bridge Console" (D-026); engine + hooks enabled (D-024)
 1. [x] Vessels: watch-list (attention first), search, filters, detail, create, edit; Impeccable critique 25/40 → all P1/P2 fixed (D-027 – D-030)
@@ -40,10 +40,9 @@ Each slice: schema already in place → DAL → actions → UI (loading, empty, 
 5. [x] Handovers: inbox list (yours first), detail with recipient-only acknowledgement, send from a work order or vessel, dashboard rows link through (D-041)
 6. [x] Audit history: organization-wide Audit log (`/audit`, by record type and person, keyset paging) and a History card on every record; critique 28/40, audit 16/20 → P1/P2/quick P3 fixes (D-042). Deferred: date and vessel filters, sticky day headings, collapsed runs
 
-## M4: Verification 🟡
+## M4: Verification ✅ (2026-10-15)
 - [x] Dashboard slice closed out: Impeccable doctor (product pointer, D-025), critique 28/40 and audit 15/20 → accessibility and touch fixes (D-038); "For you" band and quieter signals deferred
-- [ ] Dark theme (light-only MVP, D-038)
-- [x] Playwright feature flows (auth, dashboard, vessels, inspections, work orders, security headers) + axe WCAG 2.2 AA on every route, desktop and Pixel 7 (D-040)
+- [x] Playwright feature flows (auth, dashboard, vessels, inspections, work orders, handovers, audit log, filters, security headers) + axe WCAG 2.2 AA on every route, desktop and Pixel 7 (D-040)
 - [x] Responsive check: lists, filters and dashboard at 320px–1360px and 200% text (D-038, D-040)
 - [x] `db advisors` clean locally and on the hosted project; migration history local = remote (8/8)
 - [x] E2E isolation: every run starts from the seed (`globalSetup`, `db reset --local`)
@@ -51,11 +50,19 @@ Each slice: schema already in place → DAL → actions → UI (loading, empty, 
 ## M5: Deployment ✅ (2026-10-15)
 - [x] Supabase Cloud + Vercel per [DEPLOYMENT.md](DEPLOYMENT.md): https://aegir-eight.vercel.app; schema 8/8, advisors clean, demo seed; smoke test 31/31 on the live URL
 
-## M6: Portfolio polish and independent review 🟡
+## M6: Portfolio polish and independent review ✅ (2026-10-16)
 - [x] Security headers and CSP (D-039)
 - [x] Real screenshots from the live demo (7: dashboard, vessels, inspection, work order, handovers, audit log, phone), README live URL, limitations; `scripts/capture-screenshots.mjs` refreshes them
-- [ ] Independent review (security, migrations, tests, docs); fix high-impact findings
+- [x] Independent review (four read-only reviewers: security, database and migrations, tests, docs): no Critical issues; every confirmed finding fixed (D-043): user deletion, checklist insert rights, two races, handover role re-check, audited deletes, queue cut after sorting, httpOnly cookies, redirect normalisation, read-isolation pgTAP, E2E date and locator fixes, docs; demo reset script
+
+## Post-MVP (not scheduled)
+- [ ] CI pipeline (lint, typecheck, unit, pgTAP, build on push; E2E stays local or nightly)
+- [ ] Sign-in rate limit per visitor (Vercel Firewall rule on the login POST, or a CAPTCHA); SECURITY.md §9
+- [ ] Integration suite: DAL and Server Actions against the local stack, including TS ↔ DB transition parity (D-006)
+- [ ] Dark theme (light-only MVP, D-038)
+- [ ] Audit log: date and vessel filters, an index for the person filter, sticky day headings (D-042)
+- [ ] Invariants enforced only in Zod/UI moved into the database (e.g. date ranges); `private` default privileges revoke EXECUTE
+- [ ] App shell at 768px with 200% text (sidebar forces sideways scroll)
 
 ## Blockers / prerequisites
-- Supabase Cloud project + scoped access token (owner), needed only at M5.
-- Vercel account linked to GitHub (owner), needed only at M5.
+- None open. (Supabase Cloud project, scoped token and Vercel account were provided at M5.)

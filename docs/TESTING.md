@@ -6,9 +6,9 @@ A green build is not evidence of correctness. Tests target **business rules** an
 
 | Layer | Tool | Location | What it proves |
 |---|---|---|---|
-| Unit | Vitest 5 | `src/**/*.test.ts` (colocated) | Pure rules: transitions, Zod schemas, DTO mapping, env validation |
+| Unit | Vitest 5 | `src/**/*.test.ts` (colocated), `scripts/*.test.mjs` | Pure rules: transitions, Zod schemas, entry wording, URL params, redirects, env validation, demo seed/reset SQL |
 | Database | pgTAP via `supabase test db` | `supabase/tests/*.test.sql` | Constraints, triggers, **RLS per role and organization**, audit immutability |
-| Integration | Vitest against the local Supabase stack | `tests/integration/` (⬜, M3) | DAL and Server Action behaviour with real sessions; TS↔DB transition parity |
+| Integration | Vitest against the local Supabase stack | not built (post-MVP, ROADMAP) | Would cover DAL and Server Action behaviour with real sessions and TS↔DB transition parity (D-006); today each side is tested separately |
 | End-to-end | Playwright 1.64 (desktop + Pixel 7 projects) | `e2e/` ✅ | Critical user flows in a real browser against a production build |
 
 ## Commands
@@ -21,9 +21,10 @@ npm run db:start      # start local Supabase (Docker required)
 npm run db:reset      # rebuild LOCAL db from migrations + seed
 npm run db:lint       # plpgsql lint (supabase db lint)
 npm run db:test       # pgTAP tests (supabase test db)
-npx supabase db advisors   # security/performance advisors (CLI ≥ 2.81.3)
+npx supabase db advisors --local   # security/performance advisors (CLI ≥ 2.81.3)
 npm run build         # production build
-npm run test:e2e      # Playwright: builds, starts on :3100, runs e2e/ (needs db:start + db:reset)
+npx playwright install chromium   # once, before the first E2E run
+npm run test:e2e      # Playwright: resets the LOCAL db from the seed, builds, starts on :3100, runs e2e/ (needs db:start; E2E_SKIP_DB_RESET=1 skips the reset)
 ```
 
 E2E runs serially locally (1 worker, 10 s expect timeout) because the Supabase stack plus parallel browsers saturates a laptop (D-021).
@@ -58,6 +59,19 @@ select * from finish();
 rollback;
 ```
 
+## Current status (2026-10-16)
+
+| Check | Result |
+|---|---|
+| Unit (`npm test`) | ✅ 116/116 in 13 files |
+| Database (`npm run db:test`) | ✅ 135/135 in 12 files |
+| End-to-end (`npm run test:e2e`) | ✅ 76/76 (38 tests × desktop and Pixel 7), twice in a row on fresh seeds |
+| Accessibility (axe, WCAG 2.2 AA, in E2E) | ✅ 0 violations on every route |
+| Lint, typecheck, build | ✅ |
+| `db lint --local`, `db advisors --local` | ✅ no errors, no issues |
+| `npm audit --omit=dev` | ✅ 0 vulnerabilities (dev tooling: see SECURITY.md §9) |
+| CI | none: everything above runs locally (Known gaps) |
+
 ## Results log
 
 | Date | Command | Result |
@@ -79,6 +93,7 @@ rollback;
 | 2026-10-12 | `npm run test:e2e` (after M3 vessels) | ✅ 20/20 (auth 5 + vessels 5, × desktop + mobile), three consecutive green runs after fixes |
 | 2026-10-12 | Impeccable `critique` (vessels, dual-agent) | 25/40 Acceptable before fixes; all 3 P1 and 4 P2 issues fixed (D-027 – D-029); snapshot `.impeccable/critique/2026-10-12T09-13-47Z__src-app-app-vessels.md` |
 | 2026-10-12 | Confirmation round after fixes | ✅ `impeccable detect` `[]`; 44px controls under `(pointer: coarse)`, 32px on desktop; focus moves to the first invalid field; screenshots desktop + mobile |
+| 2026-10-12 | Token contrast (OKLCH→sRGB WCAG script) | ✅ all pairs ≥ 4.5:1 text, ring ≥ 3:1; shadcn default destructive-on-tint was 3.99:1 (fixed, D-026) |
 | 2026-10-15 | `npm run db:test` (after M3 inspections) | ✅ 78/78 (7 files; new `07_inspection_results`, red against the old policy first) |
 | 2026-10-15 | `npm run db:reset` | ✅ 7 migrations + seed apply on a fresh DB |
 | 2026-10-15 | `npm test` (after M3 inspections) | ✅ 49/49 (+16 inspections: conduct rights, overdue, checklist summary, completion, schedule/result/list schemas) |
@@ -95,18 +110,18 @@ rollback;
 | 2026-10-15 | `npm run test:e2e` (after M3 dashboard) | ✅ 42/42 (auth 5 + dashboard 3 + inspections 4 + vessels 5 + work orders 4, × desktop + mobile), two consecutive green runs (fresh seed, then on the first run's data) |
 | 2026-10-15 | `npm run db:test` / `db:lint` / `supabase db advisors --local` | ✅ 78/78 / no errors / no issues (no migration in this slice) |
 | 2026-10-15 | Design inspection round (desktop 1360×900 + Pixel 7, manager and inspector) | ✅ no console errors, no overflow; 4 fixes after the first round (card bottom band, vessel reason text, link labels, copy length) |
-| 2026-10-15 | Impeccable `critique` (inspections + work orders, dual-agent, one combined run) | 29/40 Good; 0 P0, 2 P1 (inspection completion unconfirmed and silent; recorded failures stay as open forms), 3 P2; detector `[]` and overlay only `overused-font` (false positive). **Not fixed yet**, awaiting the owner's priorities. Snapshots `.impeccable/critique/2026-10-15T04-09-20Z__src-app-app-{inspections,work-orders}.md` |
+| 2026-10-15 | Impeccable `critique` (inspections + work orders, dual-agent, one combined run) | 29/40 Good; 0 P0, 2 P1 (inspection completion unconfirmed and silent; recorded failures stay as open forms), 3 P2; detector `[]` and overlay only `overused-font` (false positive). **Not fixed yet**, awaiting the owner's priorities (→ fixed in D-036). Snapshots `.impeccable/critique/2026-10-15T04-09-20Z__src-app-app-{inspections,work-orders}.md` |
 | 2026-10-15 | `npm run test:e2e` (after the critique fixes) | ⚠️ 40/42 first run: both projects failed on a strict-mode locator (the completion hint is intentionally shown twice); test corrected → inspections 8/8 → full suite ✅ 42/42 twice in a row |
 | 2026-10-15 | Confirmation round for the critique fixes (desktop + Pixel 7) | ✅ blocked icon amber (computed colour), `h2` card titles, select items 44px coarse / 28px fine, severity cards 86px, no overflow, no console errors |
-| 2026-10-15 | Impeccable re-critique (inspections + work orders, fresh dual-agent run after the D-036 fixes) | 27/40 Acceptable (29 → 27: different independent reviewer; all five earlier issues verified resolved). New **P1, pre-existing since the inspections slice**: tapping Pass/N/A on a recorded failure saves at once and erases its finding and severity, even with a linked work order (verified in code: `recordResultSchema` nulls them). 3 P2 + 1 P3. Detector `[]`; overlay only `overused-font` (false positive). **Not fixed yet**, awaiting the owner. Snapshots `.impeccable/critique/2026-10-15T04-55-22Z__src-app-app-{inspections,work-orders}.md` |
+| 2026-10-15 | Impeccable re-critique (inspections + work orders, fresh dual-agent run after the D-036 fixes) | 27/40 Acceptable (29 → 27: different independent reviewer; all five earlier issues verified resolved). New **P1, pre-existing since the inspections slice**: tapping Pass/N/A on a recorded failure saves at once and erases its finding and severity, even with a linked work order (verified in code: `recordResultSchema` nulls them). 3 P2 + 1 P3. Detector `[]`; overlay only `overused-font` (false positive). **Not fixed yet**, awaiting the owner (→ fixed in D-037). Snapshots `.impeccable/critique/2026-10-15T04-55-22Z__src-app-app-{inspections,work-orders}.md` |
 | 2026-10-15 | `npm run db:test` (after `protect_linked_failed_checks`) | ✅ 85/85 (8 files; new `08_linked_failed_checks` 7/7, red first: 5/7 failed against the old schema). A later run failed 03 #9 and 08 #4 because manual/agent clicking had changed the seeded fixtures; `db:reset` → 85/85 again |
 | 2026-10-15 | `npm test` (after D-037) | ✅ 76/76 (tiered urgency: tests written first and seen failing; dashboard queue expectation updated to the new order) |
 | 2026-10-15 | `npm run test:e2e` (after D-037) | ⚠️ 41/42 once: the desktop dashboard follow-up test did not find the "Needs follow-up" row within 10 s (that run was ~4× slower; the failure snapshot shows the row present). Not reproduced in 18/18 repeats of the spec and 4 later full runs (42/42 ×2, then 42/42 ×2 after the notice fix). Root cause **not identified**; recorded as intermittent |
 | 2026-10-15 | Confirmation round for D-037 (desktop + Pixel 7) | Found a real bug: after raising work from a check, the inspection's "Work order raised" notice stayed hidden (stale `SavedNotice` state on a reused page). Reproduced in E2E (red), fixed, green; then all checks pass: Complete disabled while a form is open, focus on "Keep the failure", Pass disabled on linked failures, no other primary beside the block form, no overflow, no console errors |
 | 2026-10-15 | `db:lint` / `db advisors --local` / `impeccable detect` (all changed UI) | ✅ no errors / no issues / `[]` |
 | 2026-10-15 | Impeccable `doctor` | 1 mention: `.impeccable/design.json` sidecar older than DESIGN.md (refresh via `document`, not run). Product context fixed with a root `PRODUCT.md` pointer (D-025) |
-| 2026-10-15 | Impeccable `critique` (dashboard, dual-agent) | 28/40 Good; 3 P1 (200% text layout, page ignores who is looking, 20px stacked work-order link), 6 P2. Detector `[]`; overlay only `overused-font`. **Not fixed yet.** Snapshot under `.impeccable/critique/` (slug `src-app-app-dashboard`) |
-| 2026-10-15 | Impeccable `audit` (dashboard) | 15/20 Good (a11y 3, performance 4, theming 3, responsive 2, integrity 3); P1: row titles and figure badges break at 200% text (WCAG 1.4.4), 20px work-order link (2.5.8); P2: silent Failed-checks truncation, shell landmarks/skip link, dark theme unreachable. Light-mode contrast all ≥ 4.7:1; LCP 360–430 ms, CLS 0, 6 DB requests per render. **Not fixed yet** |
+| 2026-10-15 | Impeccable `critique` (dashboard, dual-agent) | 28/40 Good; 3 P1 (200% text layout, page ignores who is looking, 20px stacked work-order link), 6 P2. Detector `[]`; overlay only `overused-font`. **Not fixed yet** (→ fixed in D-038). Snapshot under `.impeccable/critique/` (slug `src-app-app-dashboard`) |
+| 2026-10-15 | Impeccable `audit` (dashboard) | 15/20 Good (a11y 3, performance 4, theming 3, responsive 2, integrity 3); P1: row titles and figure badges break at 200% text (WCAG 1.4.4), 20px work-order link (2.5.8); P2: silent Failed-checks truncation, shell landmarks/skip link, dark theme unreachable. Light-mode contrast all ≥ 4.7:1; LCP 360–430 ms, CLS 0, 6 DB requests per render. **Not fixed yet** (→ fixed in D-038) |
 | 2026-10-15 | Dashboard fixes (D-038): unit + targeted E2E | ✅ unit 77/77 (truncation total, red first); dashboard + auth specs 18/18 incl. new skip-link / `aria-current` test and figure-jump focus |
 | 2026-10-15 | Confirmation round (desktop 1360, Pixel 7, 320px; normal and 200% text) | ✅ narrowest row title 192–288px at 200% (was 0–27px); no clipped badges; figure grid 5→2→1 columns; no Pixel 7 control under 44px (the 20px work-order link and 18px "assigned to you" are gone); no overflow; no console errors |
 | 2026-10-15 | `npm run test:e2e` (after D-038) | ⚠️ 43/44 then ✅ 44/44. The failure was the mobile "a viewer follows inspections" test (not touched by this change); 10/10 in repeats; error output not captured. **Second unexplained intermittent** (see Known gaps) |
@@ -118,7 +133,7 @@ rollback;
 | 2026-10-15 | Production after the header deploy (`1944fd8`) | ✅ headers live on `/` and `/login`; smoke test 31/31, no console errors |
 | 2026-10-15 | axe (`e2e/accessibility.spec.ts`, WCAG 2.2 A/AA) | ✅ 0 violations on 2 signed-out + 13 signed-in routes + the open Fail panel, desktop and Pixel 7, after giving the login and no-access pages an `h1`. Sanity: 22 rules pass on `/login`; injected `image-alt` / `button-name` failures are caught |
 | 2026-10-15 | Lists and filters at 200% text (desktop 1360, Pixel 7) | Before: desktop tables clipped whole columns (Priority, Status, half of Due) behind `overflow-hidden`; work-order titles truncated even at normal size; phone filter values clipped. After (container queries, wrapping titles and values): no overflow, no clipping (only intentional `sr-only`), titles ≥ 348px; filter triggers 32px desktop / 44px Pixel 7 (a first attempt regressed them to 38px; caught by measurement and fixed) |
-| 2026-10-15 | `npm run test:e2e` with `globalSetup` reset (3 consecutive runs) | ⚠️ 54/54, 53/54, 54/54: the mobile viewer inspection test failed once, with output kept: a text locator matched a hidden duplicate (D-030). Fixed by applying the `visible` filter to every user-facing text assertion (isolation checks stay unfiltered) → ✅ 54/54 ×3 consecutive |
+| 2026-10-15 | `npm run test:e2e` with `globalSetup` reset (3 consecutive runs) | ⚠️ 54/54, 53/54, 54/54: the mobile viewer inspection test failed once, with output kept: a text locator matched a hidden duplicate (D-040, refining D-030). Fixed by applying the `visible` filter to every user-facing text assertion (isolation checks stay unfiltered) → ✅ 54/54 ×3 consecutive |
 | 2026-10-15 | `npm test` / lint / typecheck / `impeccable detect` / pgTAP (fresh seed) | ✅ 83/83 / 0 problems / ✅ / `[]` / 85/85 |
 | 2026-10-15 | Handovers slice: unit + pgTAP | ✅ unit 92/92 (+9 handovers: acknowledge rights, inbox order, schema rules and limits, list params; +1 `formatDateTime`); pgTAP 90/90 (+`09_handover_access` 5: viewer can't send, other organization can't read/write/link, sender can't acknowledge; these describe existing rules, so green from the start) |
 | 2026-10-15 | Impeccable critique (handovers, dual-agent) + audit | 29/40 Good; audit 16/20 Good. Fixed before commit: tasks-first record, honest acknowledge copy, the "All" view bug (also in work orders and inspections since their slices; new `e2e/filters.spec.ts` proven to fail against the old code), container-query fact grids on all four record pages, form selects wrap and follow the container, roles in the picker, date + hour in the inbox and dashboard, raw URL values never shown in filters, `h1` on all four not-found pages |
@@ -127,16 +142,21 @@ rollback;
 | 2026-10-15 | Audit slice: unit + pgTAP | ✅ unit 109/109 (+19 audit: entry wording per record type, lead field first, creation details, long text named, unknown columns kept, bookkeeping ignored, malformed payloads and dates degrade, people ids, snapshots, day grouping, URL params; −2 work-order history tests moved into them); pgTAP 96/96 (+`10_audit_log_access` 6: one transaction shares a timestamp (the paging tie-break), a viewer reads the whole organization's log and every record type, resolves every actor's name, can't delete; another organization can't resolve our actors. These describe existing rules, so green from the start) |
 | 2026-10-15 | Impeccable critique (audit, dual-agent) + audit | 28/40 Good; audit 16/20 Good; detector `[]`; axe 0 violations on 8 screens. Fixed before commit: failed checks lead with their result and seeded results show on creation, entries name their inspection and vessel, paging bounded for an index seek, unknown person filter named, pager survives an unreadable page, "by" before actors, page summary names filters, whole-row links, seed attribution note, UUID/malformed-payload hardening. Found on the way (pre-existing, also on production): the phone menu sheet stayed open over the page after following a link; fixed and covered by `e2e/audit.spec.ts` |
 | 2026-10-15 | `npm run test:e2e` after the audit slice (fresh seed each run) | ✅ 76/76 twice in a row (+ audit 4 flows, axe on 2 new routes; × desktop + mobile). Before the fixes the first full run was 72/76: two existing locators (`vessels`, `work-orders`) matched the new History card's text; scoped to the badge and to the "to" read after the arrow |
-| 2026-10-12 | Token contrast (OKLCH→sRGB WCAG script) | ✅ all pairs ≥ 4.5:1 text, ring ≥ 3:1; shadcn default destructive-on-tint was 3.99:1 (fixed, D-026) |
+| 2026-10-16 | Independent review (four read-only reviewers: security, database, tests, docs) | No Critical issues. Confirmed and fixed (D-043): see SECURITY.md §8. Tests found: the audit E2E hard-coded a date the seed computes from today (failing from 2026-10-16); no pgTAP read-isolation test for vessels, inspections, checks or work orders; two isolation checks were wrongly `visible`-filtered and five text locators weren't; the dashboard figure helper didn't retry |
+| 2026-10-16 | `npm run db:test` after `20261016000517_harden_after_independent_review` | ✅ 135/135 (+ `11_review_hardening` 11, six red against the previous schema; + `12_read_isolation` 28). Races reproduced with two sessions before, waiting on the new lock after |
+| 2026-10-16 | `npm test` | ✅ 116/116 (+ deleted audit entries, 3 redirect normalisation cases (red first), 3 demo-reset SQL tests) |
+| 2026-10-16 | `scripts/demo-reset.mjs` against the local database | ✅ visitor edit removed; two consecutive resets each restored the seeded counts; refused without `confirm` and with a third organization present |
+| 2026-10-16 | `npm run test:e2e` after the review fixes (fresh seed each run) | ✅ 76/76 twice in a row (audit date read from the page, session cookies asserted `httpOnly`, isolation unfiltered, figures read from accessible names) |
 
 ## Known gaps
 
-- No Vitest integration tests against the local stack yet (planned with the M3 DAL).
+- No integration tests against the local stack (post-MVP): Server Actions' role pre-checks and error mapping are covered only through E2E and the database rules they rely on (pgTAP).
+- **No CI.** Every check in this file was run locally and recorded by hand; nothing runs on push (post-MVP, ROADMAP).
 - axe covers WCAG 2.2 A/AA rules only; it cannot judge everything (e.g. whether a heading names its section well). The dashboard and inspection/work-order critiques cover the rest.
 - pgTAP uses the seed as its fixture (D-018): run `npm run db:reset` before `npm run db:test` after any manual, agent or screenshot clicking in the local app, or seeded-row tests fail on drifted data.
 - Intermittent E2E failures: the mobile inspections viewer failure was explained and fixed (hidden duplicate matched by an unfiltered text locator, D-040). The earlier dashboard one (row not found within 10 s, ~4× slower run) hasn't recurred in 6 fresh-seed runs; it stays listed until it has a clean history. When a test fails, keep the log and `test-results/` (traces are retained on failure) before rerunning.
 - E2E covers authentication, dashboard, vessels, inspections, work orders, handovers and the audit log. Dashboard tests compare figures before and after their own actions instead of asserting global totals (D-030).
 - Tests that change state create their own records (seeded work orders and inspections are never moved), and since M4 every run also starts from a fresh seed (`e2e/global-setup.ts` runs `supabase db reset --local`; `E2E_SKIP_DB_RESET=1` skips it for quick reruns of one spec).
 - Inputs with a `list` (datalist) are exposed as `combobox`, not `textbox`; locate them by that role.
-- E2E locator policy under Cache Components: see D-030 (role locators, `visible` filter, scoped to `main`).
+- E2E locator policy under Cache Components: see D-030 and D-040 (role locators, `visible` filter for text, scoped to `main`; isolation checks stay unfiltered, since a hidden leak is still a leak).
 - E2E runs leave their records in the local database until the next run's reset; pgTAP needs a fresh seed too (`npm run db:reset` before `npm run db:test`).

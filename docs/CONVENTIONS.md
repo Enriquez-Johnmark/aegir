@@ -1,6 +1,6 @@
 # Engineering Conventions
 
-The working rules for Aegir code. They combine the official Next.js and Supabase documentation (checked 2026-10-12 against Next.js 16.4 and the Supabase docs/changelog) with the four project skills in `.claude/skills/`. When a rule here conflicts with a skill, this file wins, and the reason is in [DECISIONS.md](DECISIONS.md).
+The working rules for Aegir code. They combine the official Next.js and Supabase documentation (checked 2026-10-12 against Next.js 16.4 and the Supabase docs/changelog) with the project skills in `.claude/skills/` (AGENT-SKILLS.md). When a rule here conflicts with a skill, this file wins, and the reason is in [DECISIONS.md](DECISIONS.md).
 
 Folder layout and boundaries: see [ARCHITECTURE.md](ARCHITECTURE.md#3-project-folder-layout).
 
@@ -21,8 +21,8 @@ Folder layout and boundaries: see [ARCHITECTURE.md](ARCHITECTURE.md#3-project-fo
 ### Routing and files
 - `src/app` is for routing files only: `page`, `layout`, `loading`, `error`, `not-found`, `route`. Business logic goes in `src/features/*`.
 - Use **route groups** `(auth)` and `(app)` for different layouts, and **dynamic segments** named after the entity (`[vesselId]`).
-- Each data-heavy route segment gets a `loading.tsx` (skeleton) and an `error.tsx` (recoverable error UI). Add `not-found.tsx` where `notFound()` is used.
-- Next 16 renamed middleware to **`proxy.ts`** (`export function proxy`). We use it only to refresh Supabase cookies.
+- Pages stream their data sections behind `<Suspense>` with `Skeleton` fallbacks (no `loading.tsx` files; ARCHITECTURE §7). The `(app)` group has one `error.tsx` (recoverable error UI). Add `not-found.tsx` where `notFound()` is used.
+- Next 16 renamed middleware to **`proxy.ts`** (`export function proxy`). We use it to refresh Supabase cookies and to redirect optimistically (signed out → `/login`); it is never the authorization boundary (SECURITY.md §1).
 
 ### Server and Client Components
 - **Server Components by default.** Add `"use client"` only for state, effects, event handlers or browser APIs, and push it to the smallest leaf component.
@@ -35,7 +35,7 @@ Folder layout and boundaries: see [ARCHITECTURE.md](ARCHITECTURE.md#3-project-fo
 - New-project recommendation from the Next.js data-security guide: a **Data Access Layer**. In Aegir that is `features/*/server/queries.ts` and `mutations.ts`.
 - DAL functions verify the user themselves (they don't trust the caller) and return **DTOs** containing only the fields the UI needs.
 - Start independent fetches together with `Promise.all` (`async-parallel`). Avoid request waterfalls.
-- Wrap per-request helpers such as `getCurrentUser()` in `React.cache()` so they run once per request (`server-cache-react`).
+- Wrap per-request helpers in `React.cache()` so they run once per request (`server-cache-react`), as `getSessionState()` is (`requireUser()` builds on it, `src/lib/auth/session.ts`).
 - Stream slow sections with `<Suspense>` (`async-suspense-boundaries`).
 
 ### Cache Components (enabled)
@@ -49,8 +49,8 @@ Server Actions are **public POST endpoints**: a page-level auth check does not p
 2. Parse input with Zod (`safeParse`) and return field errors, without throwing for validation failures.
 3. Treat `organization_id`, `role`, `created_by` and similar fields from the client as **untrusted**. Derive them server-side or let the database enforce them.
 4. Delegate to `server/mutations.ts`. Keep the action thin.
-5. Return a small result (`{ ok: true }` or `{ ok: false, fieldErrors }`), never raw rows.
-6. Call `revalidatePath()` or `updateTag()` for affected views. When a record feeds other screens (inspections feed the vessel watch list and the dashboard), revalidate the app-shell layout (`revalidatePath("/", "layout")`, D-033).
+5. Return a small typed state (`{ values?, fieldErrors?, formError? }` for forms, `{ error? }` for buttons) or `redirect()`, never raw rows.
+6. Call `revalidatePath()` for affected views. When a record feeds other screens (inspections feed the vessel watch list and the dashboard), revalidate the app-shell layout (`revalidatePath("/", "layout")`, D-033).
 7. Never run mutations as side effects of rendering (GET); always use an action (POST).
 
 ### Environment variables
@@ -116,7 +116,7 @@ Server Actions are **public POST endpoints**: a page-level auth check does not p
 - **UPDATE policies need both `using` and `with check`**, and UPDATE also needs a SELECT policy, or updates silently affect 0 rows.
 - Policy naming: `"<table>: <operation> <who>"`, e.g. `"vessels: update managers"`.
 - No DELETE policy means users cannot delete rows. That is intentional for safety records.
-- Every policy has pgTAP tests covering the allowed role, a disallowed role in the same organization, a user from another organization, and anon. See [TESTING.md](TESTING.md).
+- Every policy has pgTAP tests covering the allowed role, a disallowed role in the same organization and a user from another organization; anon is covered globally by the privilege checks in `01_tenancy` (no table privileges, no `private` execute). See [TESTING.md](TESTING.md).
 
 ## 6. UI (shadcn/ui, Tailwind v4)
 

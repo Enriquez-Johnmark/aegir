@@ -33,7 +33,7 @@ Aegir is a single **Next.js 16 (App Router)** application backed by **Supabase**
 | Auth & DB | Supabase Auth + Postgres 17, `@supabase/ssr` 0.12, `supabase-js` 2.117 | Publishable key only in the app |
 | DB tooling | Supabase CLI 2.120 pinned as a devDependency | Run via `npx supabase` / npm scripts |
 | Tests | Vitest 5 (unit), pgTAP via `supabase test db` (RLS, constraints, triggers), Playwright 1.64 (E2E) | |
-| Hosting | Vercel + Supabase Cloud (⬜) | |
+| Hosting | Vercel + Supabase Cloud ✅ (2026-10-15, see DEPLOYMENT.md) | |
 
 ## 3. Project folder layout
 
@@ -45,7 +45,7 @@ aegir/
 ├── docs/                        # All project documentation (this folder)
 ├── e2e/                         # ✅ Playwright specs per feature + accessibility (axe) + security headers; global-setup resets the LOCAL db
 ├── public/                      # Static assets served as-is
-├── scripts/                     # ✅ demo-seed.mjs (+ test): hosted demo seed from supabase/seed.sql (D-011)
+├── scripts/                     # ✅ demo-seed.mjs and demo-reset.mjs (+ tests): hosted demo seed and reset from supabase/seed.sql (D-011, D-043); capture-screenshots.mjs (README images)
 ├── supabase/
 │   ├── config.toml              # Local Supabase stack configuration (committed)
 │   ├── migrations/              # ✅ Timestamped, append-only SQL migrations (source of truth)
@@ -68,7 +68,7 @@ aegir/
 │   │       ├── work-orders/{page.tsx, new/, [workOrderId]/, [workOrderId]/edit/}  # ✅ M3 slice 3
 │   │       ├── handovers/{page.tsx, new/, [handoverId]/}  # ✅ M3 slice 5
 │   │       └── audit/page.tsx   # ✅ M3 slice 6: organization-wide audit log (D-042)
-│   ├── features/                # 🟡 One folder per business capability (auth ✅, vessels ✅, inspections ✅, work-orders ✅, dashboard ✅, handovers ✅, audit ✅)
+│   ├── features/                # ✅ One folder per business capability (auth ✅, vessels ✅, inspections ✅, work-orders ✅, dashboard ✅, handovers ✅, audit ✅)
 │   │   └── <feature>/           #    e.g. vessels, inspections, work-orders, handovers, audit, dashboard
 │   │       ├── components/      #    Feature UI (Server Components by default; "use client" only when needed)
 │   │       ├── server/
@@ -80,13 +80,15 @@ aegir/
 │   │       └── *.test.ts        #    Colocated unit tests
 │   ├── components/
 │   │   ├── ui/                  # shadcn/ui generated components (managed by the shadcn CLI)
-│   │   ├── layout/              # ✅ App shell: app-sidebar.tsx, user-menu.tsx
-│   │   └── shared/              # ✅ button-link, forbidden-state, saved-notice, panel (EMPTY_PANEL), url-filters (D-033)
+│   │   ├── layout/              # ✅ App shell: app-sidebar.tsx, user-menu.tsx, page-header.tsx
+│   │   └── shared/              # ✅ button-link, forbidden-state, saved-notice, panel (EMPTY_PANEL), url-filters (D-033), wrapping-select
 │   ├── lib/
 │   │   ├── env.ts               # ✅ Zod-validated public env
 │   │   ├── utils.ts             # ✅ cn() helper (shadcn)
+│   │   ├── format.ts            # ✅ Dates (UTC), date-times, numbers
 │   │   ├── supabase/
-│   │   │   ├── client.ts        # ✅ Browser client (publishable key, RLS)
+│   │   │   ├── client.ts        # ✅ Browser client (currently unused; using it needs a CSP connect-src change, D-039)
+│   │   │   ├── cookie-options.ts # ✅ httpOnly session cookies, Secure on Vercel (D-043)
 │   │   │   ├── server.ts        # ✅ Server client (server-only, per request, RLS)
 │   │   │   └── proxy.ts         # ✅ updateSession() used by src/proxy.ts
 │   │   ├── auth/session.ts      # ✅ getSessionState() (React.cache) / requireUser(), server-only
@@ -99,7 +101,7 @@ aegir/
 ├── .env.example                 # ✅ Placeholder env vars (real values in .env.local, git-ignored)
 ├── AGENTS.md / CLAUDE.md        # Agent instructions (CLAUDE.md imports AGENTS.md)
 ├── DESIGN.md                    # ✅ Design system "The Bridge Console" (tokens in src/app/globals.css)
-├── .impeccable/                 # ✅ Impeccable config (shared) + design.json sidecar; local files git-ignored
+├── .impeccable/                 # ✅ Impeccable config (shared), design.json sidecar and critique/ snapshots (committed); local files git-ignored
 └── components.json              # shadcn/ui configuration
 ```
 
@@ -124,9 +126,9 @@ aegir/
 
 ## 5. Data flow
 
-**Read:** `page.tsx` renders a feature component inside `<Suspense>` → component awaits `features/x/server/queries.ts` → query resolves the current user (`getCurrentUser()`, wrapped in `React.cache`, verified with `supabase.auth.getClaims()`) → Supabase query **as that user** → RLS filters rows → query maps rows to a minimal DTO → component renders.
+**Read:** `page.tsx` renders a feature component inside `<Suspense>` → component awaits `features/x/server/queries.ts` → query resolves the current user (`requireUser()` over `getSessionState()`, wrapped in `React.cache`, verified with `supabase.auth.getClaims()`) → Supabase query **as that user** → RLS filters rows → query maps rows to a minimal DTO → component renders.
 
-**Write:** form (shadcn `Field` components, client-side Zod for UX) → Server Action → `schema.safeParse(formData)` → `server/mutations.ts` re-verifies the session and role → Supabase insert/update **as the user**, or an RPC for multi-row transactions → Postgres constraints, transition triggers and RLS enforce the invariants → audit trigger records the event → action calls `revalidatePath`/`updateTag` and returns `{ ok, fieldErrors? }`, never the raw row.
+**Write:** form (shadcn `Field` components, client-side Zod for UX) → Server Action → `schema.safeParse(formData)` → `server/mutations.ts` re-verifies the session and role → Supabase insert/update **as the user**, or an RPC for multi-row transactions → Postgres constraints, transition triggers and RLS enforce the invariants → audit trigger records the event → action calls `revalidatePath` and returns a small typed state (`{ values?, fieldErrors?, formError? }`) or redirects, never the raw row.
 
 ## 6. Trust boundaries
 

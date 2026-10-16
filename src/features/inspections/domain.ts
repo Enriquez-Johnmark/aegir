@@ -49,11 +49,30 @@ export const SEVERITY_DESCRIPTIONS: Record<Severity, string> = {
 /** Which roles can be assigned as the inspector (mirrors inspections_before_write()). */
 export const INSPECTOR_ROLES = ["admin", "manager", "inspector"] as const satisfies readonly OrgRole[];
 
+export const INSPECTION_STATUSES = [
+  "scheduled",
+  "in_progress",
+  "completed",
+  "cancelled",
+] as const satisfies readonly InspectionStatus[];
+
 /**
- * Lifecycle (mirrors private.inspections_before_write()):
- * scheduled → in_progress | cancelled, in_progress → completed | cancelled.
- * Completed and cancelled are terminal and freeze the checklist.
+ * Lifecycle (mirrors private.inspections_before_write(); parity tested in
+ * integration/inspections.test.ts, D-006): scheduled → in_progress | cancelled,
+ * in_progress → completed | cancelled. Completed and cancelled are terminal and
+ * freeze the checklist.
  */
+export const NEXT_STATUSES: Record<InspectionStatus, readonly InspectionStatus[]> = {
+  scheduled: ["in_progress", "cancelled"],
+  in_progress: ["completed", "cancelled"],
+  completed: [],
+  cancelled: [],
+};
+
+export function canTransition(from: InspectionStatus, to: InspectionStatus): boolean {
+  return NEXT_STATUSES[from].includes(to);
+}
+
 export function isClosed(status: InspectionStatus): boolean {
   return status === "completed" || status === "cancelled";
 }

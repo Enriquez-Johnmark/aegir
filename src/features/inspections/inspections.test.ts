@@ -3,6 +3,9 @@ import { describe, expect, it } from "vitest";
 import {
   canComplete,
   canConduct,
+  canTransition,
+  INSPECTION_STATUSES,
+  isClosed,
   isInspectionOverdue,
   summarizeChecklist,
 } from "./domain";
@@ -14,6 +17,23 @@ import {
 
 const VESSEL_ID = "a2000000-0000-4000-8000-000000000001";
 const INSPECTOR_ID = "a1000000-0000-4000-8000-000000000003";
+
+describe("canTransition", () => {
+  it("follows the lifecycle: scheduled → in progress → completed, cancellable until closed", () => {
+    expect(canTransition("scheduled", "in_progress")).toBe(true);
+    expect(canTransition("scheduled", "cancelled")).toBe(true);
+    expect(canTransition("scheduled", "completed")).toBe(false);
+    expect(canTransition("in_progress", "completed")).toBe(true);
+    expect(canTransition("in_progress", "cancelled")).toBe(true);
+    expect(canTransition("in_progress", "scheduled")).toBe(false);
+  });
+
+  it("allows nothing out of a closed inspection", () => {
+    for (const from of INSPECTION_STATUSES.filter(isClosed)) {
+      expect(INSPECTION_STATUSES.some((to) => canTransition(from, to))).toBe(false);
+    }
+  });
+});
 
 describe("canConduct", () => {
   const assigned = { inspectorId: INSPECTOR_ID };

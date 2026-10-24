@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { DEMO_ACCOUNTS, DEMO_ROLES, demoEmailFor, demoSignInHref } from "./demo-accounts";
+import { DEMO_ACCOUNTS, DEMO_ROLES, demoEmailFor, demoRoleFor, demoSignInHref } from "./demo-accounts";
 
 describe("demoEmailFor", () => {
   it.each(DEMO_ROLES)("pre-fills the published %s account", (role) => {
@@ -22,6 +22,12 @@ describe("demoEmailFor", () => {
     ["non-string", 42],
   ])("pre-fills nothing for %s", (_label, value) => {
     expect(demoEmailFor(value)).toBeUndefined();
+    expect(demoRoleFor(value)).toBeUndefined();
+  });
+
+  it("names the role for the sign-in heading", () => {
+    expect(demoRoleFor("viewer")).toBe("viewer");
+    expect(demoRoleFor(["technician", "admin"])).toBe("technician");
   });
 });
 

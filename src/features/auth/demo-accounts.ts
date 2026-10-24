@@ -4,7 +4,8 @@ import { ROLE_LABELS } from "@/lib/auth/roles";
 
 /**
  * The four published demo accounts (D-011): one per non-admin role in Northwind
- * Shipping. The administrator and the second organization are never published,
+ * Shipping. `tryThis` is a first task built on that person's own seeded work
+ * (supabase/seed.sql), so it works on a fresh demo (D-051). The administrator and the second organization are never published,
  * so they are not listed here and `?as=` can never pre-fill them.
  */
 export const DEMO_ROLES = ["manager", "inspector", "technician", "viewer"] as const;
@@ -14,22 +15,22 @@ export const DEMO_ACCOUNTS = {
   manager: {
     name: "Marcus Reyes",
     email: "marcus.reyes@northwind.example",
-    tryThis: "Everything: vessels, scheduling, assigning and editing work.",
+    tryThis: "Open Northwind Fjord on the watch list and see why it's flagged, then assign or reprioritise its work.",
   },
   inspector: {
     name: "Ingrid Solberg",
     email: "ingrid.solberg@northwind.example",
-    tryThis: "Conduct the inspections assigned to you, record failures, raise work orders.",
+    tryThis: "Finish the monthly fire safety audit on Northwind Halcyon: fail a check, then raise a work order from it.",
   },
   technician: {
     name: "Tomas Okafor",
     email: "tomas.okafor@northwind.example",
-    tryThis: "Work the jobs assigned to you: start, block with a reason, complete.",
+    tryThis: "Start the oily water separator alarm job on Northwind Fjord, then block it with a reason.",
   },
   viewer: {
     name: "Vera Lindqvist",
     email: "vera.lindqvist@northwind.example",
-    tryThis: "See everything, including the audit log. Change nothing.",
+    tryThis: "Open the audit log and follow who changed what. Try to change something: you can't.",
   },
 } as const satisfies Record<DemoRole, { name: string; email: string; tryThis: string }>;
 
@@ -51,8 +52,14 @@ export function demoSignInHref(role: DemoRole): string {
 
 const demoRoleSchema = z.enum(DEMO_ROLES);
 
+/** The published demo role an untrusted `?as=` value names, or undefined for anything else. */
+export function demoRoleFor(value: unknown): DemoRole | undefined {
+  const parsed = demoRoleSchema.safeParse(Array.isArray(value) ? value[0] : value);
+  return parsed.success ? parsed.data : undefined;
+}
+
 /** The email to pre-fill for an untrusted `?as=` value, or undefined for anything else. */
 export function demoEmailFor(value: unknown): string | undefined {
-  const parsed = demoRoleSchema.safeParse(Array.isArray(value) ? value[0] : value);
-  return parsed.success ? DEMO_ACCOUNTS[parsed.data].email : undefined;
+  const role = demoRoleFor(value);
+  return role ? DEMO_ACCOUNTS[role].email : undefined;
 }

@@ -81,7 +81,7 @@ export function TrustSection() {
         <figure className="flex flex-col gap-3 @5xl:pt-2">
           <ScreenshotFrame
             shot={SCREENSHOTS.auditLog}
-            visibleHeight={0.8}
+            crop={{ top: 0, height: 0.8 }}
             focus={{ x: 0.185, y: 0.276, width: 0.415, height: 0.34 }} // the day heading and the first entries
             sizes="(min-width: 80rem) 46rem, (min-width: 48rem) 63vw, 250vw"
           />

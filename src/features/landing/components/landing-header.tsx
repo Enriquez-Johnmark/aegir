@@ -6,6 +6,7 @@ import { SECTION_IDS, SOURCE_LINKS } from "@/features/landing/links";
 const NAV = [
   { href: `#${SECTION_IDS.howItWorks}`, label: "How it works" },
   { href: `#${SECTION_IDS.trust}`, label: "Why trust it" },
+  { href: `#${SECTION_IDS.built}`, label: "How it's built" },
   { href: `#${SECTION_IDS.demo}`, label: "Try the demo" },
   { href: SOURCE_LINKS.repository, label: "Source" },
 ];
@@ -35,9 +36,15 @@ export function LandingHeader() {
             ))}
           </ul>
         </nav>
-        <ButtonLink href="/login" variant="outline">
-          Sign in
-        </ButtonLink>
+        <div className="flex items-center gap-1">
+          {/* The section links hide on phones; the source stays one tap away for visitors who are hiring. */}
+          <ButtonLink href={SOURCE_LINKS.repository} variant="ghost" className="md:hidden">
+            Source
+          </ButtonLink>
+          <ButtonLink href="/login" variant="outline">
+            Sign in
+          </ButtonLink>
+        </div>
       </div>
     </header>
   );

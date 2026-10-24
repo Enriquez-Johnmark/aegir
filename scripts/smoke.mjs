@@ -75,6 +75,10 @@ for (const [vp, options] of [["desktop", { viewport: { width: 1440, height: 900 
     if (ok) loaded += 1;
   }
   check(`landing/${vp}: all 6 screenshots load from this site`, loaded === 6 && (await images.count()) === 6, `${loaded}/${await images.count()}`);
+  check(`landing/${vp}: says who built it`, (await page.getByRole("region", { name: "Built by Johnmark Enriquez" }).count()) === 1);
+  const previewPath = new URL(await page.locator('meta[property="og:image"]').getAttribute("content")).pathname;
+  const preview = await context.request.get(`${BASE}${previewPath}`, { maxRedirects: 0 });
+  check(`landing/${vp}: link preview image is served signed out`, preview.status() === 200 && preview.headers()["content-type"] === "image/png", `${preview.status()}`);
   await page.goto(`${BASE}/login?as=inspector`);
   check(`landing/${vp}: ?as=inspector pre-fills the email only`, (await page.getByLabel("Email").inputValue()) === ROLES.inspector && (await page.getByLabel("Password").inputValue()) === "");
   await page.goto(`${BASE}/login?as=admin`);

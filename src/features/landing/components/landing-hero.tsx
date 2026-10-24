@@ -4,6 +4,8 @@ import { getImageProps } from "next/image";
 
 import { Badge } from "@/components/ui/badge";
 import { RolePicker } from "@/features/landing/components/role-picker";
+import { SIDEBAR_FRACTION } from "@/features/landing/components/screenshot-frame";
+import { AUTHOR, SECTION_IDS, SOURCE_LINKS } from "@/features/landing/links";
 import { SCREENSHOTS } from "@/features/landing/screenshots";
 
 /**
@@ -23,7 +25,8 @@ const LIT_SIGNALS = [
 export function LandingHero() {
   return (
     <section aria-labelledby="hero-title" className="dark night @container overflow-hidden bg-background text-foreground">
-      <div className="mx-auto grid max-w-7xl grid-cols-1 gap-12 px-4 pt-12 sm:px-8 @5xl:grid-cols-[minmax(0,34rem)_minmax(0,1fr)] @5xl:gap-16 @5xl:pt-20">
+      {/* A narrower text column below 80rem keeps the lit signals on screen at laptop widths (D-050). */}
+      <div className="mx-auto grid max-w-7xl grid-cols-1 gap-12 px-4 pt-12 sm:px-8 @5xl:grid-cols-[minmax(0,30rem)_minmax(0,1fr)] @5xl:pt-20 @7xl:grid-cols-[minmax(0,34rem)_minmax(0,1fr)] @7xl:gap-16">
         <div className="flex flex-col gap-8 @5xl:pb-24">
           <div className="flex flex-col gap-5">
             <h1
@@ -37,9 +40,24 @@ export function LandingHero() {
             </p>
           </div>
           <RolePicker />
-          <p className="text-sm text-muted-foreground">
-            A portfolio project with synthetic data. Not a certified maritime safety system.
-          </p>
+          <div className="flex flex-col gap-2 text-sm text-muted-foreground">
+            <p className="text-pretty">
+              Built by{" "}
+              <a href={`#${SECTION_IDS.author}`} className="font-medium text-foreground underline-offset-4 hover:underline">
+                {AUTHOR.name}
+              </a>
+              , {AUTHOR.title.toLowerCase()}.{" "}
+              <a href={SOURCE_LINKS.repository} className="font-medium text-primary underline-offset-4 hover:underline">
+                Read the source
+              </a>{" "}
+              or see{" "}
+              <a href={`#${SECTION_IDS.built}`} className="font-medium text-primary underline-offset-4 hover:underline">
+                how it&apos;s built
+              </a>
+              .
+            </p>
+            <p>A portfolio project with synthetic data. Not a certified maritime safety system.</p>
+          </div>
         </div>
         <HeroScreenshot />
       </div>
@@ -53,21 +71,36 @@ export function LandingHero() {
  * with getImageProps). The hero's columns switch at the same 64rem (`@5xl`, the
  * section is full width), so the lit signals only ever sit on the desktop capture;
  * with enlarged text the layout stacks and the signals stay hidden.
+ *
+ * On the desktop capture the app's sidebar is cut off (the image is widened and
+ * shifted left by its share), and the frame is 42rem wide until 80rem: together they
+ * keep all three signals inside the window from 1024px up (D-050). The signals stay
+ * positioned in % of the whole capture, so they don't move with the crop.
  */
+const CONTENT_FRACTION = 1 - SIDEBAR_FRACTION;
+const DESKTOP_CROP = {
+  "--hero-width": `${100 / CONTENT_FRACTION}%`,
+  "--hero-shift": `${(100 * SIDEBAR_FRACTION) / CONTENT_FRACTION}%`,
+} as React.CSSProperties;
+
 function HeroScreenshot() {
   const { dashboard, phoneDashboard } = SCREENSHOTS;
   const common = { alt: dashboard.alt, loading: "eager", fetchPriority: "high" } as const;
   const {
     props: { srcSet: desktopSrcSet },
-  } = getImageProps({ ...common, src: dashboard.src, sizes: "64rem" });
+  } = getImageProps({
+    ...common,
+    src: dashboard.src,
+    sizes: `(min-width: 80rem) ${64 / CONTENT_FRACTION}rem, ${42 / CONTENT_FRACTION}rem`,
+  });
   const {
     props: { srcSet: phoneSrcSet, src, alt, ...img },
   } = getImageProps({ ...common, src: phoneDashboard.src, sizes: "(min-width: 40rem) 24rem, 80vw" });
 
   return (
-    <figure className="relative mx-auto w-full max-w-sm self-end @5xl:mx-0 @5xl:w-[64rem] @5xl:max-w-none">
-      <div className="relative max-h-[28rem] overflow-hidden rounded-t-xl ring-1 ring-foreground/15 @5xl:max-h-none">
-        <div className="relative">
+    <figure className="relative mx-auto w-full max-w-sm self-end @5xl:mx-0 @5xl:w-[42rem] @5xl:max-w-none @7xl:w-[64rem]">
+      <div className="relative max-h-[28rem] overflow-hidden rounded-t-xl ring-1 ring-foreground/15 @5xl:max-h-none @7xl:max-h-[40rem]">
+        <div className="relative @5xl:-ml-(--hero-shift) @5xl:w-(--hero-width)" style={DESKTOP_CROP}>
           <picture>
             <source media="(min-width: 64rem)" srcSet={desktopSrcSet} />
             <img {...img} src={src} alt={alt} srcSet={phoneSrcSet} className="block h-auto w-full @5xl:brightness-[0.6] @5xl:saturate-[0.6]" />

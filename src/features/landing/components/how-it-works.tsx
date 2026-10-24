@@ -3,7 +3,7 @@ import { CircleAlertIcon, ClockAlertIcon, FlagIcon, OctagonAlertIcon } from "luc
 import { Badge } from "@/components/ui/badge";
 import { ForYouBadge, HandoverStatusBadge } from "@/features/handovers/components/handover-badges";
 import { CheckResultBadge, SeverityBadge } from "@/features/inspections/components/inspection-badges";
-import { ScreenshotFrame, type Region } from "@/features/landing/components/screenshot-frame";
+import { ScreenshotFrame, type Band, type Region } from "@/features/landing/components/screenshot-frame";
 import { SECTION_IDS } from "@/features/landing/links";
 import { SCREENSHOTS, type Screenshot } from "@/features/landing/screenshots";
 import {
@@ -17,7 +17,8 @@ type Step = {
   body: string;
   signals: React.ReactNode;
   shot: Screenshot;
-  visibleHeight: number;
+  /** The band a wide frame shows, measured on the screenshot. */
+  crop: Band;
   /** What a phone zooms to (fractions of the capture), measured on the screenshot. */
   focus: Region;
 };
@@ -38,7 +39,7 @@ const STEPS: Step[] = [
       </>
     ),
     shot: SCREENSHOTS.inspection,
-    visibleHeight: 0.76,
+    crop: { top: 0.38, height: 0.375 }, // the checklist and both failed checks
     focus: { x: 0.19, y: 0.4, width: 0.365, height: 0.21 }, // the checklist and the first failed check
   },
   {
@@ -52,7 +53,7 @@ const STEPS: Step[] = [
       </>
     ),
     shot: SCREENSHOTS.workOrder,
-    visibleHeight: 0.84,
+    crop: { top: 0.205, height: 0.64 }, // the block reason, the facts, the failed check and the history
     focus: { x: 0.185, y: 0.11, width: 0.335, height: 0.17 }, // the title, its Blocked badge and the reason
   },
   {
@@ -66,7 +67,7 @@ const STEPS: Step[] = [
       </>
     ),
     shot: SCREENSHOTS.handovers,
-    visibleHeight: 1,
+    crop: { top: 0.15, height: 0.775 }, // the inbox
     focus: { x: 0.535, y: 0.55, width: 0.41, height: 0.4 }, // from and to, when, and the For you / Pending badges
   },
   {
@@ -86,7 +87,7 @@ const STEPS: Step[] = [
       </>
     ),
     shot: SCREENSHOTS.vessels,
-    visibleHeight: 1,
+    crop: { top: 0.14, height: 0.795 }, // the watch list
     focus: { x: 0.605, y: 0.437, width: 0.38, height: 0.495 }, // status, open work and attention
   },
 ];
@@ -108,28 +109,28 @@ export function HowItWorks() {
           </p>
         </div>
         {/* The line down the left joins the steps (a finding never leaves the trail); it needs 20rem, so enlarged text on a phone stacks the number above the step instead. */}
-        <ol className="relative flex flex-col gap-16 before:absolute before:top-4 before:bottom-4 before:left-4 before:hidden before:w-px before:bg-border lg:gap-24 @xs:before:block">
+        {/* Each step's words sit above its screenshot, which takes the full width so the app's own text stays readable (about 13px at 1440, D-050). */}
+        <ol className="relative flex flex-col gap-16 before:absolute before:top-4 before:bottom-4 before:left-4 before:hidden before:w-px before:bg-border lg:gap-20 @xs:before:block">
           {STEPS.map((step, index) => (
-            <li
-              key={step.title}
-              className="relative grid grid-cols-1 gap-6 @xs:pl-14 @5xl:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] @5xl:gap-14"
-            >
+            <li key={step.title} className="relative flex flex-col gap-6 @xs:pl-14">
               <span
                 aria-hidden
                 className="flex size-8 @xs:absolute @xs:top-0 @xs:left-0 items-center justify-center rounded-full bg-background text-sm font-medium tabular-nums ring-1 ring-foreground/15"
               >
                 {index + 1}
               </span>
-              <div className="flex flex-col gap-3 @5xl:pt-1">
-                <h3 className="text-xl font-semibold tracking-[-0.02em] text-balance">{step.title}</h3>
-                <p className="text-pretty text-muted-foreground">{step.body}</p>
-                <p className="flex flex-wrap gap-1.5 pt-1">{step.signals}</p>
+              <div className="grid gap-3 @5xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] @5xl:items-end @5xl:gap-x-14">
+                <div className="flex flex-col gap-3 @5xl:pt-1">
+                  <h3 className="text-xl font-semibold tracking-[-0.02em] text-balance">{step.title}</h3>
+                  <p className="max-w-[65ch] text-pretty text-muted-foreground">{step.body}</p>
+                </div>
+                <p className="flex flex-wrap gap-1.5 pt-1 @5xl:justify-end">{step.signals}</p>
               </div>
               <ScreenshotFrame
                 shot={step.shot}
-                visibleHeight={step.visibleHeight}
+                crop={step.crop}
                 focus={step.focus}
-                sizes="(min-width: 80rem) 61rem, (min-width: 48rem) 73vw, 300vw"
+                sizes="(min-width: 80rem) 89rem, (min-width: 48rem) 110vw, 300vw"
               />
             </li>
           ))}

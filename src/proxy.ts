@@ -8,7 +8,8 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Every path except static assets and image optimisation output.
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    // Every path except static assets, image optimisation output and the link-preview
+    // image, which crawlers fetch signed out (D-050).
+    "/((?!_next/static|_next/image|favicon.ico|opengraph-image|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };

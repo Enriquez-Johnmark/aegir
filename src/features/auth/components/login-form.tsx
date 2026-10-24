@@ -4,9 +4,10 @@ import { AlertCircleIcon } from "lucide-react";
 import { useActionState } from "react";
 
 import { signIn, type SignInState } from "@/features/auth/actions";
+import { CopyButton } from "@/components/shared/copy-button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
+import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 
@@ -16,7 +17,16 @@ function toFieldErrors(messages: string[] | undefined) {
   return messages?.map((message) => ({ message }));
 }
 
-export function LoginForm({ next, defaultEmail }: { next: string; defaultEmail?: string }) {
+export function LoginForm({
+  next,
+  defaultEmail,
+  demoPassword,
+}: {
+  next: string;
+  defaultEmail?: string;
+  /** Shown as a hint, never filled in: set only when a published demo account was picked (D-050). */
+  demoPassword?: string;
+}) {
   const [state, formAction, isPending] = useActionState(signIn, initialState);
   const emailErrors = state.fieldErrors?.email;
   const passwordErrors = state.fieldErrors?.password;
@@ -56,7 +66,16 @@ export function LoginForm({ next, defaultEmail }: { next: string; defaultEmail?:
             autoComplete="current-password"
             required
             aria-invalid={passwordErrors ? true : undefined}
+            aria-describedby={demoPassword ? "demo-password" : undefined}
           />
+          {demoPassword ? (
+            <FieldDescription id="demo-password" className="flex flex-wrap items-center gap-x-2 gap-y-1">
+              <span>
+                Live demo password: <code className="font-mono text-foreground">{demoPassword}</code>
+              </span>
+              <CopyButton value={demoPassword} what="the demo password" />
+            </FieldDescription>
+          ) : null}
           <FieldError errors={toFieldErrors(passwordErrors)} />
         </Field>
 

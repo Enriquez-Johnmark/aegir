@@ -1,15 +1,17 @@
 import type { StaticImageData } from "next/image";
 
 // One source for the README and the landing page: docs/screenshots/, refreshed by
-// scripts/capture-screenshots.mjs from the live demo (synthetic data). Static
+// scripts/capture-screenshots.mjs from the live demo (synthetic data). The two
+// added for D-051 (phone-inspection, handovers-all) came from the local stack, on
+// the same seed, so their dates differ from the others by a few days. Static
 // imports give next/image their size and a blur placeholder; the optimised files
 // are served from this site (/_next/image), so the CSP's img-src 'self' data:
 // already covers them (D-039, D-046).
 import auditLog from "../../../docs/screenshots/audit-log.png";
 import dashboard from "../../../docs/screenshots/dashboard.png";
-import handovers from "../../../docs/screenshots/handovers.png";
-import inspection from "../../../docs/screenshots/inspection.png";
+import handoversAll from "../../../docs/screenshots/handovers-all.png";
 import phoneDashboard from "../../../docs/screenshots/phone-dashboard.png";
+import phoneInspection from "../../../docs/screenshots/phone-inspection.png";
 import vessels from "../../../docs/screenshots/vessels.png";
 import workOrder from "../../../docs/screenshots/work-order.png";
 
@@ -24,17 +26,17 @@ export const SCREENSHOTS = {
     src: phoneDashboard,
     alt: "The same dashboard on a phone: the figures stack into one column above the work queue.",
   },
-  inspection: {
-    src: inspection,
-    alt: "A completed pre-maintenance survey with two failed checks, each with its finding, severity and the work order raised for it.",
-  },
   workOrder: {
     src: workOrder,
     alt: "A blocked work order showing its reason, the failed check it came from, and its history.",
   },
-  handovers: {
-    src: handovers,
-    alt: "The handovers inbox: pending handovers addressed to you first, then the others, then acknowledged ones.",
+  phoneInspection: {
+    src: phoneInspection,
+    alt: "An inspection in progress on a phone: the check \"Fixed CO2 system release controls sealed\" marked Fail, with fields for the finding and four severity choices, each with its guidance.",
+  },
+  handoversAll: {
+    src: handoversAll,
+    alt: "All handovers: the night shift's Fjord fuel pump isolation, handed from Kenji Watanabe to the technician and acknowledged, and two pending handovers.",
   },
   vessels: {
     src: vessels,

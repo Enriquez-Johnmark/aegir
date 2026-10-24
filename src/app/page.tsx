@@ -1,32 +1,34 @@
 import type { Metadata } from "next";
 
-import { AuthorSection } from "@/features/landing/components/author-section";
-import { BuiltSection } from "@/features/landing/components/built-section";
+import { ContactSection } from "@/features/landing/components/contact-section";
 import { DemoAccounts } from "@/features/landing/components/demo-accounts";
 import { HowItWorks } from "@/features/landing/components/how-it-works";
 import { LandingFooter } from "@/features/landing/components/landing-footer";
 import { LandingHeader } from "@/features/landing/components/landing-header";
 import { LandingHero } from "@/features/landing/components/landing-hero";
+import { RolesSection } from "@/features/landing/components/roles-section";
+import { ScopeSection } from "@/features/landing/components/scope-section";
 import { TrustSection } from "@/features/landing/components/trust-section";
 
 export const metadata: Metadata = {
   title: { absolute: "Aegir: maritime safety and fleet operations" },
   description:
     "Vessels, safety inspections, work orders and shift handovers in one audited workspace. Try the live demo as a fleet manager, inspector, technician or viewer.",
-  // The image comes from app/opengraph-image.tsx (D-050).
+  // The image comes from app/opengraph-image.tsx (D-050); the words speak to users and clients (D-051).
   openGraph: {
     type: "website",
     siteName: "Aegir",
     title: "Aegir: maritime safety and fleet operations",
     description:
-      "Every failed check stays in sight until the work is done. A portfolio project by Johnmark Enriquez: Next.js 16, Postgres with row-level security, a live demo.",
+      "Every failed check stays in sight until the work is done: inspections, work orders and shift handovers for a fleet, with a live demo to try as each role.",
   },
   twitter: { card: "summary_large_image" },
 };
 
-// The public landing page (Impeccable Persuade surface, D-024, D-046), for people who
-// run fleets and people who are hiring (D-050). Fully static: no session or database
-// reads, so it prerenders.
+// The public product page (Impeccable Persuade surface, D-024, D-046), for the people
+// who would use Aegir and the clients who would choose it (D-051). Engineers and
+// people who are hiring have /engineering (D-050, D-051). Fully static: no session or
+// database reads, so it prerenders.
 export default function Home() {
   return (
     <>
@@ -34,10 +36,11 @@ export default function Home() {
       <main className="flex-1">
         <LandingHero />
         <HowItWorks />
+        <RolesSection />
         <TrustSection />
-        <BuiltSection />
+        <ScopeSection />
         <DemoAccounts />
-        <AuthorSection />
+        <ContactSection />
       </main>
       <LandingFooter />
     </>

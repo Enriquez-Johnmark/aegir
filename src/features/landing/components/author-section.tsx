@@ -3,6 +3,7 @@ import { ArrowUpRightIcon } from "lucide-react";
 import { AUTHOR, SECTION_IDS, SOURCE_LINKS } from "@/features/landing/links";
 
 const LINKS = [
+  { href: AUTHOR.linkedin, label: "LinkedIn" },
   { href: AUTHOR.github, label: "GitHub profile" },
   { href: SOURCE_LINKS.repository, label: "Aegir's source code" },
   { href: SOURCE_LINKS.decisions, label: "The decision log" },

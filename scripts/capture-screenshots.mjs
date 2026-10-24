@@ -5,6 +5,9 @@
 //   read -s DEMO_PASSWORD && export DEMO_PASSWORD
 //   node scripts/capture-screenshots.mjs                       # the hosted demo
 //   BASE_URL=http://localhost:3000 node scripts/capture-screenshots.mjs
+//   ONLY=phone-inspection.png,handovers-all.png node scripts/capture-screenshots.mjs
+//
+// ONLY limits the run to the named files and leaves the others as they are.
 //
 // The password comes from the environment, never from this file (D-011).
 import { mkdirSync } from "node:fs";
@@ -22,6 +25,8 @@ const OUT = fileURLToPath(new URL("../docs/screenshots/", import.meta.url));
 mkdirSync(OUT, { recursive: true });
 
 const DESKTOP = { viewport: { width: 1440, height: 900 }, deviceScaleFactor: 2 };
+const ONLY = process.env.ONLY ? new Set(process.env.ONLY.split(",")) : null;
+const wanted = (file) => !ONLY || ONLY.has(file);
 
 // [account, path, file, clipToContent]
 const SHOTS = [
@@ -31,6 +36,8 @@ const SHOTS = [
   ["marcus.reyes", "/work-orders/a4000000-0000-4000-8000-000000000002", "work-order.png", false],
   ["ingrid.solberg", "/handovers", "handovers.png", true],
   ["vera.lindqvist", "/audit", "audit-log.png", false],
+  // The landing page's handover step (D-051): every handover, so the Fjord fuel pump one shows.
+  ["tomas.okafor", "/handovers?view=all", "handovers-all.png", true],
 ];
 
 const browser = await chromium.launch();
@@ -64,6 +71,7 @@ function contentBottom(page) {
 }
 
 for (const [account, path, file, clip] of SHOTS) {
+  if (!wanted(file)) continue;
   const page = await signedIn(account, DESKTOP);
   await open(page, path);
   const height = clip ? Math.min(900, Math.ceil((await contentBottom(page)) + 40)) : 900;
@@ -72,9 +80,28 @@ for (const [account, path, file, clip] of SHOTS) {
   await page.context().close();
 }
 
-const phone = await signedIn("marcus.reyes", devices["Pixel 7"]);
-await open(phone, "/dashboard");
-await phone.screenshot({ path: `${OUT}phone-dashboard.png` });
-console.log("docs/screenshots/phone-dashboard.png");
+if (wanted("phone-dashboard.png")) {
+  const phone = await signedIn("marcus.reyes", devices["Pixel 7"]);
+  await open(phone, "/dashboard");
+  await phone.screenshot({ path: `${OUT}phone-dashboard.png` });
+  console.log("docs/screenshots/phone-dashboard.png");
+  await phone.context().close();
+}
+
+// The inspector on deck (D-051): an inspection in progress on a phone, with the Fail
+// panel open on the next check. Opening the panel saves nothing.
+if (wanted("phone-inspection.png")) {
+  const phone = await signedIn("ingrid.solberg", devices["Pixel 7"]);
+  await open(phone, "/inspections/a3000000-0000-4000-8000-000000000003");
+  const result = phone.getByRole("main").getByRole("group", { name: "Result for check 3" });
+  await result.getByRole("button", { name: "Fail" }).click();
+  await phone.getByLabel("What did you find?").waitFor();
+  await phone.getByLabel("What did you find?").blur();
+  // Check 3's name and buttons at the top, its Fail panel below.
+  await result.evaluate((el) => window.scrollTo(0, el.getBoundingClientRect().top + window.scrollY - 140));
+  await phone.screenshot({ path: `${OUT}phone-inspection.png` });
+  console.log("docs/screenshots/phone-inspection.png");
+  await phone.context().close();
+}
 
 await browser.close();

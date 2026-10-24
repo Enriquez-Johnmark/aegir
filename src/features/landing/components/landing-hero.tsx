@@ -5,7 +5,7 @@ import { getImageProps } from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { RolePicker } from "@/features/landing/components/role-picker";
 import { SIDEBAR_FRACTION } from "@/features/landing/components/screenshot-frame";
-import { AUTHOR, SECTION_IDS, SOURCE_LINKS } from "@/features/landing/links";
+import { AUTHOR } from "@/features/landing/links";
 import { SCREENSHOTS } from "@/features/landing/screenshots";
 
 /**
@@ -40,24 +40,9 @@ export function LandingHero() {
             </p>
           </div>
           <RolePicker />
-          <div className="flex flex-col gap-2 text-sm text-muted-foreground">
-            <p className="text-pretty">
-              Built by{" "}
-              <a href={`#${SECTION_IDS.author}`} className="font-medium text-foreground underline-offset-4 hover:underline">
-                {AUTHOR.name}
-              </a>
-              , {AUTHOR.title.toLowerCase()}.{" "}
-              <a href={SOURCE_LINKS.repository} className="font-medium text-primary underline-offset-4 hover:underline">
-                Read the source
-              </a>{" "}
-              or see{" "}
-              <a href={`#${SECTION_IDS.built}`} className="font-medium text-primary underline-offset-4 hover:underline">
-                how it&apos;s built
-              </a>
-              .
-            </p>
-            <p>A portfolio project with synthetic data. Not a certified maritime safety system.</p>
-          </div>
+          <p className="text-sm text-pretty text-muted-foreground">
+            A portfolio project by {AUTHOR.name}, with synthetic data. Not a certified maritime safety system.
+          </p>
         </div>
         <HeroScreenshot />
       </div>

@@ -6,7 +6,7 @@ import { signIn, USERS } from "./helpers";
 // WCAG 2.2 A/AA rules (axe tags). Every route, desktop and Pixel 7 (the two projects).
 const WCAG = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22a", "wcag22aa"];
 
-const SIGNED_OUT = ["/", "/login"];
+const SIGNED_OUT = ["/", "/engineering", "/login", "/login?as=technician"];
 const SIGNED_IN = [
   "/dashboard",
   "/vessels",

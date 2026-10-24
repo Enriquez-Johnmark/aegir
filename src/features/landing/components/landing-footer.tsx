@@ -1,6 +1,9 @@
-import { SOURCE_LINKS } from "@/features/landing/links";
+import Link from "next/link";
+
+import { ENGINEERING_PATH, SOURCE_LINKS } from "@/features/landing/links";
 
 const LINKS = [
+  { href: ENGINEERING_PATH, label: "For engineers" },
   { href: SOURCE_LINKS.repository, label: "Source on GitHub" },
   { href: SOURCE_LINKS.architecture, label: "Architecture" },
   { href: SOURCE_LINKS.security, label: "Security" },
@@ -15,12 +18,12 @@ export function LandingFooter() {
           <ul className="flex flex-wrap gap-x-6 gap-y-2">
             {LINKS.map((link) => (
               <li key={link.href}>
-                <a
+                <Link
                   href={link.href}
                   className="inline-flex items-center font-medium text-foreground underline-offset-4 hover:underline pointer-coarse:min-h-11"
                 >
                   {link.label}
-                </a>
+                </Link>
               </li>
             ))}
           </ul>

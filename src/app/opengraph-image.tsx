@@ -77,7 +77,7 @@ export default async function Image() {
               Vessels, inspections, work orders and handovers in one audited workspace.
             </div>
           </div>
-          <div style={{ fontSize: 20, color: NIGHT.primary }}>Live demo · Next.js 16 · Postgres row-level security</div>
+          <div style={{ fontSize: 20, color: NIGHT.primary }}>Try the live demo as a manager, inspector or technician</div>
         </div>
 
         <div

@@ -22,13 +22,21 @@ export const AUTHOR = {
   name: "Johnmark Enriquez",
   title: "Full-stack engineer",
   github: "https://github.com/Enriquez-Johnmark",
+  linkedin: "https://www.linkedin.com/in/johnmark-enriquez/",
 } as const;
 
-/** In-page sections, shared by the header and the sections themselves. */
+/** The engineering page: how it's built and who built it (D-051). */
+export const ENGINEERING_PATH = "/engineering";
+
+/** Sections on `/` and on the engineering page, shared by the header and the sections themselves. */
 export const SECTION_IDS = {
   howItWorks: "how-it-works",
+  roles: "who-uses-it",
   trust: "why-trust-it",
-  built: "how-its-built",
+  scope: "what-it-replaces",
   demo: "try-the-demo",
+  contact: "for-your-fleet",
+  guarantees: "guarantees",
+  built: "how-its-built",
   author: "built-by",
 } as const;

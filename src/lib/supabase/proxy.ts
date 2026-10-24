@@ -5,7 +5,8 @@ import { publicEnv } from "@/lib/env";
 import { SESSION_COOKIE_OPTIONS } from "@/lib/supabase/cookie-options";
 import { DEFAULT_AUTHENTICATED_PATH } from "@/lib/safe-redirect";
 
-const PUBLIC_PATHS = new Set(["/", "/login"]);
+// The public pages: the product page, the engineering page (D-051) and sign-in.
+const PUBLIC_PATHS = new Set(["/", "/engineering", "/login"]);
 
 /**
  * Refreshes the Supabase auth session cookies on every matched request and

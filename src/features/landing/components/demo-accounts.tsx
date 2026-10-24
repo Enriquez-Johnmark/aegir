@@ -2,13 +2,12 @@ import { ButtonLink } from "@/components/shared/button-link";
 import {
   DEMO_ACCOUNTS,
   DEMO_ROLES,
-  HOSTED_DEMO_PASSWORD,
   demoRoleLabel,
   demoSignInHref,
 } from "@/features/auth/demo-accounts";
-import { SECTION_IDS, SOURCE_LINKS } from "@/features/landing/links";
+import { SECTION_IDS } from "@/features/landing/links";
 
-/** The page's close: every published account, what to try with it, and a way in. */
+/** Every published account, a first task built on its own seeded work, and a way in (D-051). */
 export function DemoAccounts() {
   return (
     <section aria-labelledby={`${SECTION_IDS.demo}-title`} id={SECTION_IDS.demo} className="scroll-mt-4">
@@ -21,12 +20,8 @@ export function DemoAccounts() {
             Try it as each role
           </h2>
           <p className="text-lg/relaxed text-pretty text-muted-foreground">
-            Four shared accounts in Northwind Shipping, a made-up company with synthetic data. Every role uses the
-            password{" "}
-            <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-base text-foreground">
-              {HOSTED_DEMO_PASSWORD}
-            </code>
-            .
+            Four people at Northwind Shipping, a made-up company with synthetic data. Each link opens sign-in with
+            their account filled in and the password shown. Here is a first thing to try as each.
           </p>
         </div>
         <ul className="@container flex flex-col overflow-hidden rounded-xl ring-1 ring-foreground/10">
@@ -56,19 +51,10 @@ export function DemoAccounts() {
             );
           })}
         </ul>
-        <div className="flex max-w-3xl flex-col gap-2 text-sm text-muted-foreground">
-          <p>
-            Everyone shares these accounts and safety records can&apos;t be deleted, by design, so you may see other
-            visitors&apos; changes. The administrator account isn&apos;t published.
-          </p>
-          <p>
-            Running it yourself? The{" "}
-            <a href={SOURCE_LINKS.readme} className="font-medium text-primary underline-offset-4 hover:underline">
-              README
-            </a>{" "}
-            covers the local setup and its own demo password.
-          </p>
-        </div>
+        <p className="max-w-3xl text-sm text-pretty text-muted-foreground">
+          Safety records can&apos;t be deleted, by design, so you may find other visitors&apos; work in the demo. The
+          administrator account isn&apos;t published.
+        </p>
       </div>
     </section>
   );

@@ -57,17 +57,17 @@ const EVIDENCE = [
   { href: SOURCE_LINKS.architecture, label: "Architecture", detail: "folders, boundaries and data flow" },
 ] as const;
 
-/** For engineers: the request path, one real rule with its test, the stack and the evidence (D-050). */
+/** On /engineering: the request path, one real rule with its test, the stack and the evidence (D-050, D-051). */
 export function BuiltSection() {
   return (
-    <section aria-labelledby={`${SECTION_IDS.built}-title`} id={SECTION_IDS.built} className="@container scroll-mt-4">
+    <section aria-labelledby={`${SECTION_IDS.built}-title`} id={SECTION_IDS.built} className="@container scroll-mt-4 border-t">
       <div className="mx-auto flex max-w-7xl flex-col gap-14 px-4 py-20 sm:px-8 lg:py-28">
         <div className="flex max-w-2xl flex-col gap-4">
           <h2
             id={`${SECTION_IDS.built}-title`}
             className="text-3xl font-semibold tracking-[-0.025em] text-balance sm:text-4xl"
           >
-            How it&apos;s built
+            From the browser to the database
           </h2>
           <p className="text-lg/relaxed text-pretty text-muted-foreground">
             One Next.js app and one Postgres database, with no API server in between. The app asks the database as

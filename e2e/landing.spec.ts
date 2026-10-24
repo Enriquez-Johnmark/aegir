@@ -46,6 +46,20 @@ test.describe("landing page", () => {
     }
   });
 
+  test("sign-in names the picked role, and offers the demo roles to everyone else (D-051)", async ({ page }) => {
+    await page.goto("/login?as=technician");
+    await expect(page.getByText("Signing in as Technician · Tomas Okafor")).toBeVisible();
+    await expect(page.getByRole("navigation", { name: "Trying the demo? Sign in as" })).toHaveCount(0);
+
+    await page.goto("/login");
+    const roles = page.getByRole("navigation", { name: "Trying the demo? Sign in as" });
+    await roles.getByRole("link", { name: "Viewer" }).click();
+    await expect(page).toHaveURL(/\/login\?as=viewer$/);
+    await expect(page.getByLabel("Email")).toHaveValue(USERS.viewer.email);
+    await page.getByRole("link", { name: "Aegir home" }).click();
+    await expect(page).toHaveURL(/\/$/);
+  });
+
   test("a visitor signs in from the landing page", async ({ page }) => {
     await page.goto("/");
     await page.getByRole("link", { name: "Sign in as Safety inspector" }).click();
@@ -65,7 +79,8 @@ test.describe("landing page", () => {
     await page.goto("/");
     // Bring every lazy image in, then check each one decoded from this origin.
     const images = page.locator("main img");
-    await expect(images).toHaveCount(6);
+    // Hero, four steps, the roles section's phone and the audit log (D-051).
+    await expect(images).toHaveCount(7);
     for (const image of await images.all()) {
       await image.scrollIntoViewIfNeeded();
       await expect(image).toHaveJSProperty("complete", true);
@@ -85,16 +100,37 @@ test.describe("landing page", () => {
     expect(await page.evaluate(() => navigator.clipboard.readText())).toBe("ShipShape2026");
   });
 
-  test("a visitor who is hiring finds who built it, how, and the code", async ({ page }) => {
+  test("a client finds what it replaces, what it doesn't do, and who to talk to (D-051)", async ({ page }) => {
     await page.goto("/");
-    // The source is one tap away from the header, on a phone too.
-    await expect(page.getByRole("banner").getByRole("link", { name: "Source" }).filter({ visible: true })).toHaveAttribute(
-      "href",
-      "https://github.com/Enriquez-Johnmark/aegir",
-    );
-    await expect(page.getByRole("link", { name: "Johnmark Enriquez" })).toHaveAttribute("href", "#built-by");
+    await page.getByRole("banner").getByRole("link", { name: "Try the demo" }).click();
+    await expect(page).toHaveURL(/#try-the-demo$/);
+    await expect(page.getByRole("region", { name: "Try it as each role" })).toBeInViewport();
 
-    const built = page.getByRole("region", { name: "How it's built" });
+    const scope = page.getByRole("region", { name: "What it replaces, and what it doesn't do yet" });
+    await expect(scope.getByRole("list").last()).toContainText("Offline use at sea");
+    await expect(scope).toContainText("not certified");
+
+    const contact = page.getByRole("region", { name: "Want this for your fleet?" });
+    await expect(contact.getByRole("link", { name: "Talk to Johnmark on LinkedIn" })).toHaveAttribute(
+      "href",
+      "https://www.linkedin.com/in/johnmark-enriquez/",
+    );
+  });
+
+  test("the engineering page has how it's built and who built it (D-050, D-051)", async ({ page }) => {
+    await page.goto("/");
+    await page.getByRole("contentinfo").getByRole("link", { name: "For engineers" }).click();
+    await expect(page).toHaveURL(/\/engineering$/);
+    await expect(page).toHaveTitle("How it's built · Aegir");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("How Aegir is built");
+
+    const guarantees = page.getByRole("region", { name: "The promises, and what keeps them" });
+    await expect(guarantees.getByRole("link", { name: "12_read_isolation.test.sql" })).toHaveAttribute(
+      "href",
+      /\/supabase\/tests\/12_read_isolation\.test\.sql$/,
+    );
+
+    const built = page.getByRole("region", { name: "From the browser to the database" });
     await expect(built.getByRole("list", { name: "How a request travels" })).toContainText(
       "Server Actions re-check the user and validate every input with Zod",
     );
@@ -108,6 +144,7 @@ test.describe("landing page", () => {
 
     const author = page.getByRole("region", { name: "Built by Johnmark Enriquez" });
     await expect(author.getByRole("link", { name: "GitHub profile" })).toHaveAttribute("href", "https://github.com/Enriquez-Johnmark");
+    await expect(author.getByRole("link", { name: "LinkedIn" })).toHaveAttribute("href", "https://www.linkedin.com/in/johnmark-enriquez/");
   });
 
   test("a shared link gets a preview image, served signed out", async ({ page, request }) => {
@@ -119,22 +156,26 @@ test.describe("landing page", () => {
     expect(response.headers()["content-type"]).toBe("image/png");
   });
 
-  test("source and documentation links point at the repository", async ({ page }) => {
+  test("the footer links to the engineering page and the repository", async ({ page }) => {
     await page.goto("/");
     const footerLinks = page.getByRole("navigation", { name: "Source and documentation" }).getByRole("link");
-    await expect(footerLinks).toHaveCount(4);
-    for (const link of await footerLinks.all()) {
+    await expect(footerLinks).toHaveCount(5);
+    await expect(footerLinks.first()).toHaveAttribute("href", "/engineering");
+    for (const link of (await footerLinks.all()).slice(1)) {
       await expect(link).toHaveAttribute("href", /^https:\/\/github\.com\/Enriquez-Johnmark\/aegir(\/|$)/);
     }
   });
 
   test("nothing scrolls sideways at 320px or with 200% text", async ({ page }) => {
     for (const viewport of [{ width: 320, height: 640 }, { width: 1360, height: 900 }]) {
-      await page.setViewportSize(viewport);
+      for (const path of ["/", "/engineering"]) {
+        await page.setViewportSize(viewport);
+        await page.goto(path);
+        await page.addStyleTag({ content: "html { font-size: 200% }" });
+        const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+        expect(overflow, `${path} at ${viewport.width}px`).toBe(0);
+      }
       await page.goto("/");
-      await page.addStyleTag({ content: "html { font-size: 200% }" });
-      const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
-      expect(overflow, `${viewport.width}px`).toBe(0);
       await expect(page.getByRole("link", { name: "Sign in as Viewer" }).first()).toBeVisible();
     }
   });

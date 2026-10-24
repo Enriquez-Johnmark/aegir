@@ -64,7 +64,7 @@ rollback;
 
 | Check | Result |
 |---|---|
-| Unit (`npm test`) | ✅ 132/132 in 14 files |
+| Unit (`npm test`) | ✅ 135/135 in 15 files |
 | Database (`npm run db:test`) | ✅ 135/135 in 12 files |
 | Integration (`npm run test:integration`) | ✅ 94/94 in 5 files, on a fresh seed |
 | End-to-end (`npm run test:e2e`) | ✅ 102/102 (51 tests × desktop and Pixel 7) on a fresh seed |
@@ -173,6 +173,10 @@ rollback;
 | 2026-10-16 | Enlarged text on production (one viewer sign-in, 6 pages per case) | ✅ 5/5: navigation reachable and no sideways scroll with a 32px default font at 412, 1024 and 1360px and a 200% root font at 768 and 1024px |
 | 2026-10-16 | `npm run test:integration` (D-049) | ✅ 94/94 from a fresh seed (about 40 s) and again on the same data (about 3 s): work orders 34, inspections 28, handovers 13, vessels 10, sign-in and isolation 9. Every test passed on its first run, so the suite was checked for teeth: making `open → completed` allowed in TS, dropping `scheduled → cancelled`, changing one error-message match and one acknowledgement message each failed the matching test (reverted). Two failures from the first runs were in the tests themselves (an IMO reused across reruns; a Meridian test vessel named like Northwind data), fixed |
 | 2026-10-16 | Full verification after D-049 | ✅ lint · typecheck · unit 132/132 · build (`/` static) · `db reset --local` · `db lint` no errors · pgTAP 135/135 · advisors no issues · types unchanged · integration 94/94 · E2E 102/102 on a fresh seed |
+| 2026-10-24 | Next.js 16.4.0 → 16.4.3 (security) | ✅ `npm audit --omit=dev` 0 (was 1 critical); full audit still lists 6 existing dev-only advisories (shadcn CLI, undici, body-parser, fast-uri, zod under `@shadcn/registry`) |
+| 2026-10-24 | Landing page for people who are hiring (D-050): screenshot rounds (1440, 1280, 1024, 768, 390; dev server) | Round 1: lit signals on screen at 1024/1280/1440 (were off below ~1370); 146px and 508px sideways scroll at 768 and 390 from the code blocks widening an unsized grid → `grid-cols-1`. The link-preview image redirected to `/login` (proxy) → matcher skips it. Round 2: no overflow at any width, no console errors |
+| 2026-10-24 | `src/features/landing/excerpt.test.ts` | ✅ 3/3: the quoted rule and test match their files at the linked lines |
+| 2026-10-24 | Full verification after D-050 | ✅ lint · typecheck · unit 135/135 · build (`/` and `/opengraph-image` static) · `db lint` no errors · pgTAP 135/135 · advisors no issues · integration 94/94 · E2E 108/108 on a fresh seed (axe: 0 violations on `/` and `/login`, desktop and Pixel 7) · smoke script landing checks 18/18 against the local build. Types not regenerated (no migration). Production smoke not run (not deployed) |
 
 ## Known gaps
 

@@ -594,3 +594,58 @@ Format: context → decision → alternatives → consequences. Status: **Accept
   - inspections' `23514` "finding and severity": Zod answers first;
   - the trigger's "needs at least one checklist item": `create_inspection` requires 1–100 checks, and no migration grants deletes on checklist items.
 - CONVENTIONS §7 now requires an integration test for every new mutation and every new error-message match.
+
+<a id="d-050"></a>
+
+## D-050 — The landing page also speaks to people who are hiring
+**Status:** Accepted · 2026-10-24
+
+**Context:** The owner now wants the landing page (D-046) to showcase Aegir to recruiters and hiring managers as well as to people who run fleets. An Impeccable critique on 2026-10-24 scored the page 21/28, with three P1 issues and three P2 issues (`.impeccable/critique/2026-10-24T03-42-33Z__src-app-page-tsx.md`):
+- A recruiter couldn't tell who built it, with what, or how to reach them. The author was only in the © line, the stack was never named, and the Source link was hidden on phones.
+- The engineering quality was described but not shown.
+- `/login?as=` filled in the email but gave no hint of the password.
+- Below about 1370px wide the hero's lit signals ran off the screen.
+- The step screenshots rendered the app's text at about 8px.
+- A shared link had no preview.
+
+The owner settled the direction in one grilling round:
+- refine, not redesign;
+- fix all six issues;
+- name, title, GitHub and LinkedIn, but no email address;
+- a "How it's built" section with a diagram, the stack and one real excerpt;
+- close the page with a "Built by" section;
+- the password hint on `/login`;
+- no counts on the page.
+
+**Decision:**
+- **Hero.**
+  - Under the role picker: "Built by Johnmark Enriquez, full-stack engineer", with "Read the source" and "how it's built" links.
+  - The shared-accounts note and a Copy button for the password sit in the picker itself.
+  - The desktop capture crops the app sidebar off, and the text column is 30rem with a 42rem frame until 80rem (34rem and 64rem from there). All three lit signals now stay inside the window from 1024px up, and the signals keep their positions in % of the whole capture.
+- **Header.** A "How it's built" section link. On phones, where the section links hide, a ghost "Source" link stays next to Sign in.
+- **One failed check, followed.**
+  - Each step's words now sit above a full-width screenshot cropped to a band (`crop`, measured per capture), so the app's text renders at about 13px at 1440px.
+  - Phones keep the zoomed `focus` crops.
+  - Every frame is a link that opens the full-size capture in a new tab: a "Full size" chip, icon-only on the zoomed crops.
+- **How it's built** (new, after the trust section):
+  - The request path as three stations: browser → Next.js 16 on Vercel → Postgres 17 on Supabase. Each fact is from ARCHITECTURE.md, SECURITY.md or D-039/D-044.
+  - One real rule with its test: the work-order transition rule from the latest migration, and the pgTAP assertion that tries open → completed. Both link to their lines on GitHub.
+  - The stack, as in the README, plus links to CI, testing, the decision log and architecture.
+  - The quote lives in `features/landing/excerpt.ts`. A unit test compares it with the files at the linked lines, so an edit to either file fails `npm test` instead of leaving a stale quote. The migration can't change (append-only); the test file can.
+- **Built by** (new, last before the footer): name, title, one sentence on what the project covers, and links to the GitHub profile, the source and the decision log. LinkedIn is added once the owner supplies the URL. No email address.
+- **`/login?as=<role>`** shows "Live demo password: ShipShape2026" with a Copy button under the password field, linked by `aria-describedby`. It never fills the field and never puts it in a URL (D-011). Unknown or unpublished `as` values show nothing. The local seed's password differs, so the hint names the live demo.
+- **Link preview.** `src/app/opengraph-image.tsx` renders the hero in miniature at build time: the night field, the promise and the dimmed capture with its three signals lit. Satori takes no OKLCH, so the night tokens are written out in sRGB, and the font is ImageResponse's bundled Geist. `page.tsx` adds Open Graph and Twitter metadata. On Vercel the image URL is made absolute from `VERCEL_PROJECT_PRODUCTION_URL`.
+  - The proxy's matcher now skips `/opengraph-image`. Otherwise the signed-out redirect sent crawlers to `/login` (seen in testing).
+- **Still true copy only.** No counts, no invented customers. "Built by" makes no claim beyond authorship.
+
+**Not taken:**
+- A GitHub Actions badge image. The CSP allows only same-origin images (D-039), so CI is a text link.
+- Build-time counts of tests or decisions. The owner kept the no-counts rule; the page links to the evidence instead.
+- An email address on the page (owner's choice).
+- A full redesign. The night bridge and the one-finding story stayed.
+- Re-measured phone crops for steps 3 and 4. Any region with both the subject and its signals is too wide to read on a phone, so those crops keep their signals, and the full-size link carries the rest.
+
+**Consequences:**
+- The page is longer (about 7,300px at 1440, from about 5,000), mostly from the readable screenshots and the new sections.
+- E2E: the landing spec covers the password hint, the copy button, the hiring visitor's path and the preview image served signed out. The smoke test checks the Built by section and the preview image.
+- DESIGN.md (Landing page) and the surface brief record the changes.

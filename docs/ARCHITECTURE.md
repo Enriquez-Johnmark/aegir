@@ -54,10 +54,11 @@ aegir/
 │   ├── seed.sql                 # ✅ Synthetic demo data + test fixture IDs (local only)
 │   └── tests/                   # ✅ pgTAP database tests: constraints, RLS, triggers
 ├── src/
-│   ├── proxy.ts                 # ✅ Session refresh + optimistic redirects (Next 16 "proxy", formerly middleware)
+│   ├── proxy.ts                 # ✅ Session refresh + optimistic redirects (Next 16 "proxy", formerly middleware); skips static assets and /opengraph-image
 │   ├── app/                     # ROUTING ONLY: layouts, pages, loading/error/not-found
 │   │   ├── layout.tsx           # ✅ Root layout (fonts, metadata)
 │   │   ├── page.tsx             # ✅ Public landing page (static; composes features/landing, D-046)
+│   │   ├── opengraph-image.tsx  # ✅ Link-preview image, generated at build time; the proxy skips it so crawlers get it signed out (D-050)
 │   │   ├── (auth)/              # ✅ Route group: centred auth layout (no URL segment)
 │   │   │   ├── login/page.tsx   # ✅ Sign-in (searchParams read inside <Suspense>)
 │   │   │   └── no-access/page.tsx # ✅ Signed in but no organization membership

@@ -484,3 +484,27 @@ Not tracked (machine-local, outside the repo or git-ignored): `~/.impeccable/bin
 | UPDATE | `package.json` | `test:integration` script | D-049 | ✅ |
 | UPDATE | `.github/workflows/ci.yml` | Header comment only: the integration suite stays local for now | D-049 | ✅ no step changed |
 | UPDATE | `AGENTS.md`, `README.md`, `docs/{ARCHITECTURE,CONVENTIONS,DECISIONS,ROADMAP,TESTING,CHANGELOG,FILE-CHANGE-LOG}.md` | New command; §7 integration rules; D-049 and the D-006 note; roadmap; results | D-049 | ✅ reconciled with `git status` |
+
+## 2026-10-24 · Next.js security update; landing page for people who are hiring (D-050)
+
+| Action | Path | Purpose | Related | Verification |
+|---|---|---|---|---|
+| UPDATE | `package.json`, `package-lock.json` | `next` and `eslint-config-next` 16.4.0 → 16.4.3 (critical `npm audit` advisory against 16.4.0) | — | ✅ `npm audit --omit=dev` 0; full checks below |
+| UPDATE | `src/features/landing/components/landing-hero.tsx` | "Built by" line with source and section links; capture crops the app sidebar; 30rem/42rem columns until 80rem so the lit signals stay on screen | D-050 | ✅ signals measured inside the window at 1024/1280/1440 |
+| UPDATE | `src/features/landing/components/role-picker.tsx` | Copy button for the password; shared-accounts note | D-050 | ✅ E2E copy test |
+| UPDATE | `src/features/landing/components/landing-header.tsx` | "How it's built" link; Source link on phones | D-050 | ✅ E2E |
+| UPDATE | `src/features/landing/components/how-it-works.tsx`, `screenshot-frame.tsx`, `trust-section.tsx` | Words above full-width screenshots cropped to measured bands; every frame opens the full-size capture; `visibleHeight` → `crop` | D-050 | ✅ screenshot rounds, E2E images/CSP test |
+| CREATE | `src/features/landing/components/built-section.tsx` | "How it's built": request path, one rule and its test, stack, evidence links | D-050 | ✅ E2E, axe |
+| CREATE | `src/features/landing/components/author-section.tsx` | "Built by" close | D-050 | ✅ E2E, axe |
+| CREATE | `src/features/landing/excerpt.ts`, `excerpt.test.ts` | The quoted rule and test, and a unit test that compares them with the files at the linked lines | D-050 | ✅ 3/3 |
+| UPDATE | `src/features/landing/links.ts` | `blobUrl`, CI link, `AUTHOR`, new section ids | D-050 | ✅ |
+| CREATE | `src/components/shared/copy-button.tsx` | Client Copy button with an announced result | D-050 | ✅ E2E |
+| UPDATE | `src/app/(auth)/login/page.tsx`, `src/features/auth/components/login-form.tsx` | Live demo password hint under the field when `?as=` names a published role | D-050, D-011 | ✅ E2E (shown for the 4 roles, absent for unknown values) |
+| CREATE | `src/app/opengraph-image.tsx` | Link-preview image, generated at build time | D-050 | ✅ build marks it static; 200 image/png signed out |
+| UPDATE | `src/app/page.tsx` | New sections; Open Graph and Twitter metadata | D-050 | ✅ build (`/` static) |
+| UPDATE | `src/proxy.ts` | Matcher skips `/opengraph-image` (was redirected to `/login`) | D-050 | ✅ E2E and smoke |
+| UPDATE | `e2e/landing.spec.ts`, `scripts/smoke.mjs` | Password hint, copy, the hiring visitor's path, preview image | D-050 | ✅ E2E 108/108; smoke landing 18/18 locally |
+| UPDATE | `DESIGN.md`, `.impeccable/surfaces/src-app-page-tsx.md` | Landing page rules and brief for the two audiences | D-050 | ✅ |
+| CREATE | `.impeccable/critique/2026-10-24T03-42-33Z__src-app-page-tsx.md` | Critique snapshot that started this (21/28) | D-050 | ✅ |
+| UPDATE | `docs/{DECISIONS,ROADMAP,CHANGELOG,TESTING,ARCHITECTURE,FILE-CHANGE-LOG}.md` | D-050, roadmap items, results | D-050 | ✅ reconciled with `git status` |
+| RESTORE | `src/types/database.types.ts` | Overwritten by running `db:types` after `db:stop`; restored from git (no schema change) | — | ✅ `git diff` empty, typecheck |

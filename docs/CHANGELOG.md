@@ -4,6 +4,29 @@ Meaningful functional and technical changes, newest first. Format loosely follow
 
 ## [Unreleased]
 
+### 2026-10-24: Landing page for people who are hiring (D-050), Next.js security update
+
+**Security**
+- Next.js 16.4.0 → 16.4.3 and `eslint-config-next` to match. `npm audit` flagged 16.4.0 as critical (remote code execution in Image Optimization with SVGs and in `use cache`, plus a Server Actions denial of service). `npm audit --omit=dev` is now clean. Six existing advisories remain in dev-only tools (the shadcn CLI and its dependencies); they don't ship.
+
+**Added**
+- Landing: "Built by Johnmark Enriquez, full-stack engineer" under the role picker, with links to the source and to the new "How it's built" section.
+- Landing: "How it's built", covering the request path (browser → Next.js 16 on Vercel → Postgres 17 on Supabase), the work-order transition rule and the pgTAP test that proves it (quoted from the files and linked to their lines), the stack, and links to CI, testing, the decision log and architecture. A unit test keeps the quote in step with the files.
+- Landing: a "Built by" close with links to the GitHub profile, the source and the decision log.
+- Landing: Copy buttons for the demo password; the shared-accounts note now sits in the hero's role picker.
+- `/login?as=<role>` shows the live demo password under the password field (never filled in or put in a URL).
+- Link preview: `app/opengraph-image.tsx` (generated at build time) plus Open Graph and Twitter metadata.
+
+**Changed**
+- Landing: each "How it works" step now has its words above a full-width screenshot cropped to the part that matters, so the app's text is readable on desktop. Every screenshot opens full size in a new tab.
+- Landing: the hero crops the app sidebar from the capture and narrows its columns below 80rem, so the three lit signals stay on screen from 1024px up (they ran off below about 1370px).
+- Landing header: a "How it's built" link, and a Source link on phones.
+- The proxy's matcher skips `/opengraph-image`, so crawlers get the image instead of a redirect to `/login`.
+- E2E landing spec and the smoke script cover the new parts; DESIGN.md, the surface brief, ARCHITECTURE and the roadmap are updated.
+
+**Reason:** owner request, after an Impeccable critique (21/28) and one grilling round. **Breaking changes:** none. **Migrations:** none.
+
+
 ### 2026-10-16: Integration suite (D-049)
 
 **Added**

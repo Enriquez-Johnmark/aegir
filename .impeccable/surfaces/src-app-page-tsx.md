@@ -9,7 +9,7 @@ related_targets: []
 
 Scope: the public marketing page, Aegir's only Impeccable **Persuade** surface (D-024). Static: no session or database reads; prerendered.
 
-Audience: a first-time visitor (a ship manager, inspector or technician, or a reviewer of this portfolio project). Job: understand what Aegir does, believe it works, and try the live demo as one of four roles. Proof: real screenshots of the demo (synthetic data), the product's real badges, and facts the database enforces (organization isolation, an audit trail nobody can edit, rules in Postgres, the test suites). Constraints: true copy only, no invented customers or numbers; not a certified safety system; screenshots self-hosted within the CSP (D-039); the demo password shown as the README shows it (D-011); sign-in stays on `/login` (the WAF rule covers POST /login, D-044).
+Audience: a first-time visitor (a ship manager, inspector or technician) and, since D-050, a recruiter or hiring manager judging the author (who built it, with what, how rigorously, where to look next). Job: understand what Aegir does, believe it works, and try the live demo as one of four roles. Proof: real screenshots of the demo (synthetic data), the product's real badges, and facts the database enforces (organization isolation, an audit trail nobody can edit, rules in Postgres, the test suites). Constraints: true copy only, no invented customers or numbers; not a certified safety system; screenshots self-hosted within the CSP (D-039); the demo password shown as the README shows it (D-011); sign-in stays on `/login` (the WAF rule covers POST /login, D-044).
 
 ## Direction contract
 
@@ -24,3 +24,8 @@ FIRST VIEWPORT: Header bar (wordmark, section links, Sign in). Left column: h1 a
 FORM: "Night bridge", rank 5 of 7 on the grounded surface list, dealt as the lead; role picker detail donated by "Pick your watch" (rank 3); facts list from "Spec sheet" (rank 7) becomes the trust section. Seed key 08e5ca3c.
 
 FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
+
+## Revision (D-050, 2026-10-24)
+
+Refined, not redesigned, after a critique scored 21/28 for the two audiences. Added: a "Built by" line in the hero, the copy button and shared-accounts note in the picker, a phone Source link, readable full-width step screenshots with full-size links, "How it's built" (request path, one real rule and its test, stack, evidence links), a "Built by" close, the `/login?as=` password hint and the link-preview image. The hero crops the app sidebar so the lit signals stay on screen from 1024px.
+

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { GET as keepalive } from "@/app/api/keepalive/route";
 import { listAuditEvents, listAuditPeople, getRecordHistory } from "@/features/audit/server/queries";
 import { signIn } from "@/features/auth/actions";
 import { getDashboard } from "@/features/dashboard/server/queries";
@@ -110,3 +111,14 @@ describe("organization isolation in every read", () => {
     expect((await getRecordHistory("vessels", NORTHWIND.vesselId)).items.length).toBeGreaterThan(0);
   });
 });
+
+describe("database keep-alive (D-052)", () => {
+  it("reaches Postgres signed out, reads nothing, and says so", async () => {
+    signOut();
+    const response = await keepalive();
+    expect(response.status).toBe(200);
+    expect(response.headers.get("cache-control")).toBe("no-store");
+    expect(await response.json()).toEqual({ ok: true });
+  });
+});
+

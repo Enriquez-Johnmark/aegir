@@ -5,8 +5,9 @@ import { publicEnv } from "@/lib/env";
 import { SESSION_COOKIE_OPTIONS } from "@/lib/supabase/cookie-options";
 import { DEFAULT_AUTHENTICATED_PATH } from "@/lib/safe-redirect";
 
-// The public pages: the product page, the engineering page (D-051) and sign-in.
-const PUBLIC_PATHS = new Set(["/", "/engineering", "/login"]);
+// The public pages: the product page, the engineering page (D-051) and sign-in; and
+// the database keep-alive that Vercel Cron calls signed out (D-052).
+const PUBLIC_PATHS = new Set(["/", "/engineering", "/login", "/api/keepalive"]);
 
 /**
  * Refreshes the Supabase auth session cookies on every matched request and

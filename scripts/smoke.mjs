@@ -79,6 +79,9 @@ for (const [vp, options] of [["desktop", { viewport: { width: 1440, height: 900 
   const previewPath = new URL(await page.locator('meta[property="og:image"]').getAttribute("content")).pathname;
   const preview = await context.request.get(`${BASE}${previewPath}`, { maxRedirects: 0 });
   check(`landing/${vp}: link preview image is served signed out`, preview.status() === 200 && preview.headers()["content-type"] === "image/png", `${preview.status()}`);
+  // The database itself (D-052): the landing pages never touch it, so check it directly.
+  const keepalive = await context.request.get(`${BASE}/api/keepalive`, { maxRedirects: 0 });
+  check(`landing/${vp}: the database answers (keep-alive)`, keepalive.status() === 200, `${keepalive.status()}`);
   const engineering = await page.goto(`${BASE}/engineering`);
   check(`landing/${vp}: /engineering is public and says who built it`, engineering.status() === 200 && (await page.getByRole("region", { name: "Built by Johnmark Enriquez" }).count()) === 1, `${engineering.status()} ${page.url()}`);
   await page.goto(`${BASE}/login?as=inspector`);

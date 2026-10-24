@@ -23,6 +23,8 @@
 | 2026-10-16 | Owner housekeeping | ✅ `SUPABASE_DB_PASSWORD` and `DEMO_PASSWORD` unset in the owner's shell; ✅ scoped `aegir-cli` token revoked in the dashboard and `supabase logout` run; `projects list` now fails with `AccessTokenRequiredError` (a new scoped token is needed for `link` or other token commands) |
 | 2026-10-16 | Sign-in rate limit (Vercel WAF rule, D-044) | ✅ applied by the owner as in [Sign-in rate limit](#sign-in-rate-limit-vercel-firewall-d-044). Checked with bare `POST /login` requests (no form data, so nothing reaches Supabase): 1–10 → 405 from the app, 11th → 429 with `x-vercel-mitigated: deny`; `GET /login` still 200 while blocked |
 | 2026-10-16 | Landing page deploy (`688ff66`, D-046) | ✅ `/` 200 from the edge cache (`x-vercel-cache: HIT`), CSP unchanged. Smoke test 57/59: all 14 new landing checks pass on desktop and Pixel 7 (promise, role picker in the first viewport, 6 screenshots from this site, `?as=` pre-fill, no console errors). The 2 failures were the script's own race: it counted links before the streamed sections arrived. A diagnostic sign-in found 0 links immediately and then 2 dashboard handover rows and 20 audit check entries. The pages are correct; the script now waits (`scripts/smoke.mjs`) |
+| 2026-10-24 | D-050 and D-051 deploys (`1f2dcac`, `2890fb7` via `e2c0272`) | ✅ landing smoke 18/18 and 20/20. Vercel created no deployment for the `2890fb7` push; an empty commit triggered it |
+| 2026-10-24 | Hosted project unreachable | ⚠️ every live sign-in failed with "Invalid email or password". `lerdmictefgrcmbovlft.supabase.co` returned NXDOMAIN, other Supabase hosts resolved: the project had gone 8 days without activity (last sign-ins 2026-10-16), most likely paused on the Free plan. The landing smoke couldn't see it (no database calls). Fixed forward with the keep-alive and the "unavailable" sign-in message (D-052); the owner restores the project from the dashboard |
 
 ## Environments
 
@@ -88,6 +90,14 @@ The owner applies this once, in the Vercel dashboard (Hobby allows one rate-limi
 5. Check: page loads still work; from one browser, the eleventh sign-in attempt within 5 minutes shows "Sign-in didn't go through". Firewall overview → the rule shows the blocked requests. To trial it first, set the action to **Log**, then switch to the 429.
 
 The production smoke test makes 7 sign-in attempts: one run per 5 minutes from one IP.
+
+## Keeping the database awake (D-052)
+
+Supabase pauses a Free-plan project after about 7 days without activity. A paused project's hostname stops resolving, so every sign-in fails, while `/`, `/engineering` and `/login` keep working because they never touch the database.
+
+- **Prevention:** `vercel.json` schedules a Vercel Cron call to `GET /api/keepalive` once a day (06:00 UTC). The route makes one anonymous read; RLS and the grants refuse it, so it reads nothing, but Postgres answers, which counts as activity. It returns `{ "ok": true }` (200) or `{ "ok": false }` (503) and is never cached. Check that the job appears under the Vercel project's **Settings → Cron Jobs** after the first deploy that includes `vercel.json`.
+- **Detection:** the smoke test's landing checks call the keep-alive, so `LANDING_ONLY=1 node scripts/smoke.mjs` fails when the database is unreachable. Sign-in then says "Sign-in isn't available right now", not "Invalid email or password".
+- **If it is paused anyway:** the owner opens the project in the Supabase dashboard and chooses **Restore project**. Data is kept; restoring takes a few minutes. Then run the smoke test, including the sign-ins.
 
 ## Recovery
 

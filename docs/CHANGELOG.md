@@ -4,6 +4,18 @@ Meaningful functional and technical changes, newest first. Format loosely follow
 
 ## [Unreleased]
 
+### 2026-10-24: Keep the hosted database awake; say when sign-in is down (D-052)
+
+**Fixed**
+- Sign-in no longer says "Invalid email or password." when Auth can't be reached or fails. It now says "Sign-in isn't available right now. Try again in a few minutes." A wrong password and an unknown email still share one message.
+
+**Added**
+- `GET /api/keepalive` and a daily Vercel Cron job (`vercel.json`, 06:00 UTC). The route makes one anonymous read that Postgres refuses, so it reads nothing, and the Free-plan project counts as active instead of pausing after 7 idle days. It returns `{ ok }` (200 or 503) and is never cached. It is public, with no secret (AGENTS.md rule 4), and in the proxy's public paths.
+- Tests: unit (message mapping, `reachedDatabase`), integration (the real route against the local stack), E2E (public and uncached). The smoke test's landing checks call the keep-alive, so they catch an unreachable database.
+- DEPLOYMENT: how to spot and restore a paused project. SECURITY §6 and §9: the new message and the public route.
+
+**Reason:** every live sign-in failed on 2026-10-24: the project's hostname no longer resolved after 8 idle days. **Breaking changes:** none. **Migrations:** none.
+
 ### 2026-10-24: The product page for users and clients; `/engineering` (D-051)
 
 **Added**

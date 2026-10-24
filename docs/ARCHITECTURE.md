@@ -42,6 +42,7 @@ We follow Next.js's documented **"store project files outside of `app`"** strate
 ```text
 aegir/
 ├── .github/workflows/ci.yml     # CI: app checks and database checks on every push (D-044)
+├── vercel.json                  # Vercel Cron: GET /api/keepalive daily at 06:00 UTC (D-052)
 ├── .claude/skills/              # Project-local Claude Code skills (see docs/AGENT-SKILLS.md)
 ├── docs/                        # All project documentation (this folder)
 ├── integration/                 # ✅ Vitest: real Server Actions and data layer against the LOCAL stack, as seeded users (D-049)
@@ -59,6 +60,7 @@ aegir/
 │   │   ├── layout.tsx           # ✅ Root layout (fonts, metadata)
 │   │   ├── page.tsx             # ✅ Public product page, for users and clients (static; composes features/landing, D-046, D-051)
 │   │   ├── engineering/page.tsx # ✅ Public engineering page: guarantees, request path, rule and test, stack, author (static, D-051)
+│   │   ├── api/keepalive/route.ts # ✅ Public GET for Vercel Cron: one anonymous read so the hosted database isn't paused (D-052)
 │   │   ├── opengraph-image.tsx  # ✅ Link-preview image, generated at build time; the proxy skips it so crawlers get it signed out (D-050)
 │   │   ├── (auth)/              # ✅ Route group: centred auth layout (no URL segment)
 │   │   │   ├── login/page.tsx   # ✅ Sign-in (searchParams read inside <Suspense>)
@@ -94,7 +96,8 @@ aegir/
 │   │   │   ├── client.ts        # ✅ Browser client (currently unused; using it needs a CSP connect-src change, D-039)
 │   │   │   ├── cookie-options.ts # ✅ httpOnly session cookies, Secure on Vercel (D-043)
 │   │   │   ├── server.ts        # ✅ Server client (server-only, per request, RLS)
-│   │   │   └── proxy.ts         # ✅ updateSession() used by src/proxy.ts; public paths: /, /engineering, /login
+│   │   │   ├── keepalive.ts     # ✅ pingDatabase(): one anonymous read; any SQLSTATE means Postgres answered (D-052)
+│   │   │   └── proxy.ts         # ✅ updateSession() used by src/proxy.ts; public paths: /, /engineering, /login, /api/keepalive
 │   │   ├── auth/session.ts      # ✅ getSessionState() (React.cache) / requireUser(), server-only
 │   │   ├── auth/roles.ts        # ✅ Role labels + UI capability map (DB is authoritative)
 │   │   ├── safe-redirect.ts     # ✅ Open-redirect-safe `next` handling

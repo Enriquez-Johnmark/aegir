@@ -537,3 +537,18 @@ Not tracked (machine-local, outside the repo or git-ignored): `~/.impeccable/bin
 | CREATE | `.impeccable/critique/2026-10-24T04-48-34Z__src-app-page-tsx.md` | Critique for users and clients (19/28) | D-051 | ✅ |
 | UPDATE | `docs/{DECISIONS,ARCHITECTURE,ROADMAP,CHANGELOG,TESTING,FILE-CHANGE-LOG}.md` | D-051, routes and public paths, roadmap, results | D-051 | ✅ reconciled with `git status` |
 
+## 2026-10-24 · Keep the hosted database awake; say when sign-in is down (D-052)
+
+| Action | Path | Purpose | Related | Verification |
+|---|---|---|---|---|
+| CREATE | `src/features/auth/sign-in-error.ts`, `sign-in-error.test.ts` | Failed sign-in → credentials, rate-limit or "unavailable" message | D-052 | ✅ unit |
+| UPDATE | `src/features/auth/actions.ts` | `signIn` uses `signInErrorMessage` | D-052 | ✅ integration (wrong password and unknown email still share one message) |
+| CREATE | `src/lib/supabase/keepalive.ts`, `keepalive.test.ts` | `pingDatabase()` and `reachedDatabase()` | D-052 | ✅ unit, integration |
+| CREATE | `src/app/api/keepalive/route.ts` | Public GET for Vercel Cron, `{ ok }`, no-store | D-052 | ✅ integration, E2E; build marks it dynamic |
+| CREATE | `vercel.json` | Daily cron at 06:00 UTC | D-052 | ⬜ appears in Vercel after deploy (owner to check) |
+| UPDATE | `src/lib/supabase/proxy.ts` | `/api/keepalive` is public | D-052 | ✅ E2E (200 signed out, no redirect) |
+| UPDATE | `integration/session-and-isolation.test.ts` | Keep-alive against the local stack | D-052 | ✅ 95/95 |
+| CREATE | `e2e/keepalive.spec.ts` | Public and uncached | D-052 | ✅ E2E 114/114 |
+| UPDATE | `scripts/smoke.mjs` | Landing checks call the keep-alive | D-052 | ✅ syntax; run after deploy |
+| UPDATE | `docs/{DECISIONS,DEPLOYMENT,SECURITY,ARCHITECTURE,ROADMAP,CHANGELOG,TESTING,FILE-CHANGE-LOG}.md` | D-052, pause runbook, public-route risk, results | D-052 | ✅ reconciled with `git status` |
+

@@ -700,3 +700,43 @@ The owner settled the direction in one grilling round (8 questions, all accepted
 **Consequences:**
 - `/` is about 7,500px at 1440 and 9,650px at 390. The engineering terms now live on `/engineering`.
 - E2E covers the sign-in states, the client's path, the engineering page and both pages at 320px with 200% text. axe runs on `/engineering` and `/login?as=technician`. The smoke test checks the close, `/engineering` and seven images.
+
+<a id="d-052"></a>
+
+## D-052 — Keep the hosted database awake, and say when sign-in is down
+**Status:** Accepted · 2026-10-24
+
+**Context:** On 2026-10-24 every live sign-in failed with "Invalid email or password."
+- The production project's hostname (`lerdmictefgrcmbovlft.supabase.co`) returned NXDOMAIN, while other Supabase hosts resolved.
+- The project had gone 8 days without activity (the last live sign-ins were the smoke tests on 2026-10-16), and Supabase pauses Free-plan projects after about 7. Only the owner's dashboard can confirm "paused" rather than "deleted".
+- Two things hid the outage:
+  - `signIn` reported every Auth error except the rate limit as wrong credentials;
+  - the landing-only smoke test never touches the database.
+
+The owner accepted both proposals in a grilling round.
+
+**Decision:**
+- **Sign-in messages** (`features/auth/sign-in-error.ts`, unit tested):
+  - the rate limit keeps its message;
+  - an `AuthRetryableFetchError` (status 0 for no connection, 5xx otherwise) or any 5xx shows "Sign-in isn't available right now. Try again in a few minutes.";
+  - everything else shows "Invalid email or password.", so wrong password and unknown account still can't be told apart.
+- **Keep-alive.**
+  - `vercel.json` schedules Vercel Cron to call `GET /api/keepalive` daily at 06:00 UTC. Hobby allows one run a day, well inside the 7-day window.
+  - The route calls `connection()` (request time, never prerendered) and then `pingDatabase()` (`lib/supabase/keepalive.ts`): one anonymous `GET` on `vessels`, limit 1. RLS and the grants refuse it with `42501`. Any SQLSTATE means Postgres ran the request; an empty code means it was never reached. It is a GET because a refused HEAD has no body, so its SQLSTATE would be lost.
+  - The route returns `{ ok }` with 200 or 503 and `Cache-Control: no-store`.
+- **Public, no secret.** I proposed a `CRON_SECRET` check, but AGENTS.md rule 4 allows only the two public Supabase variables at runtime. So the route is public, reads nothing and reveals only whether the database answered (SECURITY.md §9). `/api/keepalive` joins the proxy's `PUBLIC_PATHS`.
+- **Detection.** The smoke test's landing checks call the keep-alive, so a `LANDING_ONLY=1` run now fails when the database is unreachable.
+
+**Not taken:**
+- A `CRON_SECRET` header check (rule 4, above).
+- A new `public.keepalive()` function granted to `anon`. That is a schema change and an `anon` grant just for this; a refused read already reaches Postgres.
+- Upgrading to Supabase Pro. That's the owner's call and a cost; the keep-alive is free.
+- A GitHub Actions cron with the publishable key as a CI secret. CI holds no secrets (D-044).
+
+**Consequences:**
+- Assumption: Supabase counts a refused API request as activity. Check after the first week that the project stays active (dashboard), and that Vercel lists the job under Settings → Cron Jobs.
+- Tests:
+  - unit tests cover the message mapping and `reachedDatabase`;
+  - an integration test calls the real route signed out against the local stack;
+  - E2E checks it is public and uncached;
+  - unreachable hosts were checked by hand: postgrest-js gives an empty code, and auth-js gives `AuthRetryableFetchError` with status 0.

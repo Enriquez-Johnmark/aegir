@@ -90,6 +90,7 @@ Membership management is seed-only in the MVP (no UI).
 
 ## 6. Application-layer controls
 
+- Sign-in shows one message for a wrong password and an unknown email, so accounts can't be enumerated. Auth being unreachable or failing (5xx) has its own message, "Sign-in isn't available right now" (D-052); it reveals nothing about any account.
 - Server Actions are public endpoints. Each one re-verifies the session, validates input with Zod, derives identity server-side and returns minimal results ([CONVENTIONS.md §2](CONVENTIONS.md#server-actions)).
 - Route params (`[vesselId]`) are validated as UUIDs before querying. Bound Server Action arguments (`updateVesselAction.bind(null, vesselId)`) travel through the client, so they are re-validated in the action.
 - List search text is sanitised before use in a PostgREST `.or()` filter, so URL input cannot inject extra filter clauses (unit-tested in `vessels.test.ts`).
@@ -138,4 +139,5 @@ Covered by pgTAP (highlights): RLS enabled on every public table; anon has zero 
 - Demo access: seeded non-admin accounts (D-011). Locally every seeded user shares the password in `supabase/seed.sql`; the hosted demo must use different passwords and must not publish the admin account.
 - **Sign-in rate limiting is shared by all visitors.** Sign-in runs in a Server Action, so Supabase Auth sees Vercel's egress IPs, not the visitor's: about 30 bad attempts in 5 minutes could lock everyone out of the shared demo for a while. Mitigation (D-044): a Vercel WAF rule limits `POST /login` to 10 per 5 minutes per IP, so one visitor can use at most a third of that budget (live since 2026-10-16; see DEPLOYMENT.md). Many IPs together can still exhaust it; a CAPTCHA would be the next step. A refused sign-in shows the sign-in card with a wait-and-retry message, not a broken page.
 - **The shared demo can be defaced** with the published logins (records can't be deleted by design). Recovery: `scripts/demo-reset.mjs` restores the seed (destructive; DEPLOYMENT.md). Users can still edit their own display name (`profiles.full_name`), which isn't audited.
+- **`/api/keepalive` is public** (D-052). Vercel Cron calls it signed out, and a shared secret would put a secret in app code (AGENTS.md rule 4). It runs one anonymous read that RLS and the grants refuse, returns only `{ ok }`, and is never cached. Anyone can call it; each call costs one refused PostgREST request. The WAF rule covers only `POST /login`, so add a rate rule for it if it is ever abused.
 - JWT claims refresh only on token refresh. Role changes take effect at the latest after `jwt_expiry` (3600 s). Roles are read from the table, not the JWT, so this mainly affects session validity, not role checks.

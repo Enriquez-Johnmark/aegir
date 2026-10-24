@@ -64,7 +64,7 @@ rollback;
 
 | Check | Result |
 |---|---|
-| Unit (`npm test`) | ✅ 136/136 in 15 files |
+| Unit (`npm test`) | ✅ 148/148 in 17 files |
 | Database (`npm run db:test`) | ✅ 135/135 in 12 files |
 | Integration (`npm run test:integration`) | ✅ 94/94 in 5 files, on a fresh seed |
 | End-to-end (`npm run test:e2e`) | ✅ 102/102 (51 tests × desktop and Pixel 7) on a fresh seed |
@@ -182,6 +182,8 @@ rollback;
 | 2026-10-24 | E2E after D-051, first full run | ⚠️ 108 passed, 4 failed (2 × 2 projects): axe `target-size` on the stacked pgTAP links on `/engineering` (→ 24px rows), and 170px sideways scroll on `/` at 320px with 200% text (header actions and the LinkedIn button didn't wrap; long words in the trust facts → `wrap-break-word`). Two later runs stopped in global setup on a local `db reset` container error (`DbSetupError: error running container: exit 1`); a retry reset cleanly |
 | 2026-10-24 | Full verification after D-051 | ✅ lint · typecheck · unit 136/136 · build (`/`, `/engineering`, `/opengraph-image` static) · `db lint` no errors · pgTAP 135/135 · advisors no issues · integration 94/94 · E2E 112/112 on a fresh seed (axe 0 violations on `/`, `/engineering`, `/login`, `/login?as=technician`, desktop and Pixel 7) · smoke landing checks 20/20 against the local build. Production smoke not run (not deployed) |
 | 2026-10-24 | CI and production after D-051 (`2890fb7`, run 40066279048; deployed from `e2c0272`) | ✅ both CI jobs green. Vercel created no deployment for the push of `2890fb7`; an empty commit triggered it. `LANDING_ONLY=1` smoke against https://aegir-eight.vercel.app 20/20 on desktop and Pixel 7: 7 screenshots, the client close, `/engineering` public (200, no redirect), the preview image signed out. Signed-in smoke not run (no app-screen change beyond `/login`, which the landing checks cover) |
+| 2026-10-24 | Live sign-in outage, diagnosis (D-052) | ⚠️ `lerdmictefgrcmbovlft.supabase.co` NXDOMAIN while `supabase.co` and `api.supabase.com` resolved; 8 days without activity. By hand against unreachable hosts: postgrest-js returns status 0 with an empty code, and auth-js returns `AuthRetryableFetchError` (status 0), which the old action showed as "Invalid email or password." Locally, an anonymous `HEAD` on `vessels` is 401 with no body and a `GET` is 401 with `42501`, so the ping uses a GET |
+| 2026-10-24 | Full verification after D-052 | ✅ lint · typecheck · unit 148/148 (+ `sign-in-error`, `keepalive`) · build (`/api/keepalive` dynamic ƒ; `/`, `/engineering` static) · `db lint` no errors · pgTAP 135/135 · advisors no issues · integration 95/95 (+ the keep-alive route signed out) · E2E 114/114 on a fresh seed (+ keep-alive public and uncached). Production not run: the hosted project is unreachable until the owner restores it |
 
 ## Known gaps
 

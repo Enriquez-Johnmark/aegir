@@ -25,6 +25,7 @@
 | 2026-10-16 | Landing page deploy (`688ff66`, D-046) | ✅ `/` 200 from the edge cache (`x-vercel-cache: HIT`), CSP unchanged. Smoke test 57/59: all 14 new landing checks pass on desktop and Pixel 7 (promise, role picker in the first viewport, 6 screenshots from this site, `?as=` pre-fill, no console errors). The 2 failures were the script's own race: it counted links before the streamed sections arrived. A diagnostic sign-in found 0 links immediately and then 2 dashboard handover rows and 20 audit check entries. The pages are correct; the script now waits (`scripts/smoke.mjs`) |
 | 2026-10-24 | D-050 and D-051 deploys (`1f2dcac`, `2890fb7` via `e2c0272`) | ✅ landing smoke 18/18 and 20/20. Vercel created no deployment for the `2890fb7` push; an empty commit triggered it |
 | 2026-10-24 | Hosted project unreachable | ⚠️ every live sign-in failed with "Invalid email or password". `lerdmictefgrcmbovlft.supabase.co` returned NXDOMAIN, other Supabase hosts resolved: the project had gone 8 days without activity (last sign-ins 2026-10-16), most likely paused on the Free plan. The landing smoke couldn't see it (no database calls). Fixed forward with the keep-alive and the "unavailable" sign-in message (D-052); the owner restores the project from the dashboard |
+| 2026-10-24 | Project restored (owner) and D-052 deploy (`031a392`) | ✅ keep-alive 200 `{"ok":true}`; full smoke test 67/67 including all demo sign-ins. Still to confirm: the cron job listed under Vercel → Settings → Cron Jobs, and the project still active after a week |
 
 ## Environments
 

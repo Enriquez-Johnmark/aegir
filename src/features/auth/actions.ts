@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 
 import { signInSchema } from "@/features/auth/schemas";
+import { signInErrorMessage } from "@/features/auth/sign-in-error";
 import { safeNextPath } from "@/lib/safe-redirect";
 import { createClient } from "@/lib/supabase/server";
 
@@ -30,12 +31,8 @@ export async function signIn(_previous: SignInState, formData: FormData): Promis
   const { error } = await supabase.auth.signInWithPassword(parsed.data);
 
   if (error) {
-    // One message for unknown email and wrong password, so accounts can't be enumerated.
-    const formError =
-      error.code === "over_request_rate_limit"
-        ? "Too many sign-in attempts. Wait a minute and try again."
-        : "Invalid email or password.";
-    return { email: parsed.data.email, formError };
+    // One message for unknown email and wrong password; Auth being down says so (D-052).
+    return { email: parsed.data.email, formError: signInErrorMessage(error) };
   }
 
   redirect(safeNextPath(formData.get("next")));

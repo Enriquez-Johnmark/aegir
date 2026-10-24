@@ -4,6 +4,32 @@ Meaningful functional and technical changes, newest first. Format loosely follow
 
 ## [Unreleased]
 
+### 2026-10-24: The product page for users and clients; `/engineering` (D-051)
+
+**Added**
+- `/engineering` (public, static): "How Aegir is built", a table of the four promises with what enforces each and the pgTAP files that prove it, then the request path, the rule and its test, the stack and "Built by" (moved from `/`).
+- `/`: "On deck and at the desk" (who uses Aegir and where), "What it replaces, and what it doesn't do yet" (in this version / not in this version, not certified), and a closing "Want this for your fleet?" with "Talk to Johnmark on LinkedIn".
+- Sign-in: an "Aegir home" link; "Signing in as Technician · Tomas Okafor" for a picked role; the four demo roles when none was picked. `demoRoleFor` in `features/auth/demo-accounts.ts`, unit tested.
+- Screenshots: `phone-inspection.png` (an inspection on a phone, Fail panel open) and `handovers-all.png` (every handover, including the Fjord fuel pump one), from the local stack. `capture-screenshots.mjs` gained both and an `ONLY=` filter.
+
+**Changed**
+- `/` speaks to operators: the trust section's four promises are in their words, with the mechanisms on `/engineering`. The audit-log screenshot shows only its readable half.
+- Step 1 shows the phone checklist; step 3 shows the night shift's Fjord handover, so the story holds together. Step 4 drops "live query".
+- Each role's "try this" is a first task built on that person's own seeded work.
+- Header: "Try the demo" is the primary, Sign in a ghost link, "For engineers" set apart. The footer links to `/engineering`.
+- The link preview's words address users and clients.
+- The proxy treats `/engineering` as public.
+- E2E (landing, accessibility) and the smoke test cover both pages and the sign-in states.
+
+**Reason:** owner request, after an Impeccable critique for users and clients (19/28) and one grilling round. **Breaking changes:** none. **Migrations:** none.
+
+### 2026-10-24: LinkedIn on the landing page (D-050)
+
+**Added**
+- The "Built by" section links to the owner's LinkedIn profile first, then GitHub, the source and the decision log. E2E checks the link.
+
+**Reason:** the owner supplied the URL (D-050 left it pending). **Breaking changes:** none. **Migrations:** none.
+
 ### 2026-10-24: Landing page for people who are hiring (D-050), Next.js security update
 
 **Security**

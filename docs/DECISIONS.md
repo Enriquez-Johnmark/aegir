@@ -632,7 +632,7 @@ The owner settled the direction in one grilling round:
   - One real rule with its test: the work-order transition rule from the latest migration, and the pgTAP assertion that tries open → completed. Both link to their lines on GitHub.
   - The stack, as in the README, plus links to CI, testing, the decision log and architecture.
   - The quote lives in `features/landing/excerpt.ts`. A unit test compares it with the files at the linked lines, so an edit to either file fails `npm test` instead of leaving a stale quote. The migration can't change (append-only); the test file can.
-- **Built by** (new, last before the footer): name, title, one sentence on what the project covers, and links to the GitHub profile, the source and the decision log. LinkedIn is added once the owner supplies the URL. No email address.
+- **Built by** (new, last before the footer): name, title, one sentence on what the project covers, and links to the GitHub profile, the source and the decision log. LinkedIn was added on 2026-10-24. No email address.
 - **`/login?as=<role>`** shows "Live demo password: ShipShape2026" with a Copy button under the password field, linked by `aria-describedby`. It never fills the field and never puts it in a URL (D-011). Unknown or unpublished `as` values show nothing. The local seed's password differs, so the hint names the live demo.
 - **Link preview.** `src/app/opengraph-image.tsx` renders the hero in miniature at build time: the night field, the promise and the dimmed capture with its three signals lit. Satori takes no OKLCH, so the night tokens are written out in sRGB, and the font is ImageResponse's bundled Geist. `page.tsx` adds Open Graph and Twitter metadata. On Vercel the image URL is made absolute from `VERCEL_PROJECT_PRODUCTION_URL`.
   - The proxy's matcher now skips `/opengraph-image`. Otherwise the signed-out redirect sent crawlers to `/login` (seen in testing).
@@ -649,3 +649,54 @@ The owner settled the direction in one grilling round:
 - The page is longer (about 7,300px at 1440, from about 5,000), mostly from the readable screenshots and the new sections.
 - E2E: the landing spec covers the password hint, the copy button, the hiring visitor's path and the preview image served signed out. The smoke test checks the Built by section and the preview image.
 - DESIGN.md (Landing page) and the surface brief record the changes.
+
+<a id="d-051"></a>
+
+## D-051 — The product page is for users and clients; engineering moves to its own page
+**Status:** Accepted · 2026-10-24
+
+**Context:** The owner wants to show the landing page to the people who would use Aegir and the clients who would choose it. An Impeccable critique judged through their eyes scored it 19/28, down from 21/28 for recruiters (`.impeccable/critique/2026-10-24T04-48-34Z__src-app-page-tsx.md`). Its findings:
+- From the trust section on, the page spoke to engineers: "How it's built" with SQL sat between the proof and the demo, and the page ended on "Built by" and LinkedIn.
+- The trust section explained its promises as Postgres mechanisms.
+- The header's Sign in led to a bare `/login`.
+- Step 1 promised "on deck" but showed a desktop screen.
+- The story broke at step 3.
+- Nothing said what Aegir replaces or what it doesn't do yet.
+
+The owner settled the direction in one grilling round (8 questions, all accepted).
+
+**Decision:**
+- **Two pages.**
+  - `/` is the product page.
+  - `/engineering` (static, public: added to the proxy's `PUBLIC_PATHS`) carries what D-050 added for engineers and people who are hiring: "How Aegir is built" on the night field, then a new "The promises, and what keeps them" table, the request path, the rule and its test, the stack, the evidence links, and "Built by".
+  - The header's section links end with a separated "For engineers", and the footer and the trust section link to it.
+- **`/`, in order:**
+  1. Hero. The only author line is now "A portfolio project by Johnmark Enriquez, with synthetic data. Not a certified maritime safety system."
+  2. One failed check, followed to the fix.
+  3. On deck and at the desk (new): four roles, where each works and what Aegir does for them, beside the phone dashboard.
+  4. Records you can stand behind, in operators' words: your company's records stay yours; every change is signed and dated; the rules can't be skipped; handovers can't be rewritten.
+  5. What it replaces, and what it doesn't do yet (new): the positioning line, what's in this version, and PRODUCT.md's exclusions, plus "examples, not official templates" and not certified.
+  6. Try it as each role, with a first task built on each person's own seeded work instead of a repeated password.
+  7. Want this for your fleet? (new): the night field again, and one action, "Talk to Johnmark on LinkedIn". It promises a conversation, not a product for sale.
+- **Header.** "Try the demo" is the primary button (to the demo section), Sign in a ghost link. The section links show from `lg`.
+- **Sign-in.** `/login` gains an "Aegir home" link. With a published `?as=` it says "Signing in as Technician · Tomas Okafor". Without one, it lists the four demo roles. `demoRoleFor` is unit tested.
+- **Screenshots.**
+  - Two new captures, taken from the local stack (same seed, local password, no sign-ins against the live site):
+    - `phone-inspection.png`: Ingrid's fire safety audit on a Pixel 7, with the Fail panel open (nothing saved);
+    - `handovers-all.png`: Tomas's handovers, all of them, so the Fjord fuel-pump handover continues the story.
+  - Their dates differ by a few days from the hosted-demo captures. The existing captures are untouched.
+  - `capture-screenshots.mjs` gained both shots and an `ONLY=` filter.
+  - Step 1 uses a new `PhoneFrame`: a phone width, never zoomed, beside its words on wide screens.
+  - The audit-log frame shows only the log's half of the capture (`columns`), so it reads at about 14px.
+  - The "Full size" hint moved from a chip on the capture to a muted line under each frame, inside the same link. On the capture it covered a badge (bottom right) or the app's own buttons (top right).
+- **Link preview.** The words speak to users and clients; the image's bottom line invites them to try the demo as a role.
+- **No seed change.** The story's work order stays with Kenji. Changing it would touch 8 test references and need a hosted demo reset; the technician's task uses Tomas's own job instead.
+
+**Not taken:**
+- Keeping both audiences on one page with the engineering section lower down. It still cost a quarter of a phone scroll before the call to action.
+- Email on the page, and claims of availability or pricing. The close offers a conversation on LinkedIn only.
+- Recapturing every screenshot locally. It would have changed the README images.
+
+**Consequences:**
+- `/` is about 7,500px at 1440 and 9,650px at 390. The engineering terms now live on `/engineering`.
+- E2E covers the sign-in states, the client's path, the engineering page and both pages at 320px with 200% text. axe runs on `/engineering` and `/login?as=technician`. The smoke test checks the close, `/engineering` and seven images.

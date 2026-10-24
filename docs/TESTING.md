@@ -64,7 +64,7 @@ rollback;
 
 | Check | Result |
 |---|---|
-| Unit (`npm test`) | ✅ 135/135 in 15 files |
+| Unit (`npm test`) | ✅ 136/136 in 15 files |
 | Database (`npm run db:test`) | ✅ 135/135 in 12 files |
 | Integration (`npm run test:integration`) | ✅ 94/94 in 5 files, on a fresh seed |
 | End-to-end (`npm run test:e2e`) | ✅ 102/102 (51 tests × desktop and Pixel 7) on a fresh seed |
@@ -177,6 +177,10 @@ rollback;
 | 2026-10-24 | Landing page for people who are hiring (D-050): screenshot rounds (1440, 1280, 1024, 768, 390; dev server) | Round 1: lit signals on screen at 1024/1280/1440 (were off below ~1370); 146px and 508px sideways scroll at 768 and 390 from the code blocks widening an unsized grid → `grid-cols-1`. The link-preview image redirected to `/login` (proxy) → matcher skips it. Round 2: no overflow at any width, no console errors |
 | 2026-10-24 | `src/features/landing/excerpt.test.ts` | ✅ 3/3: the quoted rule and test match their files at the linked lines |
 | 2026-10-24 | Full verification after D-050 | ✅ lint · typecheck · unit 135/135 · build (`/` and `/opengraph-image` static) · `db lint` no errors · pgTAP 135/135 · advisors no issues · integration 94/94 · E2E 108/108 on a fresh seed (axe: 0 violations on `/` and `/login`, desktop and Pixel 7) · smoke script landing checks 18/18 against the local build. Types not regenerated (no migration). Production smoke not run (not deployed) |
+| 2026-10-24 | CI and production after D-050 (`1f2dcac`, run 40063144187) | ✅ both CI jobs green (audit step clean on Next 16.4.3). Vercel deployed; `LANDING_ONLY=1` smoke against https://aegir-eight.vercel.app 18/18 on desktop and Pixel 7, including the preview image served signed out (`og:image` absolute on the production domain). Signed-in smoke not run (no app-screen change) |
+| 2026-10-24 | Product page for users and clients (D-051): screenshot rounds (1440, 1024, 390; local production build) | Round 1: no overflow, no console errors on `/`, `/engineering`, `/login`, `/login?as=technician`. The "Full size" chip covered the Acknowledged badge (bottom right), then the app's own buttons (top right) → a muted line under each frame. Round 2: clean |
+| 2026-10-24 | E2E after D-051, first full run | ⚠️ 108 passed, 4 failed (2 × 2 projects): axe `target-size` on the stacked pgTAP links on `/engineering` (→ 24px rows), and 170px sideways scroll on `/` at 320px with 200% text (header actions and the LinkedIn button didn't wrap; long words in the trust facts → `wrap-break-word`). Two later runs stopped in global setup on a local `db reset` container error (`DbSetupError: error running container: exit 1`); a retry reset cleanly |
+| 2026-10-24 | Full verification after D-051 | ✅ lint · typecheck · unit 136/136 · build (`/`, `/engineering`, `/opengraph-image` static) · `db lint` no errors · pgTAP 135/135 · advisors no issues · integration 94/94 · E2E 112/112 on a fresh seed (axe 0 violations on `/`, `/engineering`, `/login`, `/login?as=technician`, desktop and Pixel 7) · smoke landing checks 20/20 against the local build. Production smoke not run (not deployed) |
 
 ## Known gaps
 

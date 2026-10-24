@@ -47,7 +47,7 @@ aegir/
 ├── integration/                 # ✅ Vitest: real Server Actions and data layer against the LOCAL stack, as seeded users (D-049)
 ├── e2e/                         # ✅ Playwright specs per feature + accessibility (axe) + security headers; global-setup resets the LOCAL db
 ├── public/                      # Static assets served as-is
-├── scripts/                     # ✅ demo-seed.mjs and demo-reset.mjs (+ tests): hosted demo seed and reset from supabase/seed.sql (D-011, D-043); capture-screenshots.mjs (README and landing images); smoke.mjs (read-only smoke test of a deployed site)
+├── scripts/                     # ✅ demo-seed.mjs and demo-reset.mjs (+ tests): hosted demo seed and reset from supabase/seed.sql (D-011, D-043); capture-screenshots.mjs (README and landing images; `ONLY=` limits a run to named files); smoke.mjs (read-only smoke test of a deployed site)
 ├── supabase/
 │   ├── config.toml              # Local Supabase stack configuration (committed)
 │   ├── migrations/              # ✅ Timestamped, append-only SQL migrations (source of truth)
@@ -57,7 +57,8 @@ aegir/
 │   ├── proxy.ts                 # ✅ Session refresh + optimistic redirects (Next 16 "proxy", formerly middleware); skips static assets and /opengraph-image
 │   ├── app/                     # ROUTING ONLY: layouts, pages, loading/error/not-found
 │   │   ├── layout.tsx           # ✅ Root layout (fonts, metadata)
-│   │   ├── page.tsx             # ✅ Public landing page (static; composes features/landing, D-046)
+│   │   ├── page.tsx             # ✅ Public product page, for users and clients (static; composes features/landing, D-046, D-051)
+│   │   ├── engineering/page.tsx # ✅ Public engineering page: guarantees, request path, rule and test, stack, author (static, D-051)
 │   │   ├── opengraph-image.tsx  # ✅ Link-preview image, generated at build time; the proxy skips it so crawlers get it signed out (D-050)
 │   │   ├── (auth)/              # ✅ Route group: centred auth layout (no URL segment)
 │   │   │   ├── login/page.tsx   # ✅ Sign-in (searchParams read inside <Suspense>)
@@ -71,7 +72,7 @@ aegir/
 │   │       ├── work-orders/{page.tsx, new/, [workOrderId]/, [workOrderId]/edit/}  # ✅ M3 slice 3
 │   │       ├── handovers/{page.tsx, new/, [handoverId]/}  # ✅ M3 slice 5
 │   │       └── audit/page.tsx   # ✅ M3 slice 6: organization-wide audit log (D-042)
-│   ├── features/                # ✅ One folder per business capability (auth ✅, vessels ✅, inspections ✅, work-orders ✅, dashboard ✅, handovers ✅, audit ✅, landing ✅: the public page's sections, no server code)
+│   ├── features/                # ✅ One folder per business capability (auth ✅, vessels ✅, inspections ✅, work-orders ✅, dashboard ✅, handovers ✅, audit ✅, landing ✅: the public pages' sections, no server code)
 │   │   └── <feature>/           #    e.g. vessels, inspections, work-orders, handovers, audit, dashboard
 │   │       ├── components/      #    Feature UI (Server Components by default; "use client" only when needed)
 │   │       ├── server/
@@ -93,7 +94,7 @@ aegir/
 │   │   │   ├── client.ts        # ✅ Browser client (currently unused; using it needs a CSP connect-src change, D-039)
 │   │   │   ├── cookie-options.ts # ✅ httpOnly session cookies, Secure on Vercel (D-043)
 │   │   │   ├── server.ts        # ✅ Server client (server-only, per request, RLS)
-│   │   │   └── proxy.ts         # ✅ updateSession() used by src/proxy.ts
+│   │   │   └── proxy.ts         # ✅ updateSession() used by src/proxy.ts; public paths: /, /engineering, /login
 │   │   ├── auth/session.ts      # ✅ getSessionState() (React.cache) / requireUser(), server-only
 │   │   ├── auth/roles.ts        # ✅ Role labels + UI capability map (DB is authoritative)
 │   │   ├── safe-redirect.ts     # ✅ Open-redirect-safe `next` handling

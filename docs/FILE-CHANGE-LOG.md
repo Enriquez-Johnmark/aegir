@@ -508,3 +508,32 @@ Not tracked (machine-local, outside the repo or git-ignored): `~/.impeccable/bin
 | CREATE | `.impeccable/critique/2026-10-24T03-42-33Z__src-app-page-tsx.md` | Critique snapshot that started this (21/28) | D-050 | ✅ |
 | UPDATE | `docs/{DECISIONS,ROADMAP,CHANGELOG,TESTING,ARCHITECTURE,FILE-CHANGE-LOG}.md` | D-050, roadmap items, results | D-050 | ✅ reconciled with `git status` |
 | RESTORE | `src/types/database.types.ts` | Overwritten by running `db:types` after `db:stop`; restored from git (no schema change) | — | ✅ `git diff` empty, typecheck |
+
+## 2026-10-24 · LinkedIn on the landing page (D-050)
+
+| Action | Path | Purpose | Related | Verification |
+|---|---|---|---|---|
+| UPDATE | `src/features/landing/links.ts`, `src/features/landing/components/author-section.tsx` | `AUTHOR.linkedin`; LinkedIn first in the Built by links | D-050 | ✅ E2E (engineering page test) |
+| UPDATE | `e2e/landing.spec.ts` | Asserts the LinkedIn link | D-050 | ✅ E2E 112/112 |
+| UPDATE | `docs/{ROADMAP,CHANGELOG,FILE-CHANGE-LOG,TESTING}.md` | Roadmap item done; CI and production results for D-050 | D-050 | ✅ |
+
+## 2026-10-24 · The product page for users and clients; `/engineering` (D-051)
+
+| Action | Path | Purpose | Related | Verification |
+|---|---|---|---|---|
+| CREATE | `src/app/engineering/page.tsx` | Public engineering page: intro, guarantees, request path, rule and test, stack, Built by | D-051 | ✅ build (static), E2E, axe |
+| CREATE | `src/features/landing/components/guarantees-section.tsx` | Each promise, what enforces it, the pgTAP files that prove it | D-051 | ✅ E2E, axe (24px link rows) |
+| CREATE | `src/features/landing/components/{roles-section,scope-section,contact-section,phone-frame}.tsx` | On deck and at the desk; what it replaces and doesn't do yet; the LinkedIn close; phone captures at phone width | D-051 | ✅ E2E, axe, screenshot rounds |
+| UPDATE | `src/features/landing/components/{how-it-works,trust-section,demo-accounts,landing-header,landing-hero,landing-footer,screenshot-frame,built-section}.tsx` | Phone step and Fjord handover; operator promises and readable audit crop; first tasks; Try the demo header; one-line hero note; For engineers link; Full size under frames; section retitled | D-051 | ✅ E2E 112/112, 320px + 200% text |
+| UPDATE | `src/features/landing/{links,screenshots}.ts` | `ENGINEERING_PATH`, new section ids; the two new captures, unused ones dropped | D-051 | ✅ |
+| UPDATE | `src/features/auth/demo-accounts.ts`, `demo-accounts.test.ts` | First tasks per role from the seed; `demoRoleFor` + tests | D-051 | ✅ unit 136/136 |
+| UPDATE | `src/app/(auth)/login/page.tsx` | Aegir home link; "Signing in as…"; demo role links without `?as=` | D-051 | ✅ E2E, axe |
+| UPDATE | `src/lib/supabase/proxy.ts` | `/engineering` is public | D-051 | ✅ E2E, smoke (200 signed out) |
+| UPDATE | `src/app/page.tsx`, `src/app/opengraph-image.tsx` | New sections and order; share text for users and clients | D-051 | ✅ build |
+| CREATE | `docs/screenshots/phone-inspection.png`, `docs/screenshots/handovers-all.png` | Captured from the local stack (local seed password, no live sign-ins) | D-051 | ✅ viewed |
+| UPDATE | `scripts/capture-screenshots.mjs` | The two new shots and an `ONLY=` filter | D-051 | ✅ ran with `ONLY=` locally |
+| UPDATE | `e2e/landing.spec.ts`, `e2e/accessibility.spec.ts`, `scripts/smoke.mjs` | Sign-in states, client path, engineering page, both pages at 320px/200%; axe on new routes; smoke checks | D-051 | ✅ E2E 112/112; smoke 20/20 locally |
+| UPDATE | `DESIGN.md`, `.impeccable/surfaces/src-app-page-tsx.md` | Two pages, section order, phone frames, night close | D-051 | ✅ |
+| CREATE | `.impeccable/critique/2026-10-24T04-48-34Z__src-app-page-tsx.md` | Critique for users and clients (19/28) | D-051 | ✅ |
+| UPDATE | `docs/{DECISIONS,ARCHITECTURE,ROADMAP,CHANGELOG,TESTING,FILE-CHANGE-LOG}.md` | D-051, routes and public paths, roadmap, results | D-051 | ✅ reconciled with `git status` |
+

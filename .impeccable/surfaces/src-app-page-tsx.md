@@ -29,3 +29,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
 
 Refined, not redesigned, after a critique scored 21/28 for the two audiences. Added: a "Built by" line in the hero, the copy button and shared-accounts note in the picker, a phone Source link, readable full-width step screenshots with full-size links, "How it's built" (request path, one real rule and its test, stack, evidence links), a "Built by" close, the `/login?as=` password hint and the link-preview image. The hero crops the app sidebar so the lit signals stay on screen from 1024px.
 
+## Revision (D-051, 2026-10-24)
+
+Audience narrowed to product users and clients after a critique through their eyes (19/28). Engineering content moved to `/engineering`. Added: "On deck and at the desk", operator-worded trust promises, "What it replaces, and what it doesn't do yet", first tasks per role, a night-field close with "Talk to Johnmark on LinkedIn", a "Try the demo" header primary, a phone capture in step 1 and the Fjord handover in step 3. Sign-in gained a home link, "Signing in as…" and demo role links.
+
